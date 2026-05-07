@@ -1,0 +1,22 @@
+#geometry {
+  display: flex;
+  /* flex-direction: row; */
+  * {
+    margin: 3px;
+  }
+}
+
+#limits,
+#regions {
+  margin: 3px;
+}
+
+/* .weightRegion input:nth-child(odd) { */
+/*   margin-left: auto; */
+/*   margin-right: 4px; */
+/* } */
+
+/* .weightRegion input:nth-child(even) { */
+/*   margin-right: auto; */
+/*   margin-left: 4px; */
+/* } */
