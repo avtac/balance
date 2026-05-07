@@ -1,0 +1,8 @@
+#diagram {
+  position: relative;
+  top: 50%;
+
+  svg {
+    position: absolute;
+  }
+}
