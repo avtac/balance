@@ -3,9 +3,7 @@ import "./Diagram.css"
 function Square({offX=0, offY=0}) {
   const size = 40;
   return (
-    <svg viewBox={"0 0 100 100"} width={size} height={size} style={{right: offX - size / 2, top: offY - size / 2}}>
-      <rect fill="white" width="100" height="100" />
-    </svg>
+    <img src={"/src/assets/Chair.svg"} style={{width: size, height: size, right: offX - size / 2, top: offY - size / 2}}/>
   );
 }
 
