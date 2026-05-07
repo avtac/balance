@@ -18,10 +18,11 @@ function Diagram() {
     {id: "G", x: 90, y:-84},
     {id: "H", x: 160, y:-84}
   ];
+  const width = 30 + seats.reduce((max, item) => Math.max(max, item.x), seats[0].x);
 
   const seatItems = seats.map(seat => <Square key={seat.id} offX={seat.x} offY={seat.y}/>)
   return (
-    <div id="diagram">
+    <div id="diagram" style={{width: width}}>
       {seatItems}
     </div>
   );

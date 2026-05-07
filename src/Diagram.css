@@ -1,6 +1,7 @@
 #diagram {
   position: relative;
   top: 50%;
+  margin-left: auto;
 
   img {
     position: absolute;
