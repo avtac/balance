@@ -16,6 +16,14 @@ function Subregion({children}) {
   );
 }
 
+function Grouping({children}) {
+  return (
+    <div className='grouping'>
+      {children}
+    </div>
+  );
+}
+
 function HorizontalRegion({children, fraction="1fr"}) {
   return (
     <div className='horizontalRegion' style={{ '--fraction': fraction }}>
@@ -32,4 +40,4 @@ function VerticalRegion({children, fraction="1fr"}) {
   );
 }
 
-export { Region, Subregion, HorizontalRegion, VerticalRegion }
+export { Region, Subregion, HorizontalRegion, VerticalRegion, Grouping }

@@ -22,3 +22,9 @@
   flex: 1;
   grid-template-columns: var(--fraction) 1fr;
 }
+
+.grouping {
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  margin: 3px;
+}
