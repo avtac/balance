@@ -4,6 +4,7 @@
   --bg: #eee;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
+  --input-bg: #101230;
   --accent: #5364c3;
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(80, 90, 137, 0.5);
@@ -33,6 +34,8 @@
     --bg: #30323e;
     --border: #1e202a;
     --code-bg: #1f2028;
+    --input-bg: #131639;
+    --button-bg: #323a86;
     --accent: #3041eb;
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
@@ -98,4 +101,29 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+input {
+  outline: unset;
+  background: var(--input-bg);
+  border-style: solid;
+  border-color: var(--border);
+  border-width: 1px;
+  border-radius: 6px;
+  padding: 5px;
+}
+
+button {
+  padding: 6px;
+  background-color: var(--button-bg);
+  border: 0px;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: oklch(from var(--button-bg) calc(l * 1.25) c h);
+}
+
+button:active {
+  background-color: oklch(from var(--button-bg) calc(l * 0.85) c h);
 }
