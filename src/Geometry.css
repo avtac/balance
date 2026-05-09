@@ -27,19 +27,21 @@
 }
 
 .weightLimit {
-  grid-template-columns: 1fr 5rem;
+  grid-template-columns: 8rem 4rem 3rem 4rem 2rem;
 }
 
 .weightRegion {
   display: flex;
   flex-direction: column;
+  padding: 4px;
   h4 {
     margin: 8px 0px;
   }
   .title {
     display: grid;
-    grid-template-columns: 10rem 5rem 4rem 3rem;
+    grid-template-columns: 10rem 3rem 5rem 3rem;
     gap: 5px;
+    padding: 3px 0px;
   }
 }
 

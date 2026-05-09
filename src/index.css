@@ -103,6 +103,7 @@ code {
   background: var(--code-bg);
 }
 
+select,
 input {
   outline: unset;
   background: var(--input-bg);

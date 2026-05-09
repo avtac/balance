@@ -3,6 +3,8 @@ import "./Geometry.css"
 import { VerticalRegion, HorizontalRegion, Subregion, Grouping } from "./Layout";
 import type { regionT, regionPointT, weightLimitT } from "./Types";
 
+const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
+
 function AircraftConfig() {
   return (
     <section id="geometry">
@@ -22,31 +24,38 @@ function AircraftConfig() {
   );
 }
 
-function WeightLimits({limit, config, setConfig}) {
-  function setName(name: string) {
+function WeightLimit({limit, config, setConfig}) {
+  const index = config.limits.limits.findIndex((lim: weightLimitT) => lim.id === limit.id);
+  if (index < 0) return;
+
+  function setValue(key: string, value: (string | number)) {
     const tmp = JSON.parse(JSON.stringify(config));
-    const index = tmp.limits.limits.findIndex((lim: weightLimitT) => lim.id === limit.id);
-    if (index < 0) return;
-    tmp.limits.limits[index].name = name;
+    tmp.limits.limits[index][key] = value;
     setConfig(tmp);
   }
 
-  function setWeight(weight: number) {
+  function removeLimit() {
     const tmp = JSON.parse(JSON.stringify(config));
-    const index = tmp.limits.limits.findIndex((lim: weightLimitT) => lim.id === limit.id);
-    if (index < 0) return;
-    tmp.limits.limits[index].value = weight;
+    tmp.limits.limits.splice(index, 1);
     setConfig(tmp);
   }
 
   return (
     <div className="weightLimit grouping">
-      <input placeholder="Limit Name" defaultValue={limit.name} onChange={e => setName(e.target.value)}/>
-      <input placeholder="Weight" type="number" defaultValue={limit.value} onChange={e => setWeight(Number(e.target.value))}/>
+      <input placeholder="Limit Name" defaultValue={limit.name} onChange={e => setValue("name", e.target.value)}/>
+      <input placeholder="Weight" type="number" defaultValue={limit.value} onChange={e => setValue("value", Number(e.target.value))}/>
+      <input type="color" value={limit.color} onChange={e => setValue('color', e.target.value)} />
+      <select onChange={e => setValue('lineStyle', e.target.value)}>
+        {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
+      </select>
+      <button onClick={removeLimit}>X</button>
     </div>
   );
 }
 
+      // <select onChange={e => setValue('color', e.target.value)}>
+      //   {availableColors.map((color: string) => <option key={color} value={color}>{color}</option>)}
+      // </select>
 function WeightRegionRow({data, config, setConfig, regionIndex, index, isLast = false }) {
 
   function setWeight(weight: number) {
@@ -78,8 +87,8 @@ function WeightRegionRow({data, config, setConfig, regionIndex, index, isLast = 
   return (
     <>
     <div className="weightRegionRow">
-      <input placeholder="Weight" min={0} step={10} type="number" defaultValue={data.weight} onChange={(e) => setWeight(Number(e.target.value))}/>
-      <input placeholder="Arm" type="number"  defaultValue={data.arm} onChange={(e) => setArm(Number(e.target.value))}/>
+      <input placeholder="Weight" min={0} step={10} type="number" defaultValue={data.weight} onChange={e => setWeight(Number(e.target.value))}/>
+      <input placeholder="Arm" type="number"  defaultValue={data.arm} onChange={e => setArm(Number(e.target.value))}/>
       {config.limits.regions[regionIndex].data.length > 3 && <button onClick={deletePoint}>X</button>}
       {<button className="addButton" onClick={addPoint}></button>}
     </div>
@@ -103,26 +112,40 @@ function WeightRegion({region, config, setConfig, nameString = ""}) {
 
   function removeRegion() {
     const tmp = JSON.parse(JSON.stringify(config));
-    const index = tmp.limits.regions.findIndex((r: regionT) => r.id === region.id);
-    if (index < 0) return;
-    tmp.limits.regions.splice(index, 1);
+    tmp.limits.regions.splice(regionIndex, 1);
+    setConfig(tmp);
+  }
+
+  function setColor(color: string) {
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.limits.regions[regionIndex].color = color;
+    setConfig(tmp);
+  }
+
+  function setStyle(style: string) {
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.limits.regions[regionIndex].lineStyle = style;
     setConfig(tmp);
   }
 
   const name = region.name;
   return (
+    <Grouping>
     <div className="weightRegion">
       <h4>{name != "" ? name : "Weight Region"}</h4>
       <div className="title">
-        <input placeholder="Name" defaultValue={name} onChange={(e) => setName(e.target.value)}/>
-        <select />
-        <select />
+        <input placeholder="Name" defaultValue={name} onChange={e => setName(e.target.value)}/>
+        <input type="color" value={region.color} onChange={e => setColor(e.target.value)} />
+        <select onChange={e => setStyle(e.target.value)}>
+          {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
+        </select>
         <button onClick={removeRegion}>X</button>
       </div>
       {region.data.map((data: regionPointT, index: number) => {
         return <WeightRegionRow key={data.id} config={config} regionIndex={regionIndex} setConfig={setConfig} index={index} data={data} isLast={index === region.data.length - 1}/>
       })}
     </div>
+    </Grouping>
   );
 }
 
@@ -130,7 +153,6 @@ function SeatInput({seats, id, setSeats}) {
   const seat = seats[id];
 
   function update(e: BaseSyntheticEvent) {
-    console.log(e);
     if (e.target == null) return;
     const key = e.target.value.replace(id, "");
     const tmp = JSON.parse(JSON.stringify(seats));
@@ -258,7 +280,8 @@ function AircraftLimits({config, setConfig}) {
     const newLimit: weightLimitT = {
       name: "",
       id: crypto.randomUUID(),
-      value: null
+      value: null,
+      color: '#FFFFFF'
     };
     tmp.limits.limits.push(newLimit);
     setConfig(tmp);
@@ -269,11 +292,12 @@ function AircraftLimits({config, setConfig}) {
     const newLimit: regionT = {
       name: "",
       id: crypto.randomUUID(),
+      color: '#FFFFFF',
       data: [
-        {weight: 1000, arm: 10},
-        {weight: 2000, arm: 10},
-        {weight: 2000, arm: 20},
-        {weight: 1000, arm: 20}
+        {id: crypto.randomUUID(), weight: 1000, arm: 10},
+        {id: crypto.randomUUID(), weight: 2000, arm: 10},
+        {id: crypto.randomUUID(), weight: 2000, arm: 20},
+        {id: crypto.randomUUID(), weight: 1000, arm: 20}
       ]
     };
     tmp.limits.regions.push(newLimit);
@@ -284,7 +308,7 @@ function AircraftLimits({config, setConfig}) {
       <HorizontalRegion>
         <section id="limits">
           {config.limits.limits.map((limit: weightLimitT) => {
-            return <WeightLimits key={limit.id} limit={limit} config={config} setConfig={setConfig} />
+            return <WeightLimit key={limit.id} limit={limit} config={config} setConfig={setConfig} />
           })}
           <button onClick={() => addLimit()}>Add Limit</button>
         </section>

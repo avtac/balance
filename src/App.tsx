@@ -14,12 +14,13 @@ function App() {
       regions: [{
         name: "",
         id: crypto.randomUUID(),
+        color: '#FFFFFF',
         data: [
-          {arm: 30, weight: 1400},
-          {arm: 30, weight: 2000},
-          {arm: 35, weight: 2550},
-          {arm: 50, weight: 2550},
-          {arm: 50, weight: 1400}
+          {id: crypto.randomUUID(), arm: 30, weight: 1400},
+          {id: crypto.randomUUID(), arm: 30, weight: 2000},
+          {id: crypto.randomUUID(), arm: 35, weight: 2550},
+          {id: crypto.randomUUID(), arm: 50, weight: 2550},
+          {id: crypto.randomUUID(), arm: 50, weight: 1400}
         ]}
       ],
       limits: []

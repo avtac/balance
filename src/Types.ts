@@ -1,6 +1,8 @@
 export interface weightLimitT {
   id: string,
   name: string,
+  color?: string,
+  lineStyle?: string,
   value: number | null
 }
 
@@ -13,6 +15,8 @@ export interface regionPointT {
 export interface regionT {
   id: string,
   name: string,
+  color?: string,
+  lineStyle?: string,
   data: regionPointT[]
 }
 

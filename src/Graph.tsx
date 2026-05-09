@@ -14,7 +14,7 @@ function cleanLimits(limits: weightLimitT[]) {
       ret[index].name += ";" + limit.name;
       continue;
     }
-    ret.push({ id: limit.id, value: limit.value, name: limit.name });
+    ret.push({ id: limit.id, value: limit.value, name: limit.name, color: limit.color, lineStyle: limit.lineStyle });
   }
   return ret;
 }
@@ -39,10 +39,10 @@ function PlotLimit({data, limits}) {
   let points = `${x1},${y} ${x2},${y}`;
   return (
     <>
-    <polyline points={points} stroke="#28cbce" strokeWidth='.3' fill='none'/>
-    <text x={x2 + 1} y={y} alignmentBaseline='after-edge' fontSize={2} fill='#28cbce'>{data.value}</text>
+    <polyline points={points} stroke={data.color ?? 'white'} strokeDasharray={data.lineStyle ?? ''} strokeWidth='.3' fill='none'/>
+    <text x={x2 + 1} y={y} alignmentBaseline={data.name != "" ? 'after-edge' : 'middle'} fontSize={2} fill={data.color ?? 'white'}>{data.value}</text>
     {data.name.split(";").map((name: string, i: number) => {
-      return <text key={name} x={x2 + 1} y={y + i * 2} alignmentBaseline='before-edge' fontSize={2} fill='#28cbce'>{name}</text>
+      return <text key={name} x={x2 + 1} y={y + i * 2} alignmentBaseline='before-edge' fontSize={2} fill={data.color ?? 'white'}>{name}</text>
     })}
     </>
   );
@@ -60,10 +60,11 @@ function PlotRegion({data, limits}) {
   let middleY = (Math.max(...points.map((p: number[]) => p[1])) + Math.min(...points.map((p: number[]) => p[1]))) / 2;
   // let middleX = (points.map((p: number[]) => p[0])).reduce((sum, current) => sum + current, 0) / points.length;
   // let middleY = (points.map((p: number[]) => p[1])).reduce((sum, current) => sum + current, 0) / points.length;
+
   return (
     <>
-    <polyline points={pointsString} stroke="#28cbce" strokeWidth='.3' fill='none'/>
-    <text x={middleX} y={middleY} fontSize="2" fill="#29cbce" textAnchor='middle' alignmentBaseline='middle'>{data.name}</text>
+    <polyline points={pointsString} stroke={data.color ?? 'white'} strokeDasharray={data.lineStyle ?? ''} strokeWidth='.3' fill='none'/>
+    <text x={middleX} y={middleY} fontSize="2" fill={data.color} textAnchor='middle' alignmentBaseline='middle'>{data.name}</text>
     </>
   );
 }
