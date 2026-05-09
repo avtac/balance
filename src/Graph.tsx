@@ -112,12 +112,14 @@ function PlotRegions({data, limits}) {
 }
 
 function PlotHorizontalGrid({limits, gridSpacing}) {
-  let numGrid = Math.floor((limits.maxX - limits.minX) / gridSpacing) + 1;
+  let smallestGridValue = Math.ceil(limits.minX / gridSpacing) * gridSpacing;
+  let xOffset = (smallestGridValue - limits.minX) * limits.xRatio + padding;
+  let numGrid = Math.floor((limits.maxX - smallestGridValue) / gridSpacing) + 1;
   let gapBetweenGrid = gridSpacing * limits.xRatio;
-  let xOffset = (limits.minX % gridSpacing) * limits.xRatio;
+  if (!numGrid) return;
   let positions = Array(numGrid).fill(0).map((_, index) => {return {
-    pos: gapBetweenGrid * (index + 1) + padding - xOffset,
-    value: (index + 1) * gridSpacing - limits.minX % gridSpacing + limits.minX
+    pos: gapBetweenGrid * index + xOffset,
+    value: smallestGridValue + index * gridSpacing
   }});
   return (
     <>
@@ -132,12 +134,14 @@ function PlotHorizontalGrid({limits, gridSpacing}) {
 }
 
 function PlotVerticalGrid({limits, gridSpacing}) {
-  let numGrid = Math.floor((limits.maxY - limits.minY) / gridSpacing);
+  const largestGridValue = Math.floor(limits.maxY / gridSpacing) * gridSpacing;
+  let yOffset = (limits.maxY - largestGridValue) * limits.yRatio + padding;
+  let numGrid = Math.floor((largestGridValue - limits.minY) / gridSpacing) + 1;
   let gapBetweenGrid = gridSpacing * limits.yRatio;
-  let yOffset = (limits.maxY % gridSpacing) * limits.yRatio;
+  if (!numGrid) return;
   let positions = Array(numGrid).fill(0).map((_, index) => {return {
-    pos: gapBetweenGrid * (index + 1) + padding - yOffset,
-    value: (numGrid - index) * gridSpacing - limits.minY % gridSpacing + limits.minY
+    pos: gapBetweenGrid * index + yOffset,
+    value: largestGridValue - index * gridSpacing
   }});
   return (
     <>
