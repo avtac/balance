@@ -33,13 +33,21 @@ function App() {
     }
   };
 
-  const [config, setConfig] = useState(defaultValue);
+  const storageConfig = JSON.parse(localStorage.getItem("config"));
+
+  const [config, setConfig] = useState(storageConfig ?? defaultValue);
+  // const [config, setConfig] = useState(defaultValue);
+
+  function setConfigSpecial(value: configT) {
+    localStorage.setItem("config", JSON.stringify(value));
+    setConfig(value);
+  }
 
   return (
     <section id="content">
       <HorizontalRegion fraction={"1.2fr"}>
         <Region>
-          <Geometry config={config} setConfig={setConfig} />
+          <Geometry config={config} setConfig={setConfigSpecial} />
         </Region>
         <VerticalRegion fraction={"2.0fr"}>
           <Region>
