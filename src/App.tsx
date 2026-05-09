@@ -13,6 +13,7 @@ function App() {
       name: "Pilot Seat",
       arm: 0,
       seatCount: 1,
+      lateralDist: 0,
       maxWeight: 300
     }],
     cargoAreas: [],

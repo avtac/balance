@@ -30,6 +30,7 @@ export interface seatT {
   name: string,
   maxWeight: number,
   arm: number,
+  lateralDist: number,
   seatCount: number
 }
 
