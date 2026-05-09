@@ -8,7 +8,13 @@ import type { configT } from './Types.tsx'
 
 function App() {
   const defaultValue: configT = {
-    seats: [],
+    seats: [{
+      id: crypto.randomUUID(),
+      name: "Pilot Seat",
+      arm: 0,
+      seatCount: 1,
+      maxWeight: 300
+    }],
     cargoAreas: [],
     limits: {
       regions: [{

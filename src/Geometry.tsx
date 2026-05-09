@@ -1,7 +1,7 @@
 import { useState, type BaseSyntheticEvent } from "react";
 import "./Geometry.css"
 import { VerticalRegion, HorizontalRegion, Subregion, Grouping } from "./Layout";
-import type { regionT, regionPointT, weightLimitT } from "./Types";
+import type { regionT, regionPointT, weightLimitT, seatT, configT, cargoAreaT } from "./Types";
 
 const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
 
@@ -149,55 +149,36 @@ function WeightRegion({region, config, setConfig, nameString = ""}) {
   );
 }
 
-function SeatInput({seats, id, setSeats}) {
-  const seat = seats[id];
+function SeatInput({seat, index, config, setConfig}) {
 
-  function update(e: BaseSyntheticEvent) {
-    if (e.target == null) return;
-    const key = e.target.value.replace(id, "");
-    const tmp = JSON.parse(JSON.stringify(seats));
-    tmp[id][key] = e.target.value;
-    localStorage.setItem("seats", JSON.stringify(tmp));
-    setSeats(tmp);
+  function setValue(name: string, value: (string | number)) {
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.seats[index][name] = value;
+    setConfig(tmp);
   }
 
-  function removeSeat(id: string) {
-    const tmp = JSON.parse(JSON.stringify(seats));
-    delete tmp[id];
-    localStorage.setItem("seats", JSON.stringify(tmp));
-    setSeats(tmp);
+  function removeSeat() {
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.seats.splice(index, 1);
+    setConfig(tmp);
   }
 
   return (
     <div className="seatInput">
-      <input name={"name" + id} placeholder="Name" value={seat.name ? seat.name : ""} onChange={e => update(e)}/>
-      <input name={"arm" + id} placeholder="Arm" type="number" value={seat.arm ? seat.arm : ""} onChange={e => update(e)}/>
-      <input name={"maxWeight" + id} placeholder="Max Weight" type="number" value={seat.maxWeight ? seat.maxWeight : ""} onChange={e => update(e)}/>
-      <input name={"seatCount" + id} placeholder="Seat Count" min={1} type="number" value={seat.seatCount ? seat.seatCount : ""} onChange={e => update(e)}/>
-      {id !== "pilot" && <button onClick={() => removeSeat(id)}>X</button>}
+      {index === 0 ? <p>{seat.name}</p> : <input name={"name" + index} placeholder="Name" value={seat.name ? seat.name : ""} onChange={e => setValue('name', e.target.value)}/>}
+      <input name={"arm" + index} placeholder="Arm" type="number" value={seat.arm ? seat.arm : ""} onChange={e => setValue('arm', e.target.value)}/>
+      <input name={"maxWeight" + index} placeholder="Max Weight" min={0} type="number" value={seat.maxWeight ? seat.maxWeight : ""} onChange={e => setValue('maxWeight', e.target.value)}/>
+      <input name={"seatCount" + index} placeholder="Seat Count" min={1} type="number" value={seat.seatCount ? seat.seatCount : ""} onChange={e => setValue('seatCount', e.target.value)}/>
+      {index !== 0 && <button onClick={() => removeSeat()}>X</button>}
     </div>
   );
 }
 
-function SeatConfig() {
-  let def = {"pilot": {
-      name: "Pilot Seat",
-      arm: 0,
-      seatCount: 1,
-      maxWeight: 300
-    }
-  };
-
-  const storageSeats = localStorage.getItem("seats");
-  if (storageSeats !== null)
-    def = JSON.parse(storageSeats);
-
-  let [seats, setSeats] = useState(def);
-
+function SeatConfig({config, setConfig}) {
   function addSeat() {
-    const tmp = JSON.parse(JSON.stringify(seats));
-    tmp[crypto.randomUUID()] = {name: "New", arm: 0, seatCount: 1, maxWeight: 300};
-    setSeats(tmp);
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.seats.push({id: crypto.randomUUID(), name: "New", arm: 0, seatCount: 1, maxWeight: 300});
+    setConfig(tmp);
   }
 
   return (
@@ -205,9 +186,9 @@ function SeatConfig() {
       <h3>Seat Config</h3>
       <button onClick={addSeat}>Add Seat</button>
       <form id="seatsForm">
-        {Object.keys(seats).map(id => (
-          <Grouping key={id}>
-            <SeatInput key={id} seats={seats} id={id} setSeats={setSeats}/>
+        {config.seats.map((seat: seatT, index: number) => (
+          <Grouping key={seat.id}>
+            <SeatInput seat={seat} index={index} config={config} setConfig={setConfig}/>
           </Grouping>
         ))}
       </form>
@@ -215,48 +196,36 @@ function SeatConfig() {
   );
 }
 
-function CargoInput({cargo, id, setCargo}) {
-  const area = cargo[id];
+function CargoInput({area, index, config, setConfig}) {
 
-  function update(e: BaseSyntheticEvent) {
-    if (e.target == null) return;
-    const key = e.target.name.replace(id, "");
-    const tmp = JSON.parse(JSON.stringify(cargo));
-    tmp[id][key] = e.target.value;
-    localStorage.setItem("cargo", JSON.stringify(tmp));
-    setCargo(tmp);
+  function setValue(name: string, value: (string | number)) {
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.cargoAreas[index][name] = value;
+    setConfig(tmp);
   }
 
-  function removeCargo(id: string) {
-    const tmp = JSON.parse(JSON.stringify(cargo));
-    delete tmp[id];
-    localStorage.setItem("cargo", JSON.stringify(tmp));
-    setCargo(tmp);
+  function removeCargo() {
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.cargoAreas.splice(index, 1);
+    setConfig(tmp);
   }
 
   return (
     <div className="cargoInput">
-      <input name={"name" + id} placeholder="Name" value={area.name ? area.name : ""} onChange={e => update(e)}/>
-      <input name={"arm" + id} placeholder="Arm" type="number" value={area.arm ? area.arm : ""} onChange={e => update(e)}/>
-      <input name={"maxWeight" + id} placeholder="Max Weight" type="number" value={area.maxWeight ? area.maxWeight : ""} onChange={e => update(e)}/>
-      <button onClick={() => removeCargo(id)}>X</button>
+      <input name={"name" + index} placeholder="Name" value={area.name ? area.name : ""} onChange={e => setValue('name', e.target.value)}/>
+      <input name={"arm" + index} placeholder="Arm" type="number" value={area.arm ? area.arm : ""} onChange={e => setValue('arm', e.target.value)}/>
+      <input name={"maxWeight" + index} placeholder="Max Weight" type="number" value={area.maxWeight ? area.maxWeight : ""} onChange={e => setValue('maxWeight', e.target.value)}/>
+      <button onClick={() => removeCargo()}>X</button>
     </div>
   );
 }
 
-function CargoConfig() {
-  let def = {};
-
-  const storageSeats = localStorage.getItem("cargo");
-  if (storageSeats !== null)
-    def = JSON.parse(storageSeats);
-
-  let [cargo, setCargo] = useState(def);
+function CargoConfig({config, setConfig}) {
 
   function addCargo() {
-    const tmp = JSON.parse(JSON.stringify(cargo));
-    tmp[crypto.randomUUID()] = {name: "New", arm: 0, seatCount: 1, maxWeight: 300};
-    setCargo(tmp);
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.cargoAreas.push({ id: crypto.randomUUID(), name: "", arm: 0, maxWeight: 300});
+    setConfig(tmp);
   }
 
   return (
@@ -264,9 +233,9 @@ function CargoConfig() {
       <h3>Cargo Config</h3>
       <button onClick={addCargo}>Add Cargo Area</button>
       <form id="cargoForm">
-        {Object.keys(cargo).map(id => (
-          <Grouping key={id}>
-            <CargoInput key={id} cargo={cargo} id={id} setCargo={setCargo}/>
+        {config.cargoAreas.map((area: cargoAreaT, index: number) => (
+          <Grouping key={area.id}>
+            <CargoInput area={area} index={index} config={config} setConfig={setConfig}/>
           </Grouping>
         ))}
       </form>
@@ -335,8 +304,8 @@ function Geometry({config, setConfig}) {
       </Subregion>
       <Subregion>
         <HorizontalRegion>
-          <SeatConfig />
-          <CargoConfig />
+          <SeatConfig config={config} setConfig={setConfig} />
+          <CargoConfig config={config} setConfig={setConfig} />
         </HorizontalRegion>
       </Subregion>
     </>
