@@ -1,3 +1,6 @@
+#graphHolder,
+#diagramHolder,
+#leftPanel,
 .subregion,
 .region {
   background: #1f2134;
@@ -7,19 +10,34 @@
   overflow-x: auto;
 }
 
+#content {
+  max-height: calc(100vh - 100px);
+  display: flex;
+}
+
+#leftPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+#split {
+  display: grid;
+  grid-template-columns: 8fr 6fr;
+  height: 100%;
+}
+
 .subregion {
   background: #2f314f;
+  overflow-y: auto;
 }
 
 .verticalRegion {
   display: grid;
-  flex: 1;
   grid-template-rows: var(--fraction) 1fr;
 }
 
 .horizontalRegion {
   display: grid;
-  flex: 1;
   grid-template-columns: var(--fraction) 1fr;
 }
 

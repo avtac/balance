@@ -49,9 +49,9 @@
 #root {
   border-inline: 1px solid var(--border);
   min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 100px 1fr;
+  /* box-sizing: border-box; */
 }
 
 body {
@@ -88,8 +88,7 @@ p {
   margin: 0;
 }
 
-code,
-.counter {
+code {
   font-family: var(--mono);
   display: inline-flex;
   border-radius: 4px;

@@ -46,19 +46,19 @@ function App() {
 
   return (
     <section id="content">
-      <HorizontalRegion fraction={"1.2fr"}>
-        <Region>
+      <div id="split">
+        <div id='leftPanel'>
           <Geometry config={config} setConfig={setConfigSpecial} />
-        </Region>
-        <VerticalRegion fraction={"2.0fr"}>
-          <Region>
+        </div>
+        <div id='rightPanel'>
+          <div id='graphHolder'>
             <Graph config={config} />
-          </Region>
-          <Region>
-            <Diagram />
-          </Region>
-        </VerticalRegion>
-      </HorizontalRegion>
+          </div>
+          <div id='diagramHolder'>
+            <Diagram config={config}/>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }

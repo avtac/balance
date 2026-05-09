@@ -13,7 +13,7 @@
 
 .seatInput {
   display: grid;
-  grid-template-columns: 8.5rem 3.5rem 3.5rem 2.5rem 2rem;
+  grid-template-columns: 8.5rem 3.5rem 3.5rem 3.5rem 2.5rem 2rem;
   gap: 6px;
   margin: 3px;
 }

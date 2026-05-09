@@ -161,8 +161,9 @@ function SeatInput({seat, index, config, setConfig}) {
     <div className="seatInput">
       {index === 0 ? <p>{seat.name}</p> : <input name={"name" + index} placeholder="Name" value={seat.name ? seat.name : ""} onChange={e => setValue('name', e.target.value)}/>}
       <input name={"arm" + index} placeholder="Arm" type="number" value={seat.arm ? seat.arm : ""} onChange={e => setValue('arm', e.target.value)}/>
-      <input name={"maxWeight" + index} placeholder="Max Weight" min={0} type="number" value={seat.maxWeight ? seat.maxWeight : ""} onChange={e => setValue('maxWeight', e.target.value)}/>
-      <input name={"seatCount" + index} placeholder="Seat Count" min={1} type="number" value={seat.seatCount ? seat.seatCount : ""} onChange={e => setValue('seatCount', e.target.value)}/>
+      <input name={"maxWeight" + index} placeholder="Max Weight" min={0} type="number" value={seat.maxWeight ? seat.maxWeight : ""} onChange={e => setValue('maxWeight', Number(e.target.value))}/>
+      <input name={"lateralDist" + index} placeholder="Lateral Offset" type="number" value={seat.lateralDist ? seat.lateralDist : ""} onChange={e => setValue('lateralDist', Number(e.target.value))}/>
+      <input name={"seatCount" + index} placeholder="Seat Count" min={1} type="number" value={seat.seatCount ? seat.seatCount : ""} onChange={e => setValue('seatCount', Number(e.target.value))}/>
       {index !== 0 && <button onClick={() => removeSeat()}>X</button>}
     </div>
   );
@@ -171,7 +172,7 @@ function SeatInput({seat, index, config, setConfig}) {
 function SeatConfig({config, setConfig}) {
   function addSeat() {
     const tmp = JSON.parse(JSON.stringify(config));
-    tmp.seats.push({id: crypto.randomUUID(), name: "New", arm: 0, seatCount: 1, maxWeight: 300});
+    tmp.seats.push({id: crypto.randomUUID(), name: "New", arm: 0, seatCount: 1, maxWeight: 300, lateralDist: 0});
     setConfig(tmp);
   }
 
@@ -290,18 +291,24 @@ function Geometry({config, setConfig}) {
   return (
     <>
       <h2>GEOMETRY</h2>
+      <div style={{flex: 0}}>
       <Subregion>
         <AircraftConfig />
       </Subregion>
+      </div>
+      <div style={{flex: 1}}>
       <Subregion>
         <AircraftLimits config={config} setConfig={setConfig} />
       </Subregion>
+      </div>
+      <div style={{flex: 5}}>
       <Subregion>
         <HorizontalRegion>
           <SeatConfig config={config} setConfig={setConfig} />
           <CargoConfig config={config} setConfig={setConfig} />
         </HorizontalRegion>
       </Subregion>
+      </div>
     </>
   );
 }
