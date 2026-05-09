@@ -45,7 +45,7 @@ function WeightLimit({limit, config, setConfig}) {
       <input placeholder="Limit Name" defaultValue={limit.name} onChange={e => setValue("name", e.target.value)}/>
       <input placeholder="Weight" type="number" defaultValue={limit.value} onChange={e => setValue("value", Number(e.target.value))}/>
       <input type="color" value={limit.color} onChange={e => setValue('color', e.target.value)} />
-      <select onChange={e => setValue('lineStyle', e.target.value)}>
+      <select value={limit.lineStyle} onChange={e => setValue('lineStyle', e.target.value)}>
         {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
       </select>
       <button onClick={removeLimit}>X</button>
@@ -53,9 +53,6 @@ function WeightLimit({limit, config, setConfig}) {
   );
 }
 
-      // <select onChange={e => setValue('color', e.target.value)}>
-      //   {availableColors.map((color: string) => <option key={color} value={color}>{color}</option>)}
-      // </select>
 function WeightRegionRow({data, config, setConfig, regionIndex, index, isLast = false }) {
 
   function setWeight(weight: number) {
@@ -82,8 +79,6 @@ function WeightRegionRow({data, config, setConfig, regionIndex, index, isLast = 
     setConfig(tmp);
   }
 
-  // <h4>Weight</h4>
-  // <h4>Arm</h4>
   return (
     <>
     <div className="weightRegionRow">
@@ -94,7 +89,6 @@ function WeightRegionRow({data, config, setConfig, regionIndex, index, isLast = 
     </div>
     </>
   );
-  // TODO: Add function to button
 }
 
 function WeightRegion({region, config, setConfig, nameString = ""}) {
@@ -136,7 +130,7 @@ function WeightRegion({region, config, setConfig, nameString = ""}) {
       <div className="title">
         <input placeholder="Name" defaultValue={name} onChange={e => setName(e.target.value)}/>
         <input type="color" value={region.color} onChange={e => setColor(e.target.value)} />
-        <select onChange={e => setStyle(e.target.value)}>
+        <select value={region.lineStyle} onChange={e => setStyle(e.target.value)}>
           {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
         </select>
         <button onClick={removeRegion}>X</button>
