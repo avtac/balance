@@ -18,19 +18,54 @@
   margin: 3px;
 }
 
+.weightLimit,
 .cargoInput {
   display: grid;
   grid-template-columns: 11rem 4rem 4rem 2rem;
   gap: 6px;
-  margin: 3px;
+  padding: 3px;
 }
 
-/* .weightRegion input:nth-child(odd) { */
-/*   margin-left: auto; */
-/*   margin-right: 4px; */
-/* } */
+.weightLimit {
+  grid-template-columns: 1fr 5rem;
+}
 
-/* .weightRegion input:nth-child(even) { */
-/*   margin-right: auto; */
-/*   margin-left: 4px; */
+.weightRegion {
+  display: flex;
+  flex-direction: column;
+  h4 {
+    margin: 8px 0px;
+  }
+  .title {
+    display: grid;
+    grid-template-columns: 10rem 5rem 4rem 3rem;
+    gap: 5px;
+  }
+}
+
+.weightRegionRow {
+  display: grid;
+  grid-template-columns: 5rem 5rem 3rem;
+  gap: 4px 2px;
+
+  .addButton {
+    opacity: 0;
+    position: relative;
+    bottom: 3px;
+    left: 0px;
+    right: 0px;
+    padding: 0px;
+    height: 4px;
+    border-radius: 2px;
+    grid-column: span 3;
+  }
+}
+.weightRegionRow:has(input:focus) .addButton,
+.addButton:hover {
+  opacity: 1;
+}
+
+
+/* .weightRegionRow:last-child:hover { */
+/*   border-bottom: 3px solid Red; */
 /* } */

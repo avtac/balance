@@ -1,20 +1,20 @@
 import './Graph.css'
-import { useRef, useEffect, useState } from 'react';
+import type { regionPointT, regionT, weightLimitT } from './Types';
 
 let width = 120;
 let height = 80;
-let padding = 8;
+let padding = 12;
 
-function cleanLimits(limits: Array<{ value: number; name: string }>) {
-  const ret: Array<{ value: number; name: string }> = [];
+function cleanLimits(limits: weightLimitT[]) {
+  const ret: weightLimitT[] = [];
   for (const i in limits) {
     let limit = limits[i];
     if (ret.find(a => a.value === limit.value)) {
       const index = ret.findIndex(a => a.value === limit.value);
-      ret[index].name += " " + limit.name;
+      ret[index].name += ";" + limit.name;
       continue;
     }
-    ret.push({ value: limit.value, name: limit.name });
+    ret.push({ id: limit.id, value: limit.value, name: limit.name });
   }
   return ret;
 }
@@ -31,42 +31,6 @@ function PlotArea({width, height}) {
   );
 }
 
-let sampleData = [
-  {x: 30, y: 1400},
-  {x: 30, y: 2000},
-  {x: 35, y: 2550},
-  {x: 50, y: 2550},
-  {x: 50, y: 1400}
-]
-
-let sampleData2 = [
-  {x: 20, y: 1400},
-  {x: 20, y: 2000},
-  {x: 35, y: 2500},
-  {x: 40, y: 2500},
-  {x: 70, y: 1400}
-]
-
-let sampleData3 = [
-  {x: 20, y: 1400},
-  {x: 20, y: 1500},
-  {x: 29, y: 1500},
-  {x: 29, y: 1400}
-]
-
-let testData = {
-  regions: [
-    {name: "Limit 1", data: sampleData},
-    {name: "Limit 2", data: sampleData2},
-    {name: "Limit 3", data: sampleData3}
-  ],
-  limits: [
-    {name: "MRW", value: 2550},
-    {name: "MZFW", value: 1800},
-    {name: "MLW", value: 2500},
-    {name: "MTOW", value: 2500}
-  ]}
-
 function PlotLimit({data, limits}) {
   if (!data.value) return;
   let x1 = padding;
@@ -75,28 +39,30 @@ function PlotLimit({data, limits}) {
   let points = `${x1},${y} ${x2},${y}`;
   return (
     <>
-    <polyline points={points} stroke="#28cbce" stroke-linejoin="miter" strokeWidth='.3' fill='none'/>
+    <polyline points={points} stroke="#28cbce" strokeWidth='.3' fill='none'/>
     <text x={x2 + 1} y={y} alignmentBaseline='after-edge' fontSize={2} fill='#28cbce'>{data.value}</text>
-    {data.name.split(" ").map((name, i) => <text x={x2 + 1} y={y + i * 2} alignmentBaseline='before-edge' fontSize={2} fill='#28cbce'>{name}</text>)}
+    {data.name.split(";").map((name: string, i: number) => {
+      return <text key={name} x={x2 + 1} y={y + i * 2} alignmentBaseline='before-edge' fontSize={2} fill='#28cbce'>{name}</text>
+    })}
     </>
   );
 }
 
 function PlotRegion({data, limits}) {
-  data.data.push(data.data[0]);
-  let points = data.data.map(point => {
-    let x = limits.xRatio * (point.x - limits.minX) + padding;
-    let y = height - limits.yRatio * (point.y - limits.minY) - padding;
+  const withEnd = [...data.data, data.data[0]];
+  let points = withEnd.map((point: regionPointT) => {;
+    let x = limits.xRatio * (point.arm - limits.minX) + padding;
+    let y = height - limits.yRatio * (point.weight - limits.minY) - padding;
     return [x, y];
   })
-  let pointsString = points.map(p => `${p[0]},${p[1]}`).join(' ');
-  let middleX = (Math.max(...points.map(p => p[0])) + Math.min(...points.map(p => p[0]))) / 2;
-  let middleY = (Math.max(...points.map(p => p[1])) + Math.min(...points.map(p => p[1]))) / 2;
-  // let middleX = (points.map(p => p[0])).reduce((sum, current) => sum + current, 0) / points.length;
-  // let middleY = (points.map(p => p[1])).reduce((sum, current) => sum + current, 0) / points.length;
+  let pointsString = points.map((p: number[]) => `${p[0]},${p[1]}`).join(' ');
+  let middleX = (Math.max(...points.map((p: number[]) => p[0])) + Math.min(...points.map((p: number[]) => p[0]))) / 2;
+  let middleY = (Math.max(...points.map((p: number[]) => p[1])) + Math.min(...points.map((p: number[]) => p[1]))) / 2;
+  // let middleX = (points.map((p: number[]) => p[0])).reduce((sum, current) => sum + current, 0) / points.length;
+  // let middleY = (points.map((p: number[]) => p[1])).reduce((sum, current) => sum + current, 0) / points.length;
   return (
     <>
-    <polyline points={pointsString} stroke="#28cbce" stroke-linejoin="miter" strokeWidth='.3' fill='none'/>
+    <polyline points={pointsString} stroke="#28cbce" strokeWidth='.3' fill='none'/>
     <text x={middleX} y={middleY} fontSize="2" fill="#29cbce" textAnchor='middle' alignmentBaseline='middle'>{data.name}</text>
     </>
   );
@@ -105,8 +71,8 @@ function PlotRegion({data, limits}) {
 function PlotRegions({data, limits}) {
   return (
     <>
-    {data.regions.map(region => <PlotRegion data={region} limits={limits}/>)}
-    {data.limits.map(limit => <PlotLimit data={limit} limits={limits}/>)}
+    {data.regions.map((region: regionT) => <PlotRegion data={region} limits={limits}/>)}
+    {data.limits.map((limit: weightLimitT) => <PlotLimit data={limit} limits={limits}/>)}
     </>
   );
 }
@@ -163,14 +129,25 @@ function PlotTitle({title}) {
   )
 }
 
-function Graph() {
-  let data = testData;
-  const minX = Math.min(...data.regions.map(r => Math.min(...r.data.filter(v=> v.x !== null).map(p => p.x))));
-  const maxX = Math.max(...data.regions.map(r => Math.max(...r.data.filter(v=> v.x !== null).map(p => p.x))));
-  let minY = Math.min(...data.regions.map(r => Math.min(...r.data.filter(v=> v.y !== null).map(p => p.y))));
-  let maxY = Math.max(...data.regions.map(r => Math.max(...r.data.filter(v=> v.y !== null).map(p => p.y))));
-  maxY = Math.max(...data.limits.filter(v=> v.value !== null).map(lim => lim.value), maxX);
-  minY = Math.min(...data.limits.filter(v=> v.value !== null).map(lim => lim.value), minY);
+function Graph({ config }) {
+  if (config === undefined) return;
+  let data = JSON.parse(JSON.stringify(config.limits));
+
+  let minX: number = NaN;
+  let maxX: number = NaN;
+  let minY: number = NaN;
+  let maxY: number = NaN;
+
+  if (data.regions.length > 0) {
+    minX = Math.min(...data.regions.map((r: regionT) => Math.min(...r.data.filter((v: regionPointT) => v.arm !== null).map(p => p.arm))));
+    maxX = Math.max(...data.regions.map((r: regionT) => Math.max(...r.data.filter((v: regionPointT)=> v.arm !== null).map(p => p.arm))));
+    minY = Math.min(...data.regions.map((r: regionT) => Math.min(...r.data.filter((v: regionPointT) => v.weight !== null).map(p => p.weight))));
+    maxY = Math.max(...data.regions.map((r: regionT) => Math.max(...r.data.filter((v: regionPointT) => v.weight !== null).map(p => p.weight))));
+  }
+  if (data.limits.length > 0) {
+    maxY = Math.max(...data.limits.filter((v: weightLimitT) => v.value !== null).map((lim: weightLimitT) => lim.value), maxY) ?? maxY;
+    minY = Math.min(...data.limits.filter((v: weightLimitT) => v.value !== null).map((lim: weightLimitT) => lim.value), minY) ?? minY;
+  }
   const limits = {
     minX: minX,
     maxX: maxX,
@@ -179,15 +156,15 @@ function Graph() {
     xRatio: (width - padding * 2) / (maxX - minX),
     yRatio: (height - padding * 2) / (maxY - minY)
   };
-  testData.limits = cleanLimits(testData.limits);
+  data.limits = cleanLimits(data.limits);
   return (
     <>
       <svg viewBox={'0 0 ' + width + ' ' + height}>
         <PlotArea width={width} height={height} />
         <PlotTitle title="Weight vs Arm" />
-        <PlotHorizontalGrid limits={limits} gridSpacing={5} />
-        <PlotVerticalGrid limits={limits} gridSpacing={100} />
-        <PlotRegions data={testData} limits={limits}/>
+        {!isNaN(limits.xRatio) && <PlotHorizontalGrid limits={limits} gridSpacing={5} />}
+        {!isNaN(limits.xRatio) && <PlotVerticalGrid limits={limits} gridSpacing={100} />}
+        {!isNaN(limits.xRatio) && <PlotRegions data={data} limits={limits}/>}
       </svg>
     </>
   );
