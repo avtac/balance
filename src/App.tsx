@@ -1,10 +1,12 @@
 import './App.css'
-import { Region, HorizontalRegion, VerticalRegion } from './Layout.tsx'
+import { MultiPane } from './Layout.tsx'
 import Geometry from './Geometry.tsx'
 import Diagram from './Diagram.tsx'
 import Graph from './Graph.tsx'
 import { useState } from 'react'
 import type { configT } from './Types.tsx'
+import { SeatConfig } from './Seats.tsx'
+import { CargoConfig } from './Cargo.tsx'
 
 function App() {
   const defaultValue: configT = {
@@ -48,7 +50,15 @@ function App() {
     <section id="content">
       <div id="split">
         <div id='leftPanel'>
-          <Geometry config={config} setConfig={setConfigSpecial} />
+          <MultiPane>
+            <Geometry name={"Geometry"} config={config} setConfig={setConfigSpecial} />
+            <div name={"Seats/Cargo"}>
+              <h2>Seats</h2>
+              <SeatConfig config={config} setConfig={setConfig} />
+              <h2>Cargo</h2>
+              <CargoConfig config={config} setConfig={setConfig} />
+            </div>
+          </MultiPane>
         </div>
         <div id='rightPanel'>
           <div id='graphHolder'>

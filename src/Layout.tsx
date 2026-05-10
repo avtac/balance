@@ -1,3 +1,4 @@
+import { Children, isValidElement, useState, type ReactNode } from 'react';
 import './Layout.css'
 
 function Region({children}) {
@@ -40,4 +41,32 @@ function VerticalRegion({children, fraction="1fr"}) {
   );
 }
 
-export { Region, Subregion, HorizontalRegion, VerticalRegion, Grouping }
+function MultiPane({ children }) {
+  const [selected, setSelected] = useState(0);
+
+  function addButton(child: ReactNode, index: number) {
+    if (!isValidElement(child)) return;
+
+    let name = child.props.name ?? 'Missing Component Name';
+    return <button
+              className={'topButton' + (selected === index ? ' selected' : '')}
+              onClick={() => setSelected(index)}>
+              {name}
+            </button>
+  }
+
+  return (
+    <div className='multiPane'>
+      <div id='topBar'>
+        {Children.map(children, addButton)}
+      </div>
+      <div id='body'>
+        {Children.map(children, (child: ReactNode, index: number) => {
+          return index === selected && child;
+        })}
+      </div>
+    </div>
+  );
+}
+
+export { Region, Subregion, HorizontalRegion, VerticalRegion, Grouping, MultiPane }
