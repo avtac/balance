@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import './Graph.css'
 import type { regionPointT, regionT, weightLimitT } from './Types';
 
@@ -78,22 +79,24 @@ function PlotRegions({data, limits}) {
   );
 }
 
+const precision = 10000;
+
 function PlotHorizontalGrid({limits, gridSpacing}) {
-  let smallestGridValue = Math.ceil(limits.minX / gridSpacing) * gridSpacing;
-  let xOffset = (smallestGridValue - limits.minX) * limits.xRatio + padding;
-  let numGrid = Math.floor((limits.maxX - smallestGridValue) / gridSpacing) + 1;
-  let gapBetweenGrid = gridSpacing * limits.xRatio;
+  const smallestGridValue = Math.ceil(limits.minX / gridSpacing) * gridSpacing;
+  const xOffset = (smallestGridValue - limits.minX) * limits.xRatio + padding;
+  const numGrid = Math.floor((limits.maxX - smallestGridValue) / gridSpacing) + 1;
+  const gapBetweenGrid = gridSpacing * limits.xRatio;
   if (!numGrid) return;
   let positions = Array(numGrid).fill(0).map((_, index) => {return {
     pos: gapBetweenGrid * index + xOffset,
-    value: smallestGridValue + index * gridSpacing
+    value: (Math.floor(smallestGridValue * precision) + Math.floor(index * gridSpacing * precision)) / precision
   }});
   return (
     <>
       {positions.map(x => (
         <>
           <polyline points={`${x.pos},${padding} ${x.pos},${height - padding}`} stroke="#9993" strokeWidth='.2' strokeDasharray={".5"} />)
-          <text x={x.pos} y={height - padding / 2} fontSize="2" fill="#888" textAnchor='middle' alignmentBaseline='after-edge'>{x.value}</text>
+          <text x={x.pos} y={height - padding / 2} transform={`rotate(${x.value.toString().length > 4 ? 45 : 0}, ${x.pos}, ${height - padding / 2})`} fontSize="2" fill="#888" textAnchor='middle' alignmentBaseline='after-edge'>{x.value}</text>
         </>
       ))};
     </>
@@ -108,7 +111,7 @@ function PlotVerticalGrid({limits, gridSpacing}) {
   if (!numGrid) return;
   let positions = Array(numGrid).fill(0).map((_, index) => {return {
     pos: gapBetweenGrid * index + yOffset,
-    value: largestGridValue - index * gridSpacing
+    value: (Math.floor(largestGridValue * precision) - Math.floor(index * gridSpacing * precision)) / precision
   }});
   return (
     <>
@@ -171,19 +174,37 @@ function Graph({ config }) {
     xRatio: (width - padding * 2) / (maxX - minX),
     yRatio: (height - padding * 2) / (maxY - minY)
   };
+
+  function getCleanInterval( width, desiredTicks ) {
+    const desiredInterval = (width / desiredTicks);
+    const power = Math.ceil(Math.log10(desiredInterval))
+    const spacing = desiredInterval / Math.pow(10, power - 1);
+    const number = (spacing < 5 ? (spacing < 2 ? 1 : 2) : 5) * Math.pow(10, power - 1);
+    return number;
+  }
+
+  const desiredTicks = 10;
+  const horSpacing = getCleanInterval(maxX - minX, desiredTicks);
+  const verSpacing = getCleanInterval(maxY - minY, desiredTicks);
+
+  // Only update the title and grid when needed
+  const title = useRef(<PlotTitle title="Weight vs Arm" />);
+  const horizontalBars = <PlotHorizontalGrid limits={limits} gridSpacing={horSpacing} />;
+  const verticalBars = <PlotVerticalGrid limits={limits} gridSpacing={verSpacing} />;
+
   data.limits = cleanLimits(data.limits);
   return (
     <>
       <svg viewBox={'0 0 ' + width + ' ' + height}>
         <PlotArea width={width} height={height} />
-        <PlotTitle title="Weight vs Arm" />
-        {!isNaN(limits.xRatio) && <PlotHorizontalGrid limits={limits} gridSpacing={5} />}
-        {!isNaN(limits.xRatio) && <PlotVerticalGrid limits={limits} gridSpacing={100} />}
-        {!isNaN(limits.xRatio) && <PlotRegions data={data} limits={limits}/>}
-        <PlotPoint point={{
+        {title.current}
+        {isFinite(limits.xRatio) && isFinite(limits.yRatio) && horizontalBars}
+        {isFinite(limits.xRatio) && isFinite(limits.yRatio) && verticalBars}
+        {isFinite(limits.xRatio) && isFinite(limits.yRatio) && <PlotRegions data={data} limits={limits}/>}
+        {isFinite(limits.xRatio) && isFinite(limits.yRatio) && <PlotPoint point={{
           x: (config.config.emptyArm - limits.minX) * limits.xRatio + padding,
           y: height - (config.config.emptyWeight-limits.minY) * limits.yRatio - padding
-        }} size={1.5} style='square' />
+        }} size={1.5} style='square' />}
       </svg>
     </>
   );
