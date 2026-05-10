@@ -1,3 +1,10 @@
+export interface equipmentT {
+  id: string,
+  name: string,
+  weight: number,
+  arm: number
+}
+
 export interface weightLimitT {
   id: string,
   name: string,
@@ -52,5 +59,6 @@ export interface configT {
   config: aircraftConfigT
   limits: aircraftLimitsT,
   seats: seatT[],
-  cargoAreas: cargoAreaT[]
+  cargoAreas: cargoAreaT[],
+  equipment: equipmentT[]
 }

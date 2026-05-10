@@ -1,12 +1,13 @@
 import './App.css'
-import { MultiPane } from './Layout.tsx'
-import Geometry from './Geometry.tsx'
-import Diagram from './Diagram.tsx'
+import { MultiPane } from './Layout'
+import Geometry from './Geometry'
+import Diagram from './Diagram'
 import Graph from './Graph.tsx'
 import { useState } from 'react'
-import type { configT } from './Types.tsx'
-import { SeatConfig } from './Seats.tsx'
-import { CargoConfig } from './Cargo.tsx'
+import type { configT } from './Types'
+import { SeatConfig } from './Seats'
+import { CargoConfig } from './Cargo'
+import { Equipment } from './Equipment'
 
 function App() {
   const defaultValue: configT = {
@@ -39,7 +40,8 @@ function App() {
         ]}
       ],
       limits: []
-    }
+    },
+    equipment: []
   };
 
   const storageConfig = JSON.parse(localStorage.getItem("config"));
@@ -64,6 +66,7 @@ function App() {
               <h2>Cargo</h2>
               <CargoConfig config={config} setConfig={setConfigSpecial} />
             </div>
+            <Equipment name={"Equipment"} config={config} setConfig={setConfigSpecial} />
           </MultiPane>
         </div>
         <div id='rightPanel'>
