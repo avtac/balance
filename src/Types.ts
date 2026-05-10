@@ -1,3 +1,12 @@
+export interface aircraftConfigT {
+  id: string,
+  name: string,
+  seats: string[],
+  cargoAreas: string[],
+  equipment: string[],
+  fuelTanks: string[]
+}
+
 export interface equipmentT {
   id: string,
   name: string,
@@ -48,7 +57,7 @@ export interface cargoAreaT {
   arm: number,
 }
 
-export interface aircraftConfigT {
+export interface aircraftPropertiesT {
   tailNumber: string,
   type: string,
   emptyWeight: number,
@@ -56,9 +65,10 @@ export interface aircraftConfigT {
 }
 
 export interface configT {
-  config: aircraftConfigT
+  config: aircraftPropertiesT,
   limits: aircraftLimitsT,
   seats: seatT[],
   cargoAreas: cargoAreaT[],
-  equipment: equipmentT[]
+  equipment: equipmentT[],
+  aircraftConfigs: aircraftConfigT[],
 }

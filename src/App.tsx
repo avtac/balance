@@ -8,6 +8,7 @@ import type { configT } from './Types'
 import { SeatConfig } from './Seats'
 import { CargoConfig } from './Cargo'
 import { Equipment } from './Equipment'
+import AircraftConfigs from './Config'
 
 function App() {
   const defaultValue: configT = {
@@ -41,7 +42,8 @@ function App() {
       ],
       limits: []
     },
-    equipment: []
+    equipment: [],
+    aircraftConfigs: []
   };
 
   const storageConfig = JSON.parse(localStorage.getItem("config"));
@@ -67,6 +69,7 @@ function App() {
               <CargoConfig config={config} setConfig={setConfigSpecial} />
             </div>
             <Equipment name={"Equipment"} config={config} setConfig={setConfigSpecial} />
+            <AircraftConfigs name={"Configs"} config={config} setConfig={setConfigSpecial} />
           </MultiPane>
         </div>
         <div id='rightPanel'>
