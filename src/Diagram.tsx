@@ -103,13 +103,13 @@ function Diagram({config}) {
   let minDisplacement = seats.reduce((min, item) => Math.min(min, item.lateralDist - item.seatCount * seatSize / 2), seats[0].lateralDist - seats[0].seatCount * seatSize / 2) - planePadding;
   let maxDisplacement = seats.reduce((max, item) => Math.max(max, item.lateralDist + item.seatCount * seatSize / 2), seats[0].lateralDist + seats[0].seatCount * seatSize / 2) + planePadding;
 
-  const canvasPadding = 12;
+  const canvasPadding = 4;
   const planeTop = minDisplacement;
   const top = planeTop - canvasPadding;
   const planeBottom = maxDisplacement;
   const bottom = planeBottom + canvasPadding;
   const planeLeft = minArm;
-  const left = planeLeft + canvasPadding + 12;
+  const left = planeLeft + canvasPadding + 10;
   const planeRight = maxArm;
   const right = planeRight - canvasPadding;
   const width = left - right;
@@ -127,7 +127,7 @@ function Diagram({config}) {
 
   return (
     <svg viewBox={`${right} ${top} ${width} ${height}`} overflow={"visible"} id="diagram">
-      <path d={`M ${planeLeft} ${planeTop} C 14 ${minDisplacement / 5}, 14 ${maxDisplacement / 5} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'}/>
+      <path d={`M ${planeLeft} ${planeTop} C 25 ${planeHeight / 2 + planeTop + planePadding / 2}, 25 ${planeHeight / 2 + planeTop} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'}/>
       <rect x={planeRight} y={planeTop} width={planeWidth} height={planeHeight} fill={'white'} stroke={'none'} />
       {seatItems}
       {cargoItems}
