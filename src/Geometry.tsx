@@ -1,25 +1,34 @@
-import { useState, type BaseSyntheticEvent } from "react";
 import "./Geometry.css"
-import { VerticalRegion, HorizontalRegion, Subregion, Grouping } from "./Layout";
-import type { regionT, regionPointT, weightLimitT, seatT, configT, cargoAreaT } from "./Types";
+import { HorizontalRegion, Subregion, Grouping } from "./Layout";
+import type { regionT, regionPointT, weightLimitT } from "./Types";
 
 const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
 
-function AircraftConfig() {
+function AircraftConfig({config, setConfig}) {
+  function setValue(key:string, value: (string | number)) {
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.config[key] = value;
+    setConfig(tmp);
+  }
+
   return (
     <section id="geometry">
-      <VerticalRegion>
+      <div>
         <h3>Tail Number</h3>
-        <input placeholder="Tail Number" />
-      </VerticalRegion>
-      <VerticalRegion>
+        <input defaultValue={config.config.tailNumber} placeholder="Tail Number" onChange={(e) => setValue('tailNumber', e.target.value)}/>
+      </div>
+      <div>
+        <h3>Aircraft Type</h3>
+        <input defaultValue={config.config.type} placeholder="Type" onChange={(e) => setValue('type', e.target.value)}/>
+      </div>
+      <div>
         <h3>Empty Weight</h3>
-        <input type="number" placeholder="Empty Weight"/>
-      </VerticalRegion>
-      <VerticalRegion>
-        <h3>Empty Moment</h3>
-        <input type="number" placeholder="Empty Arm"/>
-      </VerticalRegion>
+        <input defaultValue={config.config.emptyWeight} type="number" placeholder="Empty Weight" onChange={(e) => setValue('emptyWeight', Number(e.target.value))}/>
+      </div>
+      <div>
+        <h3>Empty Arm</h3>
+        <input defaultValue={config.config.emptyArm} type="number" placeholder="Empty Arm" onChange={(e) => setValue('emptyArm', Number(e.target.value))}/>
+      </div>
     </section>
   );
 }
@@ -198,7 +207,7 @@ function Geometry({config, setConfig}) {
       <h2>Geometry</h2>
       <div style={{flex: 0}}>
       <Subregion>
-        <AircraftConfig />
+        <AircraftConfig config={config} setConfig={setConfig}/>
       </Subregion>
       </div>
       <div style={{flex: 1}}>

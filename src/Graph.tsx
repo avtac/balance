@@ -130,6 +130,20 @@ function PlotTitle({title}) {
   )
 }
 
+function PlotPoint({point, size, style=null}) {
+  let shape = <circle cx={point.x} cy={point.y} r={size} fill='#59C' stroke='black' strokeWidth={.3}/>;
+
+  if (style == 'square') {
+    shape = <rect x={point.x - size / 2} y={point.y - size / 2} width={size} height={size} fill='#59C' stroke='black' strokeWidth={.2} />;
+  }
+
+  return (
+    <>
+      {shape}
+    </>
+  );
+}
+
 function Graph({ config }) {
   if (config === undefined) return;
   let data = JSON.parse(JSON.stringify(config.limits));
@@ -166,6 +180,10 @@ function Graph({ config }) {
         {!isNaN(limits.xRatio) && <PlotHorizontalGrid limits={limits} gridSpacing={5} />}
         {!isNaN(limits.xRatio) && <PlotVerticalGrid limits={limits} gridSpacing={100} />}
         {!isNaN(limits.xRatio) && <PlotRegions data={data} limits={limits}/>}
+        <PlotPoint point={{
+          x: (config.config.emptyArm - limits.minX) * limits.xRatio + padding,
+          y: height - (config.config.emptyWeight-limits.minY) * limits.yRatio - padding
+        }} size={1.5} style='square' />
       </svg>
     </>
   );

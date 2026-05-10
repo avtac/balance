@@ -41,7 +41,15 @@ export interface cargoAreaT {
   arm: number,
 }
 
+export interface aircraftConfigT {
+  tailNumber: string,
+  type: string,
+  emptyWeight: number,
+  emptyArm: number
+}
+
 export interface configT {
+  config: aircraftConfigT
   limits: aircraftLimitsT,
   seats: seatT[],
   cargoAreas: cargoAreaT[]

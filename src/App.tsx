@@ -10,6 +10,12 @@ import { CargoConfig } from './Cargo.tsx'
 
 function App() {
   const defaultValue: configT = {
+    config: {
+      tailNumber: "",
+      type: "",
+      emptyArm: 32,
+      emptyWeight: 1700
+    },
     seats: [{
       id: crypto.randomUUID(),
       name: "Pilot Seat",
@@ -54,9 +60,9 @@ function App() {
             <Geometry name={"Geometry"} config={config} setConfig={setConfigSpecial} />
             <div name={"Seats/Cargo"}>
               <h2>Seats</h2>
-              <SeatConfig config={config} setConfig={setConfig} />
+              <SeatConfig config={config} setConfig={setConfigSpecial} />
               <h2>Cargo</h2>
-              <CargoConfig config={config} setConfig={setConfig} />
+              <CargoConfig config={config} setConfig={setConfigSpecial} />
             </div>
           </MultiPane>
         </div>
