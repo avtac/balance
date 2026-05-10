@@ -1,9 +1,29 @@
 import "./Diagram.css"
-import type { seatT } from "./Types";
+import type { seatT, cargoAreaT } from "./Types";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
 const seatSize = 14;
+const cargoSize = 14;
+
+function CargoIcon({name, offX=0, offY=0, width=cargoSize}) {
+  const left = offX - cargoSize / 2;
+  const top = -offY - width / 2;
+  return (
+    <>
+      <rect
+        fill={"#9793"}
+        stroke={"#000000"}
+        strokeWidth={0.5}
+        width={cargoSize}
+        height={width}
+        x={left}
+        y={top}
+        ry={.4105551} />
+      <text x={offX} y={-offY} transform={`rotate(${90} ${offX} ${-offY})`}alignmentBaseline={'middle'} textAnchor="middle" fontSize={4} fill={'blue'}>{name}</text>
+   </>
+  );
+}
 
 // offX, offY are in pixel units
 function SeatIcon({count, name, offX=0, offY=0}) {
@@ -68,17 +88,20 @@ function getPixelFromArm(arm) {
 
 function Diagram({config}) {
   const seats = [...config.seats]
+  const cargoAreas = [...config.cargoAreas]
   if (seats.length === 0) return;
 
-  const seatItems = seats.map((seat: seatT) => {
-    return <SeatIcon key={seat.id} name={seat.name} offX={-getPixelFromArm(seat.arm)} offY={getPixelFromArm(-seat.lateralDist)} count={Number(seat.seatCount)}/>
-  });
+  const planePadding = 6;
+  let minArm = -seats.reduce((min, item) => Math.min(min, item.arm), seats[0].arm) + planePadding + seatSize / 2;
+  let maxArm = -seats.reduce((max, item) => Math.max(max, item.arm), seats[0].arm) - planePadding - seatSize / 2;
 
-  const planePadding = 12;
-  let minArm = -seats.reduce((min, item) => Math.min(min, item.arm), seats[0].arm) + planePadding;
-  let maxArm = -seats.reduce((max, item) => Math.max(max, item.arm), seats[0].arm) - planePadding;
-  let minDisplacement = seats.reduce((min, item) => Math.min(min, item.lateralDist - item.seatCount * seatSize / 2), seats[0].lateralDist - seats[0].seatCount * seatSize / 2) - planePadding / 2;
-  let maxDisplacement = seats.reduce((max, item) => Math.max(max, item.lateralDist + item.seatCount * seatSize / 2), seats[0].lateralDist + seats[0].seatCount * seatSize / 2) + planePadding / 2;
+  if (cargoAreas.length !== 0) {
+      minArm = Math.max(minArm, -cargoAreas.reduce((min, item) => Math.min(min, item.arm), cargoAreas[0].arm) + planePadding + cargoSize / 2);
+      maxArm = Math.min(maxArm, -cargoAreas.reduce((max, item) => Math.max(max, item.arm), cargoAreas[0].arm) - planePadding - cargoSize / 2);
+  }
+
+  let minDisplacement = seats.reduce((min, item) => Math.min(min, item.lateralDist - item.seatCount * seatSize / 2), seats[0].lateralDist - seats[0].seatCount * seatSize / 2) - planePadding;
+  let maxDisplacement = seats.reduce((max, item) => Math.max(max, item.lateralDist + item.seatCount * seatSize / 2), seats[0].lateralDist + seats[0].seatCount * seatSize / 2) + planePadding;
 
   const canvasPadding = 12;
   const planeTop = minDisplacement;
@@ -93,11 +116,21 @@ function Diagram({config}) {
   const height = bottom - top;
   const planeWidth = planeLeft - planeRight;
   const planeHeight = planeBottom - planeTop;
+
+  const seatItems = seats.map((seat: seatT) => {
+    return <SeatIcon key={seat.id} name={seat.name} offX={-getPixelFromArm(seat.arm)} offY={getPixelFromArm(-seat.lateralDist)} count={Number(seat.seatCount)}/>
+  });
+
+  const cargoItems = cargoAreas.map((cargoArea: cargoAreaT) => {
+    return <CargoIcon key={cargoArea.id} name={cargoArea.name} offX={-getPixelFromArm(cargoArea.arm)} offY={-planeTop - planeHeight / 2} width={planeHeight - planePadding * 2} />
+  });
+
   return (
     <svg viewBox={`${right} ${top} ${width} ${height}`} overflow={"visible"} id="diagram">
       <path d={`M ${planeLeft} ${planeTop} C 14 ${minDisplacement / 5}, 14 ${maxDisplacement / 5} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'}/>
       <rect x={planeRight} y={planeTop} width={planeWidth} height={planeHeight} fill={'white'} stroke={'none'} />
       {seatItems}
+      {cargoItems}
     </svg>
   );
 }
