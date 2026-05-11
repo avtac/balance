@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import './Config.css'
-import { Subregion } from "./Layout";
+import { MultiPane, Subregion } from "./Layout";
 import type { aircraftConfigT, cargoAreaT, equipmentT, seatT } from "./Types";
 
 function SeatSelection({seat, configIndex, config, setConfig}) {
@@ -188,55 +188,57 @@ function AircraftConfigs({config, setConfig}) {
       <button onClick={duplicateConfig}>Duplicate Config</button>
       <button onClick={deleteConfig}>Delete Config</button>
     </Subregion>
-    <Subregion>
-      <table id="configSeats">
-        <tbody>
-        <tr>
-          <th>Select</th>
-          <th>Name</th>
-          <th>Arm</th>
-          <th>Max Weight</th>
-          <th># of Seats</th>
-        </tr>
-        {config.seats.map((seat: seatT) => {
-          return <SeatSelection key={seat.id + " seatSelect"} configIndex={configIndex} seat={seat} config={config} setConfig={setConfig}/>
-        })}
-        </tbody>
-      </table>
-    </Subregion>
-    <Subregion>
-      <table id="configCargo">
-        <tbody>
-        <tr>
-          <th>Select</th>
-          <th>Name</th>
-          <th>Arm</th>
-          <th>Max Weight</th>
-        </tr>
-        {config.cargoAreas.map((cargo: cargoAreaT) => {
-          return <CargoSelection key={cargo.id + " cargoSelect"} configIndex={configIndex} cargoArea={cargo} config={config} setConfig={setConfig}/>
-        })}
-        </tbody>
-      </table>
-    </Subregion>
-    <Subregion>
-      <table id="configEquipment">
-        <tbody>
-        <tr>
-          <th>Select</th>
-          <th>Name</th>
-          <th>Arm</th>
-          <th>Weight</th>
-          <th>Count</th>
-        </tr>
-        {config.equipment.map((equipment: equipmentT) => {
-          return <EquipmentSelection key={equipment.id + " cargoSelect"} configIndex={configIndex} equipment={equipment} config={config} setConfig={setConfig}/>
-        })}
-        </tbody>
-      </table>
-      <div id="configEquipment">
-      </div>
-    </Subregion>
+    <MultiPane>
+      <Subregion name={"Seats"}>
+        <table id="configSeats">
+          <tbody>
+          <tr>
+            <th>Select</th>
+            <th>Name</th>
+            <th>Arm</th>
+            <th>Max Weight</th>
+            <th># of Seats</th>
+          </tr>
+          {config.seats.map((seat: seatT) => {
+            return <SeatSelection key={seat.id + " seatSelect"} configIndex={configIndex} seat={seat} config={config} setConfig={setConfig}/>
+          })}
+          </tbody>
+        </table>
+      </Subregion>
+      <Subregion name={"Cargo Areas"}>
+        <table id="configCargo">
+          <tbody>
+          <tr>
+            <th>Select</th>
+            <th>Name</th>
+            <th>Arm</th>
+            <th>Max Weight</th>
+          </tr>
+          {config.cargoAreas.map((cargo: cargoAreaT) => {
+            return <CargoSelection key={cargo.id + " cargoSelect"} configIndex={configIndex} cargoArea={cargo} config={config} setConfig={setConfig}/>
+          })}
+          </tbody>
+        </table>
+      </Subregion>
+      <Subregion name={"Equipment"}>
+        <table id="configEquipment">
+          <tbody>
+          <tr>
+            <th>Select</th>
+            <th>Name</th>
+            <th>Arm</th>
+            <th>Weight</th>
+            <th>Count</th>
+          </tr>
+          {config.equipment.map((equipment: equipmentT) => {
+            return <EquipmentSelection key={equipment.id + " cargoSelect"} configIndex={configIndex} equipment={equipment} config={config} setConfig={setConfig}/>
+          })}
+          </tbody>
+        </table>
+        <div id="configEquipment">
+        </div>
+      </Subregion>
+      </MultiPane>
     </>
   );
 }
