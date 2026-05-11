@@ -111,6 +111,7 @@ function App() {
             <Diagram 
               config={config}
               selectedConfig={selectedConfig}
+              selectedOpsConfig={selectedOpsConfig}
               filter={selectedPanel >= 3} />
           </div>
         </div>

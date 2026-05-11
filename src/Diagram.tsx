@@ -1,18 +1,18 @@
 import "./Diagram.css"
-import type { seatT, cargoAreaT } from "./Types";
+import type { seatT, cargoAreaT, aircraftConfigT, operationConfigT } from "./Types";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
 const seatSize = 14;
 const cargoSize = 14;
 
-function CargoIcon({name, offX=0, offY=0, width=cargoSize}) {
+function CargoIcon({name, color='#CCCCCC', offX=0, offY=0, width=cargoSize}) {
   const left = offX - cargoSize / 2;
   const top = -offY - width / 2;
   return (
     <>
       <rect
-        fill={"#9793"}
+        fill={color + "CC"}
         stroke={"#000000"}
         strokeWidth={0.5}
         width={cargoSize}
@@ -20,23 +20,30 @@ function CargoIcon({name, offX=0, offY=0, width=cargoSize}) {
         x={left}
         y={top}
         ry={.4105551} />
-      <text x={offX} y={-offY} transform={`rotate(${90} ${offX} ${-offY})`}alignmentBaseline={'middle'} textAnchor="middle" fontSize={4} fill={'blue'}>{name}</text>
+      <text 
+        x={offX}
+        y={-offY}
+        transform={`rotate(${90} ${offX} ${-offY})`}
+        alignmentBaseline={'middle'}
+        textAnchor="middle"
+        fontSize={4} fill={'blue'}>
+        {name}
+      </text>
    </>
   );
 }
 
 // offX, offY are in pixel units
-function SeatIcon({count, name, offX=0, offY=0}) {
+function SeatIcon({count, name, color='#CCCCCC', offX=0, offY=0}) {
   const left = offX - seatSize / 2;
   return (
     <>
     {...Array(count).fill(0).map((_, i: number) => {
       const top = offY - (i - count / 2) * seatSize;
-      let chairColor = name == "Pilot Seat" ? "#ff8060" : "#d6d7e3";
       return (
         <>
           <rect
-             fill={chairColor}
+             fill={color}
              stroke={"#000000"}
              strokeWidth={0.5}
              width={seatSize}
@@ -45,7 +52,7 @@ function SeatIcon({count, name, offX=0, offY=0}) {
              y={-top}
              ry={.4105551} />
           <rect
-             fill={chairColor}
+             fill={color}
              stroke={"#000000"}
              strokeWidth={0.5}
              width={seatSize / 2}
@@ -55,7 +62,7 @@ function SeatIcon({count, name, offX=0, offY=0}) {
              ry={0.29849526}
              transform={"scale(1,-1)"} />
           <rect
-             fill={chairColor}
+             fill={color}
              stroke={"#000000"}
              strokeWidth={0.5}
              width={seatSize / 2}
@@ -65,7 +72,7 @@ function SeatIcon({count, name, offX=0, offY=0}) {
              ry={0.29849526}
              transform={"scale(1,-1)"} />
           <rect
-             fill={chairColor}
+             fill={color}
              stroke={"#000000"}
              strokeWidth={0.5}
              width={seatSize * 3 / 8}
@@ -86,7 +93,7 @@ function getPixelFromArm(arm) {
   return arm * pixPerUnit;
 }
 
-function Diagram({config, selectedConfig, filter=false}) {
+function Diagram({config, selectedConfig, selectedOpsConfig, filter=false}) {
   let seats = [...config.seats]
   let cargoAreas = [...config.cargoAreas]
 
@@ -133,16 +140,40 @@ function Diagram({config, selectedConfig, filter=false}) {
   const planeWidth = planeLeft - planeRight;
   const planeHeight = planeBottom - planeTop;
 
+
+  const opsIndex = config.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig = o.id);
   const seatItems = seats.map((seat: seatT) => {
-    return <SeatIcon key={seat.id} name={seat.name} offX={-getPixelFromArm(seat.arm)} offY={getPixelFromArm(-seat.lateralDist)} count={Number(seat.seatCount)}/>
+    const isOps = selectedOpsConfig != undefined
+               && config.operationConfigs[opsIndex].seats.find(
+                    (v: {id: string, weight: number}) => v.id == seat.id
+                  )
+    return <SeatIcon
+      key={seat.id}
+      name={seat.name}
+      color={isOps ? "#6688AA" : "#D6D7E3"}
+      offX={-getPixelFromArm(seat.arm)}
+      offY={getPixelFromArm(-seat.lateralDist)}
+      count={Number(seat.seatCount)}/>
   });
 
   const cargoItems = cargoAreas.map((cargoArea: cargoAreaT) => {
-    return <CargoIcon key={cargoArea.id} name={cargoArea.name} offX={-getPixelFromArm(cargoArea.arm)} offY={-planeTop - planeHeight / 2} width={planeHeight - planePadding * 2} />
+    const isOps = selectedOpsConfig != undefined
+               && config.operationConfigs[opsIndex].cargoAreas.find(
+                    (v: {id: string, weight: number}) => v.id == cargoArea.id
+                  )
+    return <CargoIcon
+      key={cargoArea.id}
+      name={cargoArea.name}
+      color={isOps ? "#6688AA" : "#D6D7E3"}
+      offX={-getPixelFromArm(cargoArea.arm)}
+      offY={-planeTop - planeHeight / 2}
+      width={planeHeight - planePadding * 2} />
   });
 
   return (
-    <svg viewBox={`${right} ${top} ${width} ${height}`} overflow={"visible"} id="diagram">
+    <svg
+      viewBox={`${right} ${top} ${width} ${height}`}
+      overflow={"visible"} id="diagram">
       <path d={`M ${planeLeft} ${planeTop} C 25 ${planeHeight / 2 + planeTop + planePadding / 2}, 25 ${planeHeight / 2 + planeTop} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'}/>
       <rect x={planeRight} y={planeTop} width={planeWidth} height={planeHeight} fill={'white'} stroke={'none'} />
       {seatItems}
