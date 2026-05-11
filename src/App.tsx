@@ -43,7 +43,14 @@ function App() {
       limits: []
     },
     equipment: [],
-    aircraftConfigs: []
+    aircraftConfigs: [{
+      id: crypto.randomUUID(),
+      name: "Standard",
+      seats: [],
+      cargoAreas: [],
+      equipment: [],
+      fuelTanks: []
+    }]
   };
 
   const storageConfig = JSON.parse(localStorage.getItem("config"));
