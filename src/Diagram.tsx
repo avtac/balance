@@ -86,9 +86,25 @@ function getPixelFromArm(arm) {
   return arm * pixPerUnit;
 }
 
-function Diagram({config}) {
-  const seats = [...config.seats]
-  const cargoAreas = [...config.cargoAreas]
+function Diagram({config, selectedConfig, filter=false}) {
+  let seats = [...config.seats]
+  let cargoAreas = [...config.cargoAreas]
+
+  if (filter) {
+    const configIndex = config.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
+
+    seats = config.aircraftConfigs[configIndex].seats.map((seatId: string) => {
+      const seatIndex: number = config.seats.findIndex((s: seatT) => s.id === seatId);
+      return config.seats[seatIndex];
+    }).filter(v => v != undefined);
+
+    cargoAreas = config.aircraftConfigs[configIndex].cargoAreas.map((cargoAreaId: string) => {
+      const cargoAreaIndex: number = config.cargoAreas.findIndex((s: cargoAreaT) => s.id === cargoAreaId);
+      return config.cargoAreas[cargoAreaIndex];
+    }).filter(v => v != undefined);
+  }
+
+  // TODO: Find a way to not need this so no seats can exist
   if (seats.length === 0) return;
 
   const planePadding = 6;

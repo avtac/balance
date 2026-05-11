@@ -128,8 +128,7 @@ function EquipmentSelection({equipment, configIndex, config, setConfig}) {
   );
 }
 
-function AircraftConfigs({config, setConfig}) {
-  const [selectedConfig, setSelectedConfig] = useState(config.aircraftConfigs.length > 0 ? config.aircraftConfigs[0].id : 0);
+function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig}) {
   const configIndex = config.aircraftConfigs.findIndex(c => c.id === selectedConfig);
 
   function addConfig() {

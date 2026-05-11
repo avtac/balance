@@ -41,8 +41,9 @@ function VerticalRegion({children, fraction="1fr"}) {
   );
 }
 
-function MultiPane({ children }) {
-  const [selected, setSelected] = useState(0);
+function MultiPane({ selected = undefined, setSelected = undefined, children }) {
+  if (!selected && !setSelected)
+    [selected, setSelected] = useState(0);
 
   function addButton(child: ReactNode, index: number) {
     if (!isValidElement(child)) return;

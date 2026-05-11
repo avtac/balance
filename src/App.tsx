@@ -63,11 +63,15 @@ function App() {
     setConfig(value);
   }
 
+  const [selectedConfig, setSelectedConfig] = useState(config.aircraftConfigs.length > 0 ? config.aircraftConfigs[0].id : 0);
+
+  const [selectedPanel, setSelectedPanel] = useState(0);
+
   return (
     <section id="content">
       <div id="split">
         <div id='leftPanel'>
-          <MultiPane>
+          <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
             <Geometry name={"Geometry"} config={config} setConfig={setConfigSpecial} />
             <div name={"Seats/Cargo"}>
               <h2>Seats</h2>
@@ -76,7 +80,7 @@ function App() {
               <CargoConfig config={config} setConfig={setConfigSpecial} />
             </div>
             <Equipment name={"Equipment"} config={config} setConfig={setConfigSpecial} />
-            <AircraftConfigs name={"Configs"} config={config} setConfig={setConfigSpecial} />
+            <AircraftConfigs name={"Configs"} config={config} setConfig={setConfigSpecial} selectedConfig={selectedConfig} setSelectedConfig={setSelectedConfig} />
           </MultiPane>
         </div>
         <div id='rightPanel'>
@@ -84,7 +88,7 @@ function App() {
             <Graph config={config} />
           </div>
           <div id='diagramHolder'>
-            <Diagram config={config}/>
+            <Diagram config={config} selectedConfig={selectedConfig} filter={selectedPanel === 3} />
           </div>
         </div>
       </div>
