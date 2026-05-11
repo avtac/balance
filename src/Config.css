@@ -11,6 +11,7 @@
 #configCargo,
 #configSeats {
   border-collapse: collapse;
+  user-select: none;
 
   th {
     border-bottom: 1px solid black;

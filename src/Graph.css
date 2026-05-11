@@ -1,3 +1,4 @@
 svg {
   margin: auto;
+  user-select: none;
 }
