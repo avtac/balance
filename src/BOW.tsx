@@ -125,9 +125,8 @@ function CargoSelection({cargoAreaId, opsConfigIndex, config, setConfig}) {
   );
 }
 
-function AircraftOperationConfig({config, setConfig, selectedConfig, setSelectedConfig}) {
+function AircraftOperationConfig({config, setConfig, selectedConfig, setSelectedConfig, selectedOpsConfig, setSelectedOpsConfig}) {
   const configSelectRef = useRef(undefined);
-  const [selectedOpsConfig, setSelectedOpsConfig] = useState(config.operationConfigs.length > 0 ? config.operationConfigs[0].id : "")
   const configIndex = config.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
   const opsConfigIndex = config.operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
 

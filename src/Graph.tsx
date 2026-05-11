@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import './Graph.css'
 import type { regionPointT, regionT, weightLimitT } from './Types';
-import { calculateEmptyBalanceForConfig, calculateMaxBalanceForConfig } from './utility';
+import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMaxBalanceForConfig } from './utility';
 
 let width = 140;
 let height = 80;
@@ -149,7 +149,7 @@ function PlotPoint({point, size, label=undefined, style=null}) {
   );
 }
 
-function Graph({ config, selectedConfig }) {
+function Graph({ config, selectedConfig, selectedOpsConfig }) {
   if (config === undefined) return;
   let data = JSON.parse(JSON.stringify(config.limits));
 
@@ -194,7 +194,17 @@ function Graph({ config, selectedConfig }) {
     });
   }
 
-
+  if (selectedOpsConfig) {
+    const [weight, arm] = calculateBalanceForOperationConfig(config, selectedConfig, selectedOpsConfig);
+    if (weight != config.config.emptyWeight || arm != config.config.emptyArm)
+      points.push({
+        weight: weight,
+        arm: arm,
+        style: 'square',
+        size: 2,
+        label: "Ops Config"
+      });
+  }
 
   // Calculate graph bounding box
 
