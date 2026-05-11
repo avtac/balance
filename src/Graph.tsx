@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import './Graph.css'
 import type { regionPointT, regionT, weightLimitT } from './Types';
 
-let width = 120;
+let width = 140;
 let height = 80;
 let padding = 12;
 
