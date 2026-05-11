@@ -27,7 +27,7 @@ function SeatSelection({seat, configIndex, config, setConfig}) {
   return (
     <tr className="seatSelect" onClick={selectCheckbox}>
       <td>
-        <input ref={checkRef} checked={checked.current} type={"checkbox"} onChange={selectCheckbox} />
+        <input ref={checkRef} checked={checked.current} type={"checkbox"} />
       </td>
       <td>{seat.name}</td>
       <td>{seat.arm}</td>
@@ -61,7 +61,7 @@ function CargoSelection({cargoArea, configIndex, config, setConfig}) {
   return (
     <tr className="cargoAreaSelect" onClick={selectCheckbox}>
       <td>
-        <input ref={checkRef} checked={checked.current} type={"checkbox"} onChange={selectCheckbox} />
+        <input ref={checkRef} checked={checked.current} type={"checkbox"} />
       </td>
       <td>{cargoArea.name}</td>
       <td>{cargoArea.arm}</td>
@@ -115,7 +115,7 @@ function EquipmentSelection({equipment, configIndex, config, setConfig}) {
   return (
     <tr className="equipmentSelect">
       <td onClick={selectCheckbox}>
-        <input ref={checkRef} onClick={selectCheckbox} checked={checked.current} type={"checkbox"} onChange={selectCheckbox} />
+        <input ref={checkRef} onClick={selectCheckbox} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{equipment.name}</td>
       <td onClick={selectCheckbox}>{equipment.arm}</td>

@@ -54,7 +54,7 @@ function SeatSelection({seatId, opsConfigIndex, config, setConfig}) {
   return (
     <tr className="seatSelect">
       <td onClick={selectCheckbox}>
-        <input ref={checkRef} checked={checked.current} type={"checkbox"} onChange={selectCheckbox} />
+        <input ref={checkRef} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{seat.name}</td>
       <td>
@@ -115,7 +115,7 @@ function CargoSelection({cargoAreaId, opsConfigIndex, config, setConfig}) {
   return (
     <tr className="cargoAreaSelect">
       <td onClick={selectCheckbox}>
-        <input ref={checkRef} checked={checked.current} type={"checkbox"} onChange={selectCheckbox} />
+        <input ref={checkRef} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{cargoArea.name}</td>
       <td>
