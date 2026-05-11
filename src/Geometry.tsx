@@ -204,7 +204,6 @@ function Geometry({config, setConfig}) {
 
   return (
     <>
-      <h2>Geometry</h2>
       <div style={{flex: 0}}>
       <Subregion>
         <AircraftConfig config={config} setConfig={setConfig}/>
