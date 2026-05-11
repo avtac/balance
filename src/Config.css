@@ -1,3 +1,12 @@
+#configTitle {
+  display: grid;
+  grid-template-columns: 1fr 1fr 9rem 9rem 9rem;
+  gap: 8px;
+  input {
+    min-width: 5rem;
+  }
+}
+
 #configEquipment,
 #configCargo,
 #configSeats {
@@ -5,6 +14,7 @@
 
   th {
     border-bottom: 1px solid black;
+    height: 2.2rem;
   }
 
   tr:nth-child(even) {
@@ -18,6 +28,7 @@
 
   th, td {
     padding: 6px;
+    text-align: center;
   }
 }
 
