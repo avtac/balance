@@ -1,3 +1,11 @@
+export interface operationConfigT {
+  id: string,
+  name: string,
+  config: (string | undefined),
+  seats: {id: string, weight: number}[],
+  cargoAreas: {id: string, weight: number}[],
+}
+
 export interface aircraftConfigT {
   id: string,
   name: string,
@@ -71,4 +79,5 @@ export interface configT {
   cargoAreas: cargoAreaT[],
   equipment: equipmentT[],
   aircraftConfigs: aircraftConfigT[],
+  operationConfigs: operationConfigT[]
 }

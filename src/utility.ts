@@ -54,3 +54,32 @@ export function calculateMaxBalanceForConfig(config: configT, selectedConfig: st
   return [weight, moment / weight]
 }
 
+export function calculateBalanceForOperationConfig(config: configT, selectedConfig: string, selectedOpsConfig: string) {
+  let [weight, arm] = calculateEmptyBalanceForConfig(config, selectedConfig);
+  let moment = weight * arm;
+
+  const selectedOpsConfigIndex = config.operationConfigs.findIndex(v => v.id === selectedOpsConfig);
+
+  // Seats
+  config.operationConfigs[selectedOpsConfigIndex].seats.map(
+    (seat) => {
+      const seatIndex = config.seats.findIndex(s => s.id === seat.id);
+      if (seatIndex < 0) return;
+      const seatData = config.seats[seatIndex];
+      weight += seat.weight * seatData.seatCount;
+      moment += seat.weight * seatData.seatCount * seatData.arm;
+    });
+
+  // Cargo
+  config.operationConfigs[selectedOpsConfigIndex].cargoAreas.map(
+    (cargoArea) => {
+      const cargoAreaIndex = config.cargoAreas.findIndex(c => c.id === cargoArea.id);
+      if (cargoAreaIndex < 0) return;
+      const cargoAreaData = config.cargoAreas[cargoAreaIndex];
+      weight += cargoArea.weight;
+      moment += cargoArea.weight * cargoAreaData.arm;
+    });
+
+  return [weight, moment / weight]
+}
+

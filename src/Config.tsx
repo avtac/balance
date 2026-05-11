@@ -80,9 +80,9 @@ function EquipmentSelection({equipment, configIndex, config, setConfig}) {
 
   function selectCheckbox() {
     if (configIndex < 0) return;
-    checkRef.current.checked = !checkRef.current.checked;
+    checked.current = !checked.current;
     const tmp = JSON.parse(JSON.stringify(config));
-    if (checkRef.current.checked) {
+    if (checked.current) {
       if (!tmp.aircraftConfigs[configIndex].equipment.find((s: {id: string, count: number}) => s.id == equipment.id)) {
         tmp.aircraftConfigs[configIndex].equipment.push({id: equipment.id, count: Math.max(count, oldCount.current)});
         setCount(Math.max(count, oldCount.current));
@@ -92,12 +92,11 @@ function EquipmentSelection({equipment, configIndex, config, setConfig}) {
       oldCount.current = count;
       setCount(0);
     }
-    checked.current = !checked.current;
     setConfig(tmp);
   }
 
   function setConfigCount(value) {
-    if (!checked) return;
+    if (!checked.current) return;
     const tmp = JSON.parse(JSON.stringify(config));
     tmp.aircraftConfigs[configIndex].equipment[equipmentIndex].count = value;
     if (value === 0) {

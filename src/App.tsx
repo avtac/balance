@@ -9,6 +9,7 @@ import { SeatConfig } from './Seats'
 import { CargoConfig } from './Cargo'
 import { Equipment } from './Equipment'
 import AircraftConfigs from './Config'
+import AircraftOperationConfig from './BOW.tsx'
 
 function App() {
   const defaultValue: configT = {
@@ -50,6 +51,13 @@ function App() {
       cargoAreas: [],
       equipment: [],
       fuelTanks: []
+    }],
+    operationConfigs: [{
+        id: crypto.randomUUID(),
+        config: undefined,
+        name: "Standard",
+        seats: [],
+        cargoAreas: []
     }]
   };
 
@@ -63,7 +71,7 @@ function App() {
     setConfig(value);
   }
 
-  const [selectedConfig, setSelectedConfig] = useState(config.aircraftConfigs.length > 0 ? config.aircraftConfigs[0].id : 0);
+  const [selectedConfig, setSelectedConfig] = useState(config.aircraftConfigs.length > 0 ? config.aircraftConfigs[0].id : "");
 
   const [selectedPanel, setSelectedPanel] = useState(0);
 
@@ -81,14 +89,15 @@ function App() {
             </div>
             <Equipment name={"Equipment"} config={config} setConfig={setConfigSpecial} />
             <AircraftConfigs name={"Configs"} config={config} setConfig={setConfigSpecial} selectedConfig={selectedConfig} setSelectedConfig={setSelectedConfig} />
+            <AircraftOperationConfig name={"Ops Config"} config={config} setConfig={setConfigSpecial} selectedConfig={selectedConfig} setSelectedConfig={setSelectedConfig} />
           </MultiPane>
         </div>
         <div id='rightPanel'>
           <div id='graphHolder'>
-            <Graph config={config} selectedConfig={selectedPanel === 3 ? selectedConfig : undefined}/>
+            <Graph config={config} selectedConfig={selectedPanel >= 3 ? selectedConfig : undefined}/>
           </div>
           <div id='diagramHolder'>
-            <Diagram config={config} selectedConfig={selectedConfig} filter={selectedPanel === 3} />
+            <Diagram config={config} selectedConfig={selectedConfig} filter={selectedPanel >= 3} />
           </div>
         </div>
       </div>
