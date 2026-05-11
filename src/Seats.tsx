@@ -13,12 +13,13 @@ function SeatInput({seat, index, config, setConfig}) {
     const tmp = JSON.parse(JSON.stringify(config));
     tmp.seats.splice(index, 1);
     setConfig(tmp);
+    // TODO: check if any configs use this seat id and remove it
   }
 
   return (
     <div className="seatInput">
       {index === 0 ? <p>{seat.name}</p> : <input name={"name" + index} placeholder="Name" value={seat.name ? seat.name : ""} onChange={e => setValue('name', e.target.value)}/>}
-      <input name={"arm" + index} placeholder="Arm" type="number" value={seat.arm ? seat.arm : ""} onChange={e => setValue('arm', e.target.value)}/>
+      <input name={"arm" + index} placeholder="Arm" type="number" value={seat.arm ? seat.arm : ""} onChange={e => setValue('arm', Number(e.target.value))}/>
       <input name={"maxWeight" + index} placeholder="Max Weight" min={0} type="number" value={seat.maxWeight ? seat.maxWeight : ""} onChange={e => setValue('maxWeight', Number(e.target.value))}/>
       <input name={"lateralDist" + index} placeholder="Lateral Offset" type="number" value={seat.lateralDist ? seat.lateralDist : ""} onChange={e => setValue('lateralDist', Number(e.target.value))}/>
       <input name={"seatCount" + index} placeholder="Seat Count" min={1} type="number" value={seat.seatCount ? seat.seatCount : ""} onChange={e => setValue('seatCount', Number(e.target.value))}/>

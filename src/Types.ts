@@ -3,7 +3,7 @@ export interface aircraftConfigT {
   name: string,
   seats: string[],
   cargoAreas: string[],
-  equipment: string[],
+  equipment: {id: string, count: number}[],
   fuelTanks: string[]
 }
 

@@ -12,14 +12,15 @@ function CargoInput({area, index, config, setConfig}) {
   function removeCargo() {
     const tmp = JSON.parse(JSON.stringify(config));
     tmp.cargoAreas.splice(index, 1);
+    // TODO: check if any configs use this cargo id and remove it
     setConfig(tmp);
   }
 
   return (
     <div className="cargoInput">
       <input name={"name" + index} placeholder="Name" value={area.name ? area.name : ""} onChange={e => setValue('name', e.target.value)}/>
-      <input name={"arm" + index} placeholder="Arm" type="number" value={area.arm ? area.arm : ""} onChange={e => setValue('arm', e.target.value)}/>
-      <input name={"maxWeight" + index} placeholder="Max Weight" type="number" value={area.maxWeight ? area.maxWeight : ""} onChange={e => setValue('maxWeight', e.target.value)}/>
+      <input name={"arm" + index} placeholder="Arm" type="number" value={area.arm ? area.arm : ""} onChange={e => setValue('arm', Number(e.target.value))}/>
+      <input name={"maxWeight" + index} placeholder="Max Weight" type="number" value={area.maxWeight ? area.maxWeight : ""} onChange={e => setValue('maxWeight', Number(e.target.value))}/>
       <button onClick={() => removeCargo()}>X</button>
     </div>
   );

@@ -85,7 +85,7 @@ function App() {
         </div>
         <div id='rightPanel'>
           <div id='graphHolder'>
-            <Graph config={config} />
+            <Graph config={config} selectedConfig={selectedPanel === 3 ? selectedConfig : undefined}/>
           </div>
           <div id='diagramHolder'>
             <Diagram config={config} selectedConfig={selectedConfig} filter={selectedPanel === 3} />

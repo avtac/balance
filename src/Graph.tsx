@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import './Graph.css'
 import type { regionPointT, regionT, weightLimitT } from './Types';
+import { calculateEmptyBalanceForConfig, calculateMaxBalanceForConfig } from './utility';
 
 let width = 140;
 let height = 80;
@@ -133,7 +134,7 @@ function PlotTitle({title}) {
   )
 }
 
-function PlotPoint({point, size, style=null}) {
+function PlotPoint({point, size, label=undefined, style=null}) {
   let shape = <circle cx={point.x} cy={point.y} r={size} fill='#59C' stroke='black' strokeWidth={.3}/>;
 
   if (style == 'square') {
@@ -143,13 +144,59 @@ function PlotPoint({point, size, style=null}) {
   return (
     <>
       {shape}
+      {label != undefined && <text x={point.x + size / 2} y={point.y - size / 2 - 1.2} textAnchor='middle' fontSize={2} fill='#888'>{label}</text>}
     </>
   );
 }
 
-function Graph({ config }) {
+function Graph({ config, selectedConfig }) {
   if (config === undefined) return;
   let data = JSON.parse(JSON.stringify(config.limits));
+
+  // Add any desired points to graph
+  const points: {weight: number, arm: number, style: string, size: number, label?: string}[] = []
+  // Add any desired lines to graph
+  const lines: {weight1: number, arm1: number, weight2: number, arm2: number, color: string, style?: string}[] = []
+
+  points.push({
+    weight: config.config.emptyWeight,
+    arm: config.config.emptyArm,
+    style: 'square',
+    size: 2,
+    label: "Empty Aircraft"
+  });
+
+  if (selectedConfig) {
+    const [weight, arm] = calculateEmptyBalanceForConfig(config, selectedConfig);
+    const [weightFull, armFull] = calculateMaxBalanceForConfig(config, selectedConfig);
+    if (weight != config.config.emptyWeight || arm != config.config.emptyArm)
+      points.push({
+        weight: weight,
+        arm: arm,
+        style: 'circle',
+        size: 1,
+        label: "Empty Config"
+      });
+    if (weightFull != config.config.emptyWeight || armFull != config.config.emptyArm)
+      points.push({
+        weight: weightFull,
+        arm: armFull,
+        style: 'circle',
+        size: 1,
+        label: "Max Config"
+      });
+    lines.push({
+      weight1: weight,
+      arm1: arm,
+      weight2: weightFull,
+      arm2: armFull,
+      color: 'maroon'
+    });
+  }
+
+
+
+  // Calculate graph bounding box
 
   let minX: number = NaN;
   let maxX: number = NaN;
@@ -162,10 +209,19 @@ function Graph({ config }) {
     minY = Math.min(...data.regions.map((r: regionT) => Math.min(...r.data.filter((v: regionPointT) => v.weight !== null).map(p => p.weight))));
     maxY = Math.max(...data.regions.map((r: regionT) => Math.max(...r.data.filter((v: regionPointT) => v.weight !== null).map(p => p.weight))));
   }
+
   if (data.limits.length > 0) {
     maxY = Math.max(...data.limits.filter((v: weightLimitT) => v.value !== null).map((lim: weightLimitT) => lim.value), maxY) ?? maxY;
     minY = Math.min(...data.limits.filter((v: weightLimitT) => v.value !== null).map((lim: weightLimitT) => lim.value), minY) ?? minY;
   }
+
+  if (points.length > 0) {
+    maxX = Math.max(...points.filter((v) => v.arm !== null).map((lim) => lim.arm), maxX) ?? maxX;
+    minX = Math.min(...points.filter((v) => v.arm !== null).map((lim) => lim.arm), minX) ?? minX;
+    maxY = Math.max(...points.filter((v) => v.weight !== null).map((lim) => lim.weight), maxY) ?? maxY;
+    minY = Math.min(...points.filter((v) => v.weight !== null).map((lim) => lim.weight), minY) ?? minY;
+  }
+
   const limits = {
     minX: minX,
     maxX: maxX,
@@ -175,6 +231,7 @@ function Graph({ config }) {
     yRatio: (height - padding * 2) / (maxY - minY)
   };
 
+  // Convert interval to spacing of 1, 2, or 5 * 10^x
   function getCleanInterval( width, desiredTicks ) {
     const desiredInterval = (width / desiredTicks);
     const power = Math.ceil(Math.log10(desiredInterval))
@@ -183,14 +240,17 @@ function Graph({ config }) {
     return number;
   }
 
+  // Unit spacing for grid lines
   const desiredTicks = 10;
   const horSpacing = getCleanInterval(maxX - minX, desiredTicks);
   const verSpacing = getCleanInterval(maxY - minY, desiredTicks);
 
-  // Only update the title and grid when needed
+  // Gird base components
   const title = useRef(<PlotTitle title="Weight vs Arm" />);
   const horizontalBars = <PlotHorizontalGrid limits={limits} gridSpacing={horSpacing} />;
   const verticalBars = <PlotVerticalGrid limits={limits} gridSpacing={verSpacing} />;
+
+  const dataAvailable = isFinite(limits.xRatio) && isFinite(limits.yRatio);
 
   data.limits = cleanLimits(data.limits);
   return (
@@ -198,13 +258,30 @@ function Graph({ config }) {
       <svg viewBox={'0 0 ' + width + ' ' + height}>
         <PlotArea width={width} height={height} />
         {title.current}
-        {isFinite(limits.xRatio) && isFinite(limits.yRatio) && horizontalBars}
-        {isFinite(limits.xRatio) && isFinite(limits.yRatio) && verticalBars}
-        {isFinite(limits.xRatio) && isFinite(limits.yRatio) && <PlotRegions data={data} limits={limits}/>}
-        {isFinite(limits.xRatio) && isFinite(limits.yRatio) && <PlotPoint point={{
-          x: (config.config.emptyArm - limits.minX) * limits.xRatio + padding,
-          y: height - (config.config.emptyWeight-limits.minY) * limits.yRatio - padding
-        }} size={1.5} style='square' />}
+        {dataAvailable && horizontalBars}
+        {dataAvailable && verticalBars}
+        {dataAvailable && <PlotRegions data={data} limits={limits}/>}
+        {dataAvailable && lines.map(l => {
+          return <line
+            x1={(l.arm1 - limits.minX) * limits.xRatio + padding}
+            y1={height - (l.weight1 - limits.minY) * limits.yRatio - padding}
+            x2={(l.arm2 - limits.minX) * limits.xRatio + padding}
+            y2={height - (l.weight2 - limits.minY) * limits.yRatio - padding}
+            stroke={l.color}
+            strokeWidth={.3}
+            strokeDasharray={l.style}
+          />
+        })}
+        {dataAvailable && points.map(p => {
+          return <PlotPoint point={{
+            x: (p.arm - limits.minX) * limits.xRatio + padding,
+            y: height - (p.weight - limits.minY) * limits.yRatio - padding
+          }}
+          size={p.size}
+          label={p.label}
+          style={p.style}
+          />
+        })}
       </svg>
     </>
   );
