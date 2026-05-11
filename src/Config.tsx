@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './Config.css'
 import { Subregion } from "./Layout";
-import type { aircraftConfigT, seatT } from "./Types";
+import type { aircraftConfigT, cargoAreaT, equipmentT, seatT } from "./Types";
 
 function SeatSelection({seat, configIndex, config, setConfig}) {
   const checkRef = useRef(null);
@@ -66,6 +66,64 @@ function CargoSelection({cargoArea, configIndex, config, setConfig}) {
       <td>{cargoArea.name}</td>
       <td>{cargoArea.arm}</td>
       <td>{cargoArea.maxWeight}</td>
+    </tr>
+  );
+}
+
+function EquipmentSelection({equipment, configIndex, config, setConfig}) {
+  const checkRef = useRef(null);
+  const oldCount = useRef(1);
+  const [count, setCount] = useState(1);
+  let equipmentIndex = -1;
+  if (configIndex >= 0) equipmentIndex = config.aircraftConfigs[configIndex].equipment.findIndex((s: {id: string, count: number}) => s.id == equipment.id);
+  const checked = useRef(equipmentIndex >= 0);
+
+  function selectCheckbox() {
+    if (configIndex < 0) return;
+    checkRef.current.checked = !checkRef.current.checked;
+    const tmp = JSON.parse(JSON.stringify(config));
+    if (checkRef.current.checked) {
+      if (!tmp.aircraftConfigs[configIndex].equipment.find((s: {id: string, count: number}) => s.id == equipment.id)) {
+        tmp.aircraftConfigs[configIndex].equipment.push({id: equipment.id, count: Math.max(count, oldCount.current)});
+        setCount(Math.max(count, oldCount.current));
+      }
+    } else {
+      tmp.aircraftConfigs[configIndex].equipment.splice(equipmentIndex, 1);
+      oldCount.current = count;
+      setCount(0);
+    }
+    checked.current = !checked.current;
+    setConfig(tmp);
+  }
+
+  function setConfigCount(value) {
+    if (!checked) return;
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.aircraftConfigs[configIndex].equipment[equipmentIndex].count = value;
+    if (value === 0) {
+      selectCheckbox();
+      return;
+    }
+    setCount(value);
+    setConfig(tmp);
+  }
+
+  checked.current = equipmentIndex >= 0;
+  useEffect(() => {
+    setCount(equipmentIndex >= 0 ? config.aircraftConfigs[configIndex].equipment[equipmentIndex].count : 0);
+    oldCount.current = 1;
+  }, [configIndex])
+  return (
+    <tr className="equipmentSelect">
+      <td onClick={selectCheckbox}>
+        <input ref={checkRef} onClick={selectCheckbox} checked={checked.current} type={"checkbox"} onChange={selectCheckbox} />
+      </td>
+      <td onClick={selectCheckbox}>{equipment.name}</td>
+      <td onClick={selectCheckbox}>{equipment.arm}</td>
+      <td onClick={selectCheckbox}>{equipment.weight}</td>
+      <td>
+        <input disabled={!checked.current} min={0} value={count} type={"number"} onChange={(e) => setConfigCount(Number(e.target.value))}/>
+      </td>
     </tr>
   );
 }
@@ -155,8 +213,24 @@ function AircraftConfigs({config, setConfig}) {
           <th>Arm</th>
           <th>Max Weight</th>
         </tr>
-        {config.cargoAreas.map((seat: seatT) => {
-          return <SeatSelection key={seat.id + " seatSelect"} configIndex={configIndex} seat={seat} config={config} setConfig={setConfig}/>
+        {config.cargoAreas.map((cargo: cargoAreaT) => {
+          return <CargoSelection key={cargo.id + " cargoSelect"} configIndex={configIndex} cargoArea={cargo} config={config} setConfig={setConfig}/>
+        })}
+        </tbody>
+      </table>
+    </Subregion>
+    <Subregion>
+      <table id="configEquipment">
+        <tbody>
+        <tr>
+          <th>Select</th>
+          <th>Name</th>
+          <th>Arm</th>
+          <th>Weight</th>
+          <th>Count</th>
+        </tr>
+        {config.equipment.map((equipment: equipmentT) => {
+          return <EquipmentSelection key={equipment.id + " cargoSelect"} configIndex={configIndex} equipment={equipment} config={config} setConfig={setConfig}/>
         })}
         </tbody>
       </table>

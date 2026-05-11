@@ -9,12 +9,18 @@ function EquipmentRow({ equip, index, config, setConfig }) {
     setConfig(tmp);
   }
 
+  function setValue(key, value) {
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.equipment[index][key] = value;
+    setConfig(tmp);
+  }
+
   return (
     <Grouping>
       <div className={"equipmentRow"}>
-        <input defaultValue={equip.name} placeholder={"Name"} />
-        <input min={0} type="number" defaultValue={equip.weight} placeholder={"Weight"} />
-        <input type="number" defaultValue={equip.arm} placeholder={"Arm"} />
+        <input defaultValue={equip.name} placeholder={"Name"} onChange={(e) => setValue('name', e.target.value)}/>
+        <input min={0} type="number" defaultValue={equip.weight} placeholder={"Weight"} onChange={(e) => setValue('weight', e.target.value)}/>
+        <input type="number" defaultValue={equip.arm} placeholder={"Arm"} onChange={(e) => setValue('arm', e.target.value)}/>
         <button onClick={deleteEquipment}>X</button>
       </div>
     </Grouping>

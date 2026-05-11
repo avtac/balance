@@ -1,3 +1,4 @@
+#configEquipment,
 #configCargo,
 #configSeats {
   border-collapse: collapse;
@@ -17,5 +18,11 @@
 
   th, td {
     padding: 6px;
+  }
+}
+
+.equipmentSelect {
+  input[type=number] {
+    width: 3rem;
   }
 }
