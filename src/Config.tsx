@@ -18,6 +18,14 @@ function SeatSelection({seat, configIndex, config, setConfig}) {
         tmp.aircraftConfigs[configIndex].seats.push(seat.id);
     } else {
       tmp.aircraftConfigs[configIndex].seats.splice(seatIndex, 1);
+      for (const [index, opsConf] of tmp.operationConfigs.entries()) {
+        const usesConfig = opsConf.config === tmp.aircraftConfigs[configIndex].id;
+        if (usesConfig) {
+          const i = opsConf.seats.findIndex((s: {weight: number, id: string}) => s.id === seat.id);
+          if (i < 0) continue;
+          tmp.operationConfigs[index].seats.splice(i, 1);
+        }
+      }
     }
     checked.current = !checked.current;
     setConfig(tmp);
@@ -51,6 +59,14 @@ function CargoSelection({cargoArea, configIndex, config, setConfig}) {
         tmp.aircraftConfigs[configIndex].cargoAreas.push(cargoArea.id);
     } else {
       tmp.aircraftConfigs[configIndex].cargoAreas.splice(cargoAreaIndex, 1);
+      for (const [index, opsConf] of tmp.operationConfigs.entries()) {
+        const usesConfig = opsConf.config === tmp.aircraftConfigs[configIndex].id;
+        if (usesConfig) {
+          const i = opsConf.cargoAreas.findIndex((s: {weight: number, id: string}) => s.id === cargoArea.id)
+          if (i < 0) continue;
+          tmp.operationConfigs[index].cargoAreas.splice(i, 1);
+        }
+      }
     }
     checked.current = !checked.current;
     setConfig(tmp);
@@ -157,11 +173,19 @@ function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig})
   function deleteConfig() {
     const tmp = JSON.parse(JSON.stringify(config));
     if (configIndex < 0) return;
-    tmp.aircraftConfigs.splice(configIndex, 1);
-    if (tmp.aircraftConfigs.length > 0)
-      setSelectedConfig(tmp.aircraftConfigs[0].id);
-    else 
-      setSelectedConfig(0);
+    const oldConfig = tmp.aircraftConfigs.splice(configIndex, 1)[0].id;
+    const newConfig = tmp.aircraftConfigs.length > 0 ? tmp.aircraftConfigs[0].id : "";
+    for (const [index, opsConf] of tmp.operationConfigs.entries()) {
+      const usesConfig = opsConf.config == oldConfig;
+      if (usesConfig) {
+        tmp.operationConfigs[index].config = newConfig;
+        // TODO: This could be done more intelligently to only remove missing items in the new
+        // config
+        tmp.operationConfigs[index].seats = [];
+        tmp.operationConfigs[index].cargoAreas = [];
+      }
+    }
+    setSelectedConfig(newConfig);
     setConfig(tmp);
   }
 

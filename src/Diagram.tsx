@@ -93,12 +93,13 @@ function getPixelFromArm(arm) {
   return arm * pixPerUnit;
 }
 
-function Diagram({config, selectedConfig, selectedOpsConfig, filter=false}) {
+function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}) {
   let seats = [...config.seats]
   let cargoAreas = [...config.cargoAreas]
 
-  if (filter) {
+  if (selectedPanel >= 3) {
     const configIndex = config.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
+    if (configIndex < 0) return;
 
     seats = config.aircraftConfigs[configIndex].seats.map((seatId: string) => {
       const seatIndex: number = config.seats.findIndex((s: seatT) => s.id === seatId);
@@ -141,9 +142,10 @@ function Diagram({config, selectedConfig, selectedOpsConfig, filter=false}) {
   const planeHeight = planeBottom - planeTop;
 
 
-  const opsIndex = config.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig = o.id);
+  const opsIndex = config.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig == o.id);
   const seatItems = seats.map((seat: seatT) => {
-    const isOps = selectedOpsConfig != undefined
+    const isOps = selectedPanel >= 4 && opsIndex >= 0
+               && selectedOpsConfig != undefined
                && config.operationConfigs[opsIndex].seats.find(
                     (v: {id: string, weight: number}) => v.id == seat.id
                   )
@@ -157,7 +159,8 @@ function Diagram({config, selectedConfig, selectedOpsConfig, filter=false}) {
   });
 
   const cargoItems = cargoAreas.map((cargoArea: cargoAreaT) => {
-    const isOps = selectedOpsConfig != undefined
+    const isOps = selectedPanel >= 4 && opsIndex >= 0
+               && selectedOpsConfig != undefined
                && config.operationConfigs[opsIndex].cargoAreas.find(
                     (v: {id: string, weight: number}) => v.id == cargoArea.id
                   )

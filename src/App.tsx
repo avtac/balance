@@ -3,8 +3,8 @@ import { MultiPane } from './Layout'
 import Geometry from './Geometry'
 import Diagram from './Diagram'
 import Graph from './Graph.tsx'
-import { useState } from 'react'
-import type { configT } from './Types'
+import { useMemo, useState } from 'react'
+import type { configT, operationConfigT } from './Types'
 import { SeatConfig } from './Seats'
 import { CargoConfig } from './Cargo'
 import { Equipment } from './Equipment'
@@ -110,6 +110,22 @@ function App() {
 
   const [selectedPanel, setSelectedPanel] = useState(0);
 
+  function setOpsConfig(opsConfigId: string) {
+    setSelectedOpsConfig(opsConfigId);
+    const oI = config.operationConfigs.findIndex(c => c.id === opsConfigId);
+    if (oI >= 0 && config.operationConfigs[oI].config != selectedConfig)
+      setSelectedConfig(config.operationConfigs[oI].config);
+  }
+
+  useMemo(() => {
+    if (selectedPanel === 4) {
+      const opsConfigIndex = config.operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
+      // Set the selected config to the one being used by the ops config
+      if (opsConfigIndex >= 0 && config.operationConfigs[opsConfigIndex].config)
+        setSelectedConfig(config.operationConfigs[opsConfigIndex].config);
+    }
+  }, [selectedPanel]);
+
   return (
     <section id="content">
       <div id="split">
@@ -131,7 +147,7 @@ function App() {
               selectedConfig={selectedConfig}
               setSelectedConfig={setSelectedConfig}
               selectedOpsConfig={selectedOpsConfig}
-              setSelectedOpsConfig={setSelectedOpsConfig}/>
+              setSelectedOpsConfig={setOpsConfig}/>
           </MultiPane>
         </div>
         <div id='rightPanel'>
@@ -144,9 +160,9 @@ function App() {
           <div id='diagramHolder'>
             <Diagram 
               config={config}
+              selectedPanel={selectedPanel}
               selectedConfig={selectedConfig}
-              selectedOpsConfig={selectedOpsConfig}
-              filter={selectedPanel >= 3} />
+              selectedOpsConfig={selectedOpsConfig} />
           </div>
         </div>
       </div>

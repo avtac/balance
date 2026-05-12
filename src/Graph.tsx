@@ -45,6 +45,7 @@ function cleanLimits(limits: weightLimitT[]) {
 
 function generateConfigArea(config: configT, limits, selectedConfig: string): string[] {
   const selectedConfigIndex = config.aircraftConfigs.findIndex(v => v.id === selectedConfig);
+  if (selectedConfigIndex < 0) return [];
 
   const [configEmptyWeight, configEmptyArm] = calculateEmptyBalanceForConfig(config, selectedConfig);
 

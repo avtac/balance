@@ -13,6 +13,7 @@ export function calculateEmptyBalanceForConfig(config: configT, selectedConfig: 
 
   // Equipment
   const selectedConfigIndex = config.aircraftConfigs.findIndex(v => v.id === selectedConfig);
+  if (selectedConfigIndex < 0) return [weight, moment / weight];
   config.aircraftConfigs[selectedConfigIndex].equipment.map(
     (equipment) => {
       const equipIndex = config.equipment.findIndex(e => e.id === equipment.id);
@@ -28,6 +29,7 @@ export function calculateMaxBalanceForConfig(config: configT, selectedConfig: st
   let moment = config.config.emptyWeight * config.config.emptyArm;
 
   const selectedConfigIndex = config.aircraftConfigs.findIndex(v => v.id === selectedConfig);
+  if (selectedConfigIndex < 0) return [weight, moment / weight];
 
   // Seats
   config.aircraftConfigs[selectedConfigIndex].seats.map(

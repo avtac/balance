@@ -42,9 +42,9 @@ function SeatSelection({seat, opsConfigIndex, config, setConfig}) {
   // TODO: DO SOMETHING ON AIRCRAFT CONFIG ID CHANGE
 
   useEffect(() => {
-    let newWeight = seat.maxWeight;
+    let newWeight = seat.maxWeight * seat.seatCount;
     if (seatIndex >= 0) newWeight = config.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
-    oldWeight.current = newWeight * seat.seatCount;
+    oldWeight.current = newWeight;
   }, [opsConfigIndex]);
 
   return (
@@ -130,8 +130,8 @@ function AircraftOperationConfig({config, setConfig, selectedConfig, setSelected
       cargoAreas: [],
     };
     tmp.operationConfigs.push(newConfig);
-    setSelectedOpsConfig(newConfig.id);
     setConfig(tmp);
+    setSelectedOpsConfig(newConfig.id);
   }
 
   function duplicateOpsConfig() {
@@ -156,19 +156,32 @@ function AircraftOperationConfig({config, setConfig, selectedConfig, setSelected
     setConfig(tmp);
   }
 
-  function setName(name) {
+  function setName(name: string) {
     const tmp = JSON.parse(JSON.stringify(config));
     tmp.operationConfigs[opsConfigIndex].name = name;
     setConfig(tmp);
   }
 
-  const seats: seatT[] = config.aircraftConfigs[configIndex].seats.map((s: string) => {
-    return config.seats.find((S: seatT) => S.id === s);
-  });
+  function setAircraftConfig(configId: string) {
+    const tmp = JSON.parse(JSON.stringify(config));
+    tmp.operationConfigs[opsConfigIndex].config = configId;
+    tmp.operationConfigs[opsConfigIndex].seats = [];
+    tmp.operationConfigs[opsConfigIndex].cargoAreas = [];
+    setSelectedConfig(configId)
+    setConfig(tmp);
+  }
 
-  const cargoAreas: cargoAreaT[] = config.aircraftConfigs[configIndex].cargoAreas.map((s: string) => {
-    return config.cargoAreas.find((S: seatT) => S.id === s);
-  });
+  let seats: seatT[] = []
+  let cargoAreas: cargoAreaT[] = []
+  if (configIndex >= 0) {
+    seats = config.aircraftConfigs[configIndex].seats.map((s: string) => {
+      return config.seats.find((S: seatT) => S.id === s);
+    });
+
+    cargoAreas = config.aircraftConfigs[configIndex].cargoAreas.map((s: string) => {
+      return config.cargoAreas.find((S: seatT) => S.id === s);
+    });
+  }
 
   return (
     <>
@@ -188,7 +201,7 @@ function AircraftOperationConfig({config, setConfig, selectedConfig, setSelected
           <select
             ref={configSelectRef}
             disabled={config.aircraftConfigs.length == 0}
-            onChange={(e) => setSelectedConfig(e.target.value)}
+            onChange={(e) => setAircraftConfig(e.target.value)}
             value={selectedConfig}
           >
             {config.aircraftConfigs.map((conf) => {
