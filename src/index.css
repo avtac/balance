@@ -16,6 +16,8 @@
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
+  --margin-size: 9px;
+
   /* font: 18px/145% var(--sans); */
   letter-spacing: 0.18px;
   color-scheme: light dark;
@@ -49,13 +51,14 @@
 #root {
   border-inline: 1px solid var(--border);
   min-height: 100svh;
-  display: grid;
-  grid-template-rows: 100px 1fr;
+  display: flex;
+  flex-direction: column;
   /* box-sizing: border-box; */
 }
 
 body {
   margin: 0;
+  overflow: hidden;
 }
 
 h1,

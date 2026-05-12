@@ -133,9 +133,7 @@ function App() {
           <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
             <Geometry name={"Geometry"} config={config} setConfig={setConfigSpecial} />
             <div name={"Seats/Cargo"}>
-              <h2>Seats</h2>
               <SeatConfig config={config} setConfig={setConfigSpecial} />
-              <h2>Cargo</h2>
               <CargoConfig config={config} setConfig={setConfigSpecial} />
             </div>
             <Equipment name={"Equipment"} config={config} setConfig={setConfigSpecial} />

@@ -2,4 +2,5 @@
   background: #334;
   border-radius: 6px;
   user-select: none;
+  height: calc(100% - var(--margin-size) * 2);
 }

@@ -5,25 +5,51 @@
 .region {
   background: #1f2134;
   border-radius: 5px;
-  padding: 9px;
-  margin: 9px;
+  margin: var(--margin-size);
   overflow-x: auto;
 }
 
+.internalPadding {
+  margin: var(--margin-size);
+}
+
 #content {
-  max-height: calc(100vh - 100px);
+  flex: 1;
+  height: 100%;
+  display: flex;
+}
+
+#split {
+  flex: 1;
   display: flex;
 }
 
 #leftPanel {
+  flex: 1.1;
   display: flex;
   flex-direction: column;
+  min-width: 40rem;
 }
 
-#split {
-  display: grid;
-  grid-template-columns: 8fr 6fr;
+#rightPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   height: 100%;
+  svg {
+    margin: var(--margin-size);
+  }
+}
+
+#diagramHolder,
+#graphHolder {
+  display: flex;
+  align-items: center;
+  flex: 2;
+}
+
+#diagramHolder {
+  flex: 1;
 }
 
 .subregion {

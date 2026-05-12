@@ -4,7 +4,9 @@ import './Layout.css'
 function Region({children}) {
   return (
     <div className='region'>
-      {children}
+      <div className='internalPadding'>
+        {children}
+      </div>
     </div>
   );
 }
@@ -12,7 +14,9 @@ function Region({children}) {
 function Subregion({children}) {
   return (
     <div className='subregion'>
-      {children}
+      <div className='internalPadding'>
+        {children}
+      </div>
     </div>
   );
 }
@@ -57,7 +61,7 @@ function MultiPane({ selected = undefined, setSelected = undefined, children }) 
   }
 
   return (
-    <div className='multiPane'>
+    <div className='multiPane internalPadding'>
       <div id='topBar'>
         {Children.map(children, addButton)}
       </div>
