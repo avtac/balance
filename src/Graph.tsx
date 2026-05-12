@@ -1,6 +1,6 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import './Graph.css'
-import type { regionPointT, regionT, weightLimitT } from './Types';
+import type { cargoAreaT, configT, regionPointT, regionT, seatT, weightLimitT } from './Types';
 import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMaxBalanceForConfig } from './utility';
 
 let width = 140;
@@ -19,6 +19,72 @@ function cleanLimits(limits: weightLimitT[]) {
     ret.push({ id: limit.id, value: limit.value, name: limit.name, color: limit.color, lineStyle: limit.lineStyle });
   }
   return ret;
+}
+
+function generateConfigArea(config: configT, limits, selectedConfig: string): string[] {
+  const selectedConfigIndex = config.aircraftConfigs.findIndex(v => v.id === selectedConfig);
+
+  const [configEmptyWeight, configEmptyArm] = calculateEmptyBalanceForConfig(config, selectedConfig);
+
+  // Create list of used seats and cargoAreas from smallest to largest arm
+  let positions: {weight: number, arm: number}[] = [];
+
+  const pointData: {weight: number, arm: number}[] = [];
+  config.aircraftConfigs[selectedConfigIndex].seats.map((s: string) => {
+    const seat = config.seats.find((S: seatT) => S.id == s);
+    if (!seat) return;
+    pointData.push({weight: seat.maxWeight * seat.seatCount, arm: seat.arm});
+  })
+  .filter(s => s != undefined)
+
+  config.aircraftConfigs[selectedConfigIndex].cargoAreas.map((c: string) => {
+    const cargoArea = config.cargoAreas.find((C: cargoAreaT) => C.id == c);
+    if (!cargoArea) return;
+    pointData.push({weight: cargoArea.maxWeight, arm: cargoArea.arm});
+  })
+  .filter(s => s != undefined)
+
+  pointData.sort((a, b) => a.arm - b.arm);
+
+  let totalWeight = configEmptyWeight;
+  let totalArm = configEmptyArm;
+  pointData.map((s: {weight: number, arm: number}) => {
+    totalArm = (totalArm * totalWeight + s.weight * s.arm) / (totalWeight + s.weight);
+    totalWeight += s.weight;
+    positions.push({weight: totalWeight, arm: totalArm})
+  });
+
+  let x = limits.xRatio * (configEmptyArm - limits.minX) + padding;
+  let y = height - limits.yRatio * (configEmptyWeight - limits.minY) - padding;
+  const points: string[] = [`${x},${y}`];
+  // Generate bottom
+  for (let i = 0; i < positions.length; i++) {
+    x = limits.xRatio * (positions[i].arm - limits.minX) + padding;
+    y = height - limits.yRatio * (positions[i].weight - limits.minY) - padding;
+    points.push(`${x},${y}`);
+  }
+
+  pointData.sort((a, b) => b.arm - a.arm);
+
+  positions = [];
+  totalWeight = configEmptyWeight;
+  totalArm = configEmptyArm;
+
+  pointData.map((s: {weight: number, arm: number}) => {
+    totalArm = (totalArm * totalWeight + s.weight * s.arm) / (totalWeight + s.weight);
+    totalWeight += s.weight;
+    positions.push({weight: totalWeight, arm: totalArm})
+  });
+
+  // Generate Top
+  for (let i = positions.length - 1; i >= 0; i--) {
+    x = limits.xRatio * (positions[i].arm - limits.minX) + padding;
+    y = height - limits.yRatio * (positions[i].weight - limits.minY) - padding;
+    points.push(`${x},${y}`);
+  }
+
+  points.push(points[0]);
+  return points;
 }
 
 function PlotArea({width, height}) {
@@ -152,6 +218,7 @@ function PlotPoint({point, size, label=undefined, style=null}) {
 function Graph({ config, selectedConfig, selectedOpsConfig }) {
   if (config === undefined) return;
   let data = JSON.parse(JSON.stringify(config.limits));
+  const configAreaPoints = useRef("");
 
   // Add any desired points to graph
   const points: {weight: number, arm: number, style: string, size: number, label?: string}[] = []
@@ -185,13 +252,7 @@ function Graph({ config, selectedConfig, selectedOpsConfig }) {
         size: 1,
         label: "Max Config"
       });
-    lines.push({
-      weight1: weight,
-      arm1: arm,
-      weight2: weightFull,
-      arm2: armFull,
-      color: 'maroon'
-    });
+
   }
 
   if (selectedOpsConfig) {
@@ -241,6 +302,11 @@ function Graph({ config, selectedConfig, selectedOpsConfig }) {
     yRatio: (height - padding * 2) / (maxY - minY)
   };
 
+  useMemo(() => {
+    if (selectedConfig)
+      configAreaPoints.current = generateConfigArea(config, limits, selectedConfig).join(" ");
+  }, [config, selectedConfig]);
+
   // Convert interval to spacing of 1, 2, or 5 * 10^x
   function getCleanInterval( width, desiredTicks ) {
     const desiredInterval = (width / desiredTicks);
@@ -270,6 +336,7 @@ function Graph({ config, selectedConfig, selectedOpsConfig }) {
         {title.current}
         {dataAvailable && horizontalBars}
         {dataAvailable && verticalBars}
+        {dataAvailable && selectedConfig && <polyline points={configAreaPoints.current} fill={'#8883'} stroke={'none'}/>}
         {dataAvailable && <PlotRegions data={data} limits={limits}/>}
         {dataAvailable && lines.map(l => {
           return <line

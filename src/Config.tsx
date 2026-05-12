@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import './Config.css'
 import { MultiPane, Subregion } from "./Layout";
 import type { aircraftConfigT, cargoAreaT, equipmentT, seatT } from "./Types";
+import { getSortedByArm } from './utility';
 
 function SeatSelection({seat, configIndex, config, setConfig}) {
   let seatIndex = -1;
@@ -196,7 +197,7 @@ function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig})
               <th style={{width: "3rem"}}>Max Weight</th>
               <th style={{width: "3rem"}}># of Seats</th>
             </tr>
-            {config.seats.map((seat: seatT) => {
+            {getSortedByArm(config.seats).map((seat: seatT) => {
               return <SeatSelection key={seat.id + " seatSelect"} configIndex={configIndex} seat={seat} config={config} setConfig={setConfig}/>
             })}
             </tbody>
@@ -211,7 +212,7 @@ function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig})
               <th style={{width: "3rem"}}>Arm</th>
               <th style={{width: "3rem"}}>Max Weight</th>
             </tr>
-            {config.cargoAreas.map((cargo: cargoAreaT) => {
+            {getSortedByArm(config.cargoAreas).map((cargo: cargoAreaT) => {
               return <CargoSelection key={cargo.id + " cargoSelect"} configIndex={configIndex} cargoArea={cargo} config={config} setConfig={setConfig}/>
             })}
             </tbody>
@@ -227,7 +228,7 @@ function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig})
               <th style={{width: "3rem"}}>Weight</th>
               <th style={{width: "3rem"}}>Count</th>
             </tr>
-            {config.equipment.map((equipment: equipmentT) => {
+            {getSortedByArm(config.equipment).map((equipment: equipmentT) => {
               return <EquipmentSelection key={equipment.id + " cargoSelect"} configIndex={configIndex} equipment={equipment} config={config} setConfig={setConfig}/>
             })}
             </tbody>

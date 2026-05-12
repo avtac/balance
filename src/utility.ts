@@ -1,5 +1,12 @@
 import type { configT } from './Types';
 
+export function getSortedByArm(data: (any[])) {
+  const tmp = JSON.parse(JSON.stringify(data));
+  return tmp.sort((a: seatT, b: seatT) => {
+    return a.arm - b.arm;
+  }).filter(s => s != undefined);
+}
+
 export function calculateEmptyBalanceForConfig(config: configT, selectedConfig: string) {
   let weight = config.config.emptyWeight;
   let moment = config.config.emptyWeight * config.config.emptyArm;
@@ -29,7 +36,7 @@ export function calculateMaxBalanceForConfig(config: configT, selectedConfig: st
       if (seatIndex < 0) return;
       const seatData = config.seats[seatIndex];
       weight += seatData.maxWeight * seatData.seatCount;
-      moment += seatData.maxWeight * seatData.seatCount* seatData.arm;
+      moment += seatData.maxWeight * seatData.seatCount * seatData.arm;
     });
 
   // Cargo
@@ -66,8 +73,8 @@ export function calculateBalanceForOperationConfig(config: configT, selectedConf
       const seatIndex = config.seats.findIndex(s => s.id === seat.id);
       if (seatIndex < 0) return;
       const seatData = config.seats[seatIndex];
-      weight += seat.weight * seatData.seatCount;
-      moment += seat.weight * seatData.seatCount * seatData.arm;
+      weight += seat.weight;
+      moment += seat.weight * seatData.arm;
     });
 
   // Cargo

@@ -1,14 +1,11 @@
 import './BOW.css'
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Subregion, MultiPane } from "./Layout";
 import type { aircraftConfigT, cargoAreaT, operationConfigT, seatT } from "./Types";
+import { getSortedByArm } from './utility';
 
-function SeatSelection({seatId, opsConfigIndex, config, setConfig}) {
+function SeatSelection({seat, opsConfigIndex, config, setConfig}) {
   if (opsConfigIndex < 0) return;
-
-  const sI = config.seats.findIndex((s: seatT) => s.id == seatId);
-  if (sI < 0) return;
-  const seat: seatT = config.seats[sI];
 
   let seatIndex = config.operationConfigs[opsConfigIndex].seats.findIndex((s: {id: string, weight: number}) => s.id == seat.id);
   const checked = useRef(seatIndex >= 0);
@@ -46,8 +43,8 @@ function SeatSelection({seatId, opsConfigIndex, config, setConfig}) {
 
   useEffect(() => {
     let newWeight = seat.maxWeight;
-    if (seatIndex >= 0) newWeight =  config.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
-    oldWeight.current = newWeight;
+    if (seatIndex >= 0) newWeight = config.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
+    oldWeight.current = newWeight * seat.seatCount;
   }, [opsConfigIndex]);
 
   return (
@@ -57,18 +54,14 @@ function SeatSelection({seatId, opsConfigIndex, config, setConfig}) {
       </td>
       <td onClick={selectCheckbox}>{seat.name}</td>
       <td>
-        <input disabled={!checked.current} value={weight} min={0} max={seat.maxWeight} type="number" onChange={e => setWeight(Number(e.target.value))} />
+        <input disabled={!checked.current} value={weight} min={0} max={seat.maxWeight * seat.seatCount} type="number" onChange={e => setWeight(Number(e.target.value))} />
       </td>
     </tr>
   );
 }
 
-function CargoSelection({cargoAreaId, opsConfigIndex, config, setConfig}) {
+function CargoSelection({cargoArea, opsConfigIndex, config, setConfig}) {
   if (opsConfigIndex < 0) return;
-
-  const cI = config.cargoAreas.findIndex((c: cargoAreaT) => c.id == cargoAreaId);
-  if (cI < 0) return;
-  const cargoArea: cargoAreaT = config.cargoAreas[cI];
 
   let cargoAreaIndex = config.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: {id: string, weight: number}) => s.id == cargoArea.id);
   const checked = useRef(cargoAreaIndex >= 0);
@@ -169,6 +162,14 @@ function AircraftOperationConfig({config, setConfig, selectedConfig, setSelected
     setConfig(tmp);
   }
 
+  const seats: seatT[] = config.aircraftConfigs[configIndex].seats.map((s: string) => {
+    return config.seats.find((S: seatT) => S.id === s);
+  });
+
+  const cargoAreas: cargoAreaT[] = config.aircraftConfigs[configIndex].cargoAreas.map((s: string) => {
+    return config.cargoAreas.find((S: seatT) => S.id === s);
+  });
+
   return (
     <>
       <Subregion>
@@ -217,8 +218,8 @@ function AircraftOperationConfig({config, setConfig, selectedConfig, setSelected
               <th style={{width: "10rem"}}>Name</th>
               <th style={{width: "3rem"}}>Weight</th>
             </tr>
-            {config.aircraftConfigs[configIndex].seats.map((seatId: string) => {
-              return <SeatSelection key={seatId + " seatSelect"} opsConfigIndex={opsConfigIndex} seatId={seatId} config={config} setConfig={setConfig}/>
+            {getSortedByArm(seats).map((seat: seatT) => {
+              return <SeatSelection key={seat.id + " seatSelect"} opsConfigIndex={opsConfigIndex} seat={seat} config={config} setConfig={setConfig}/>
             })}
             </tbody>
           </table>
@@ -231,8 +232,8 @@ function AircraftOperationConfig({config, setConfig, selectedConfig, setSelected
               <th style={{width: "10rem"}}>Name</th>
               <th style={{width: "3rem"}}>Weight</th>
             </tr>
-            {config.aircraftConfigs[configIndex].cargoAreas.map((cargoId: string) => {
-              return <CargoSelection key={cargoId + " cargoSelect"} opsConfigIndex={opsConfigIndex} cargoAreaId={cargoId} config={config} setConfig={setConfig}/>
+            {getSortedByArm(cargoAreas).map((cargoArea: cargoAreaT) => {
+              return <CargoSelection key={cargoArea.id + " cargoSelect"} opsConfigIndex={opsConfigIndex} cargoArea={cargoArea} config={config} setConfig={setConfig}/>
             })}
             </tbody>
           </table>

@@ -19,8 +19,8 @@ function EquipmentRow({ equip, index, config, setConfig }) {
     <Grouping>
       <div className={"equipmentRow"}>
         <input defaultValue={equip.name} placeholder={"Name"} onChange={(e) => setValue('name', e.target.value)}/>
-        <input min={0} type="number" defaultValue={equip.weight} placeholder={"Weight"} onChange={(e) => setValue('weight', e.target.value)}/>
-        <input type="number" defaultValue={equip.arm} placeholder={"Arm"} onChange={(e) => setValue('arm', e.target.value)}/>
+        <input min={0} type="number" defaultValue={equip.weight} placeholder={"Weight"} onChange={(e) => setValue('weight', Number(e.target.value))}/>
+        <input type="number" defaultValue={equip.arm} placeholder={"Arm"} onChange={(e) => setValue('arm', Number(e.target.value))}/>
         <button onClick={deleteEquipment}>X</button>
       </div>
     </Grouping>
