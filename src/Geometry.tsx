@@ -91,9 +91,20 @@ function WeightRegionRow({data, config, setConfig, regionIndex, index, isLast = 
   return (
     <>
     <div className="weightRegionRow">
-      <input placeholder="Weight" min={0} step={10} type="number" defaultValue={data.weight} onChange={e => setWeight(Number(e.target.value))}/>
-      <input placeholder="Arm" type="number"  defaultValue={data.arm} onChange={e => setArm(Number(e.target.value))}/>
-      {config.limits.regions[regionIndex].data.length > 3 && <button onClick={deletePoint}>X</button>}
+      <input
+        placeholder="Weight"
+        min={0}
+        step={10}
+        type="number"
+        defaultValue={data.weight}
+        onChange={e => setWeight(Number(e.target.value))}/>
+      <input
+        placeholder="Arm"
+        type="number"
+        defaultValue={data.arm}
+        onChange={e => setArm(Number(e.target.value))}/>
+      {config.limits.regions[regionIndex].data.length > 3 &&
+        <button onClick={deletePoint}>X</button>}
       {<button className="addButton" onClick={addPoint}></button>}
     </div>
     </>
@@ -137,15 +148,32 @@ function WeightRegion({region, config, setConfig, nameString = ""}) {
     <div className="weightRegion">
       <h4>{name != "" ? name : "Weight Region"}</h4>
       <div className="title">
-        <input placeholder="Name" defaultValue={name} onChange={e => setName(e.target.value)}/>
-        <input type="color" value={region.color} onChange={e => setColor(e.target.value)} />
-        <select value={region.lineStyle} onChange={e => setStyle(e.target.value)}>
-          {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
+        <input
+          placeholder="Name"
+          defaultValue={name}
+          onChange={e => setName(e.target.value)}/>
+        <input
+          type="color"
+          value={region.color}
+          onChange={e => setColor(e.target.value)} />
+        <select
+          value={region.lineStyle}
+          onChange={e => setStyle(e.target.value)}>
+          {availableStyles.map((style: string[]) =>
+            <option key={style[0]} value={style[1]}>{style[0]}</option>
+          )}
         </select>
         <button onClick={removeRegion}>X</button>
       </div>
       {region.data.map((data: regionPointT, index: number) => {
-        return <WeightRegionRow key={data.id} config={config} regionIndex={regionIndex} setConfig={setConfig} index={index} data={data} isLast={index === region.data.length - 1}/>
+        return <WeightRegionRow
+                key={data.id}
+                config={config}
+                regionIndex={regionIndex}
+                setConfig={setConfig}
+                index={index}
+                data={data}
+                isLast={index === region.data.length - 1}/>
       })}
     </div>
     </Grouping>
@@ -170,7 +198,7 @@ function AircraftLimits({config, setConfig}) {
     const newLimit: regionT = {
       name: "",
       id: crypto.randomUUID(),
-      color: '#FFFFFF',
+      color: '#000000',
       data: [
         {id: crypto.randomUUID(), weight: 1000, arm: 10},
         {id: crypto.randomUUID(), weight: 2000, arm: 10},

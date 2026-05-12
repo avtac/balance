@@ -1,4 +1,33 @@
 svg {
   margin: auto;
   user-select: none;
+
+  text {
+    font-size: 2.7px;
+  }
+
+  text.title {
+    font-size: 5px;
+  }
+
+  .background {
+    fill: #FFF;
+  }
+
+  polyline.gridLines {
+    stroke: #3338;
+  }
+
+  text.gridLines {
+    fill: #FFF;
+  }
+
+  text.point {
+    fill: #000;
+  }
+
+  .configArea {
+    stroke: none;
+    fill: #9994;
+  }
 }

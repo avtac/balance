@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { Fragment, useMemo, useRef } from 'react';
 import './Graph.css'
 import type { cargoAreaT, configT, regionPointT, regionT, seatT, weightLimitT } from './Types';
 import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMaxBalanceForConfig } from './utility';
@@ -6,6 +6,28 @@ import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, cal
 let width = 140;
 let height = 80;
 let padding = 12;
+let graphInsetPadding = 5;
+
+interface limitsT {
+  minX: number,
+  maxX: number,
+  minY: number,
+  maxY: number,
+  xRatio: number,
+  yRatio: number
+}
+
+function calculatePointX(limits: limitsT, arm: number) {
+  return (arm - limits.minX) * limits.xRatio + padding + graphInsetPadding;
+}
+
+function calculatePointY(limits: limitsT, weight: number) {
+  return height - (weight - limits.minY) * limits.yRatio - padding - graphInsetPadding;
+}
+
+function calculateArm(weight1: number, arm1: number, weight2: number, arm2: number) {
+  return (arm1 * weight1 + arm2 * weight2) / (weight1 + weight2);
+}
 
 function cleanLimits(limits: weightLimitT[]) {
   const ret: weightLimitT[] = [];
@@ -44,26 +66,28 @@ function generateConfigArea(config: configT, limits, selectedConfig: string): st
   })
   .filter(s => s != undefined)
 
+  // Generate bottom
   pointData.sort((a, b) => a.arm - b.arm);
 
   let totalWeight = configEmptyWeight;
   let totalArm = configEmptyArm;
   pointData.map((s: {weight: number, arm: number}) => {
-    totalArm = (totalArm * totalWeight + s.weight * s.arm) / (totalWeight + s.weight);
+    totalArm = calculateArm(totalWeight, totalArm, s.weight, s.arm);
     totalWeight += s.weight;
     positions.push({weight: totalWeight, arm: totalArm})
   });
 
-  let x = limits.xRatio * (configEmptyArm - limits.minX) + padding;
-  let y = height - limits.yRatio * (configEmptyWeight - limits.minY) - padding;
+  let x = calculatePointX(limits, configEmptyArm);
+  let y = calculatePointY(limits, configEmptyWeight);
   const points: string[] = [`${x},${y}`];
-  // Generate bottom
+
   for (let i = 0; i < positions.length; i++) {
-    x = limits.xRatio * (positions[i].arm - limits.minX) + padding;
-    y = height - limits.yRatio * (positions[i].weight - limits.minY) - padding;
+    x = calculatePointX(limits, positions[i].arm);
+    y = calculatePointY(limits, positions[i].weight);
     points.push(`${x},${y}`);
   }
 
+  // Generate Top
   pointData.sort((a, b) => b.arm - a.arm);
 
   positions = [];
@@ -71,15 +95,14 @@ function generateConfigArea(config: configT, limits, selectedConfig: string): st
   totalArm = configEmptyArm;
 
   pointData.map((s: {weight: number, arm: number}) => {
-    totalArm = (totalArm * totalWeight + s.weight * s.arm) / (totalWeight + s.weight);
+    totalArm = calculateArm(totalWeight, totalArm, s.weight, s.arm);
     totalWeight += s.weight;
     positions.push({weight: totalWeight, arm: totalArm})
   });
 
-  // Generate Top
   for (let i = positions.length - 1; i >= 0; i--) {
-    x = limits.xRatio * (positions[i].arm - limits.minX) + padding;
-    y = height - limits.yRatio * (positions[i].weight - limits.minY) - padding;
+    x = calculatePointX(limits, positions[i].arm);
+    y = calculatePointY(limits, positions[i].weight);
     points.push(`${x},${y}`);
   }
 
@@ -90,11 +113,11 @@ function generateConfigArea(config: configT, limits, selectedConfig: string): st
 function PlotArea({width, height}) {
   return (
     <rect
+      className='background'
       width={width - padding * 2}
       height={height - padding * 2}
       x={padding}
       y={padding}
-      fill='#335'
       />
   );
 }
@@ -103,14 +126,31 @@ function PlotLimit({data, limits}) {
   if (!data.value) return;
   let x1 = padding;
   let x2 = width - padding;
-  let y = height - limits.yRatio * (data.value - limits.minY) - padding;
+  let y = calculatePointY(limits, data.value);
   let points = `${x1},${y} ${x2},${y}`;
   return (
     <>
-    <polyline points={points} stroke={data.color ?? 'white'} strokeDasharray={data.lineStyle ?? ''} strokeWidth='.3' fill='none'/>
-    <text x={x2 + 1} y={y} alignmentBaseline={data.name != "" ? 'after-edge' : 'middle'} fontSize={2} fill={data.color ?? 'white'}>{data.value}</text>
+    <polyline
+      points={points}
+      stroke={data.color ?? 'white'}
+      strokeDasharray={data.lineStyle ?? ''}
+      strokeWidth='.3'/>
+    <text
+      x={x2 + 1}
+      y={y}
+      alignmentBaseline={data.name != "" ? 'after-edge' : 'middle'}
+      fill={data.color ?? 'white'}>
+      {data.value}
+    </text>
     {data.name.split(";").map((name: string, i: number) => {
-      return <text key={name} x={x2 + 1} y={y + i * 2} alignmentBaseline='before-edge' fontSize={2} fill={data.color ?? 'white'}>{name}</text>
+      return <text 
+              key={name}
+              x={x2 + 1}
+              y={y + i * 2}
+              alignmentBaseline='before-edge'
+              fill={data.color ?? 'white'}>
+              {name}
+            </text>
     })}
     </>
   );
@@ -119,20 +159,37 @@ function PlotLimit({data, limits}) {
 function PlotRegion({data, limits}) {
   const withEnd = [...data.data, data.data[0]];
   let points = withEnd.map((point: regionPointT) => {;
-    let x = limits.xRatio * (point.arm - limits.minX) + padding;
-    let y = height - limits.yRatio * (point.weight - limits.minY) - padding;
+    let x = calculatePointX(limits, point.arm);
+    let y = calculatePointY(limits, point.weight);
     return [x, y];
   })
   let pointsString = points.map((p: number[]) => `${p[0]},${p[1]}`).join(' ');
-  let middleX = (Math.max(...points.map((p: number[]) => p[0])) + Math.min(...points.map((p: number[]) => p[0]))) / 2;
-  let middleY = (Math.max(...points.map((p: number[]) => p[1])) + Math.min(...points.map((p: number[]) => p[1]))) / 2;
-  // let middleX = (points.map((p: number[]) => p[0])).reduce((sum, current) => sum + current, 0) / points.length;
-  // let middleY = (points.map((p: number[]) => p[1])).reduce((sum, current) => sum + current, 0) / points.length;
+  let middleX = (
+    Math.max(...points.map((p: number[]) => p[0]))
+  + Math.min(...points.map((p: number[]) => p[0]))
+  ) / 2;
+  let middleY = (
+    Math.max(...points.map((p: number[]) => p[1]))
+  + Math.min(...points.map((p: number[]) => p[1]))
+  ) / 2;
 
   return (
     <>
-    <polyline points={pointsString} stroke={data.color ?? 'white'} strokeDasharray={data.lineStyle ?? ''} strokeWidth='.3' fill='none'/>
-    <text x={middleX} y={middleY} fontSize="2" fill={data.color} textAnchor='middle' alignmentBaseline='middle'>{data.name}</text>
+    <polyline
+      className='region'
+      points={pointsString}
+      stroke={data.color ?? 'black'}
+      strokeDasharray={data.lineStyle ?? ''}
+      strokeWidth='.3'
+      fill={(data.color ?? 'black') + "33"}/>
+    <text
+      x={middleX}
+      y={middleY}
+      fill={data.color}
+      textAnchor='middle'
+      alignmentBaseline='middle'>
+      {data.name}
+    </text>
     </>
   );
 }
@@ -140,54 +197,86 @@ function PlotRegion({data, limits}) {
 function PlotRegions({data, limits}) {
   return (
     <>
-    {data.regions.map((region: regionT) => <PlotRegion data={region} limits={limits}/>)}
-    {data.limits.map((limit: weightLimitT) => <PlotLimit data={limit} limits={limits}/>)}
+      {data.regions.map((region: regionT) => <PlotRegion key={region.id} data={region} limits={limits}/>)}
+      {data.limits.map((limit: weightLimitT) => <PlotLimit key={limit.id} data={limit} limits={limits}/>)}
     </>
   );
 }
 
 const precision = 10000;
 
+function truncateNumber(n: number): number {
+  return Math.floor(n * precision) / precision;
+}
+
 function PlotHorizontalGrid({limits, gridSpacing}) {
-  const smallestGridValue = Math.ceil(limits.minX / gridSpacing) * gridSpacing;
-  const xOffset = (smallestGridValue - limits.minX) * limits.xRatio + padding;
-  const numGrid = Math.floor((limits.maxX - smallestGridValue) / gridSpacing) + 1;
   const gapBetweenGrid = gridSpacing * limits.xRatio;
+  const smallestGridValue = Math.ceil((limits.minX - graphInsetPadding / limits.xRatio) / gridSpacing) * gridSpacing;
+  const largestGridValue = Math.floor((limits.maxX + graphInsetPadding / limits.xRatio) / gridSpacing) * gridSpacing;
+  const smallestGridPosition = calculatePointX(limits, smallestGridValue);
+  const largestGridPosition = calculatePointX(limits, largestGridValue);
+  const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid)) + 1;
   if (!numGrid) return;
+  const startValue = truncateNumber(smallestGridValue);
   let positions = Array(numGrid).fill(0).map((_, index) => {return {
-    pos: gapBetweenGrid * index + xOffset,
-    value: (Math.floor(smallestGridValue * precision) + Math.floor(index * gridSpacing * precision)) / precision
+    pos: gapBetweenGrid * index + smallestGridPosition,
+    value: startValue + truncateNumber(index * gridSpacing)
   }});
   return (
     <>
-      {positions.map(x => (
-        <>
-          <polyline points={`${x.pos},${padding} ${x.pos},${height - padding}`} stroke="#9993" strokeWidth='.2' strokeDasharray={".5"} />)
-          <text x={x.pos} y={height - padding / 2} transform={`rotate(${x.value.toString().length > 4 ? 45 : 0}, ${x.pos}, ${height - padding / 2})`} fontSize="2" fill="#888" textAnchor='middle' alignmentBaseline='after-edge'>{x.value}</text>
-        </>
+      {positions.map((x, i) => (
+        <Fragment key={i}>
+          <polyline
+            className={"gridLines"}
+            points={`${x.pos},${padding} ${x.pos},${height - padding}`}
+            strokeWidth='.2'
+            strokeDasharray={".5"} />
+          <text
+            className={"gridLines"}
+            x={x.pos}
+            y={height - padding / 2}
+            transform={`rotate(${x.value.toString().length > 4 ? 45 : 0}, ${x.pos}, ${height - padding / 2})`}
+            textAnchor='middle'
+            alignmentBaseline='after-edge'>
+            {x.value}
+          </text>
+        </Fragment >
       ))};
     </>
   );
 }
 
 function PlotVerticalGrid({limits, gridSpacing}) {
-  const largestGridValue = Math.floor(limits.maxY / gridSpacing) * gridSpacing;
-  let yOffset = (limits.maxY - largestGridValue) * limits.yRatio + padding;
-  let numGrid = Math.floor((largestGridValue - limits.minY) / gridSpacing) + 1;
-  let gapBetweenGrid = gridSpacing * limits.yRatio;
+  const gapBetweenGrid = gridSpacing * limits.yRatio;
+  const smallestGridValue = Math.ceil((limits.minY - graphInsetPadding / limits.yRatio) / gridSpacing) * gridSpacing;
+  const largestGridValue = Math.floor((limits.maxY + graphInsetPadding / limits.yRatio) / gridSpacing) * gridSpacing;
+  const smallestGridPosition = calculatePointY(limits, largestGridValue);
+  const largestGridPosition = calculatePointY(limits, smallestGridValue);
+  const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid)) + 1;
   if (!numGrid) return;
+  const startValue = truncateNumber(smallestGridValue);
   let positions = Array(numGrid).fill(0).map((_, index) => {return {
-    pos: gapBetweenGrid * index + yOffset,
-    value: (Math.floor(largestGridValue * precision) - Math.floor(index * gridSpacing * precision)) / precision
+    pos: largestGridPosition - gapBetweenGrid * index,
+    value: startValue + truncateNumber(index * gridSpacing)
   }});
   return (
     <>
-      {positions.map(y =>
+      {positions.map((y, i) =>
         (
-        <>
-          <polyline points={`${padding},${y.pos} ${width - padding},${y.pos}`} stroke="#9993" strokeWidth='.2' strokeDasharray={".5"} />)
-          <text x={1} y={y.pos} fontSize="2" fill="#888" alignmentBaseline='middle'>{y.value}</text>
-        </>
+        <Fragment key={i}>
+          <polyline
+            className='gridLines'
+            points={`${padding},${y.pos} ${width - padding},${y.pos}`}
+            strokeWidth='.2'
+            strokeDasharray={".5"}/>)
+          <text
+            className='gridLines'
+            x={1}
+            y={y.pos}
+            alignmentBaseline='middle'>
+            {y.value}
+            </text>
+        </Fragment>
         )
        )};
     </>
@@ -196,21 +285,62 @@ function PlotVerticalGrid({limits, gridSpacing}) {
 
 function PlotTitle({title}) {
   return (
-    <text x={width / 2} y={4} fontSize={4} fill='white' textAnchor='middle' alignmentBaseline='middle'>{title}</text>
+    <text
+      className='title'
+      x={width / 2} 
+      y={4}
+      fill='white'
+      textAnchor='middle'
+      alignmentBaseline='middle'>
+      {title}
+    </text>
   )
 }
 
-function PlotPoint({point, size, label=undefined, style=null}) {
-  let shape = <circle cx={point.x} cy={point.y} r={size} fill='#59C' stroke='black' strokeWidth={.3}/>;
+interface plotPointT {
+  weight: number,
+  arm: number,
+  style: string,
+  size: number,
+  label?: string
+}
 
-  if (style == 'square') {
-    shape = <rect x={point.x - size / 2} y={point.y - size / 2} width={size} height={size} fill='#59C' stroke='black' strokeWidth={.2} />;
+function PlotPoint({point, limits}) {
+  const x = calculatePointX(limits, point.arm)
+  const y = calculatePointY(limits, point.weight)
+  let shape = <circle
+                className='point'
+                cx={x}
+                cy={y}
+                r={point.size}
+                fill='#59C'
+                stroke='black'
+                strokeWidth={.3}/>;
+
+  if (point.style == 'square') {
+    shape = <rect
+              className='point'
+              x={x - point.size / 2}
+              y={y - point.size / 2}
+              width={point.size}
+              height={point.size}
+              fill='#59C'
+              stroke='black'
+              strokeWidth={.2}/>;
   }
 
   return (
     <>
       {shape}
-      {label != undefined && <text x={point.x + size / 2} y={point.y - size / 2 - 1.2} textAnchor='middle' fontSize={2} fill='#888'>{label}</text>}
+      {point.label != undefined && 
+        <text
+          className='point'
+          x={x + point.size / 2}
+          y={y - point.size / 2 - 1.2}
+          textAnchor='middle'>
+          {point.label}
+        </text>
+      }
     </>
   );
 }
@@ -221,7 +351,7 @@ function Graph({ config, selectedConfig, selectedOpsConfig }) {
   const configAreaPoints = useRef("");
 
   // Add any desired points to graph
-  const points: {weight: number, arm: number, style: string, size: number, label?: string}[] = []
+  const points: plotPointT[] = []
   // Add any desired lines to graph
   const lines: {weight1: number, arm1: number, weight2: number, arm2: number, color: string, style?: string}[] = []
 
@@ -293,13 +423,13 @@ function Graph({ config, selectedConfig, selectedOpsConfig }) {
     minY = Math.min(...points.filter((v) => v.weight !== null).map((lim) => lim.weight), minY) ?? minY;
   }
 
-  const limits = {
+  const limits: limitsT = {
     minX: minX,
     maxX: maxX,
     minY: minY,
     maxY: maxY,
-    xRatio: (width - padding * 2) / (maxX - minX),
-    yRatio: (height - padding * 2) / (maxY - minY)
+    xRatio: (width - graphInsetPadding * 2 - padding * 2) / (maxX - minX),
+    yRatio: (height - graphInsetPadding * 2 - padding * 2) / (maxY - minY)
   };
 
   useMemo(() => {
@@ -308,7 +438,7 @@ function Graph({ config, selectedConfig, selectedOpsConfig }) {
   }, [config, selectedConfig]);
 
   // Convert interval to spacing of 1, 2, or 5 * 10^x
-  function getCleanInterval( width, desiredTicks ) {
+  function getCleanInterval( width: number, desiredTicks: number ) {
     const desiredInterval = (width / desiredTicks);
     const power = Math.ceil(Math.log10(desiredInterval))
     const spacing = desiredInterval / Math.pow(10, power - 1);
@@ -319,7 +449,7 @@ function Graph({ config, selectedConfig, selectedOpsConfig }) {
   // Unit spacing for grid lines
   const desiredTicks = 10;
   const horSpacing = getCleanInterval(maxX - minX, desiredTicks);
-  const verSpacing = getCleanInterval(maxY - minY, desiredTicks);
+  const verSpacing = getCleanInterval(maxY - minY, desiredTicks * height / width);
 
   // Gird base components
   const title = useRef(<PlotTitle title="Weight vs Arm" />);
@@ -330,37 +460,33 @@ function Graph({ config, selectedConfig, selectedOpsConfig }) {
 
   data.limits = cleanLimits(data.limits);
   return (
-    <>
-      <svg viewBox={'0 0 ' + width + ' ' + height}>
-        <PlotArea width={width} height={height} />
-        {title.current}
-        {dataAvailable && horizontalBars}
-        {dataAvailable && verticalBars}
-        {dataAvailable && selectedConfig && <polyline points={configAreaPoints.current} fill={'#8883'} stroke={'none'}/>}
-        {dataAvailable && <PlotRegions data={data} limits={limits}/>}
-        {dataAvailable && lines.map(l => {
-          return <line
-            x1={(l.arm1 - limits.minX) * limits.xRatio + padding}
-            y1={height - (l.weight1 - limits.minY) * limits.yRatio - padding}
-            x2={(l.arm2 - limits.minX) * limits.xRatio + padding}
-            y2={height - (l.weight2 - limits.minY) * limits.yRatio - padding}
-            stroke={l.color}
-            strokeWidth={.3}
-            strokeDasharray={l.style}
-          />
-        })}
-        {dataAvailable && points.map(p => {
-          return <PlotPoint point={{
-            x: (p.arm - limits.minX) * limits.xRatio + padding,
-            y: height - (p.weight - limits.minY) * limits.yRatio - padding
-          }}
-          size={p.size}
-          label={p.label}
-          style={p.style}
-          />
-        })}
-      </svg>
-    </>
+    <svg viewBox={'0 0 ' + width + ' ' + height}>
+      <PlotArea width={width} height={height} />
+      {title.current}
+      {dataAvailable && horizontalBars}
+      {dataAvailable && verticalBars}
+      {dataAvailable && selectedConfig && <polyline className="configArea" points={configAreaPoints.current}/>}
+      {dataAvailable && <PlotRegions data={data} limits={limits}/>}
+      {dataAvailable && lines.map((l, i) => {
+        return <line
+          key={[l.arm1, l.weight2, i].join(" ")}
+          x1={calculatePointX(limits, l.arm1)}
+          y1={calculatePointY(limits, l.weight1)}
+          x2={calculatePointX(limits, l.arm2)}
+          y2={calculatePointY(limits, l.weight2)}
+          stroke={l.color}
+          strokeWidth={.3}
+          strokeDasharray={l.style}
+        />
+      })}
+      {dataAvailable && points.map((p, i) => {
+        return <PlotPoint
+          key={[p.weight, p.arm, i].join(' ')}
+          point={p}
+          limits={limits}
+        />
+      })}
+    </svg>
   );
 }
 
