@@ -17,29 +17,63 @@ function App() {
       tailNumber: "",
       type: "",
       emptyArm: 32,
-      emptyWeight: 1700
+      emptyWeight: 1450
     },
     seats: [{
       id: crypto.randomUUID(),
       name: "Pilot Seat",
-      arm: 0,
-      seatCount: 1,
+      arm: 35,
+      seatCount: 2,
       lateralDist: 0,
-      maxWeight: 300
+      maxWeight: 200
+    }, {
+      id: crypto.randomUUID(),
+      name: "Back Seat",
+      arm: 54,
+      seatCount: 2,
+      lateralDist: 0,
+      maxWeight: 200
     }],
-    cargoAreas: [],
+    cargoAreas: [{
+      arm: 73,
+      id: crypto.randomUUID(),
+      name: "C 1",
+      maxWeight: 75
+    }, {
+      arm: 91,
+      id: crypto.randomUUID(),
+      name: "C 2",
+      maxWeight: 25
+    }, {
+      arm: 54,
+      id: crypto.randomUUID(),
+      name: "C 3",
+      maxWeight: 225
+    }],
     limits: {
       regions: [{
-        name: "",
+        name: "Normal",
         id: crypto.randomUUID(),
-        color: '#FFFFFF',
+        color: '#D11F1F',
         data: [
           {id: crypto.randomUUID(), arm: 30, weight: 1400},
           {id: crypto.randomUUID(), arm: 30, weight: 2000},
           {id: crypto.randomUUID(), arm: 35, weight: 2550},
           {id: crypto.randomUUID(), arm: 50, weight: 2550},
           {id: crypto.randomUUID(), arm: 50, weight: 1400}
+        ]},
+        {
+        name: "Utility",
+        id: crypto.randomUUID(),
+        color: '#4294FF',
+        data: [
+          {id: crypto.randomUUID(), arm: 30, weight: 1400},
+          {id: crypto.randomUUID(), arm: 30, weight: 2000},
+          {id: crypto.randomUUID(), arm: 31.85, weight: 2200},
+          {id: crypto.randomUUID(), arm: 34, weight: 2200},
+          {id: crypto.randomUUID(), arm: 34, weight: 1400}
         ]}
+
       ],
       limits: []
     },
