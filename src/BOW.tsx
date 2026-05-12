@@ -10,7 +10,6 @@ function SeatSelection({seatId, opsConfigIndex, config, setConfig}) {
   if (sI < 0) return;
   const seat: seatT = config.seats[sI];
 
-  const checkRef = useRef(null);
   let seatIndex = config.operationConfigs[opsConfigIndex].seats.findIndex((s: {id: string, weight: number}) => s.id == seat.id);
   const checked = useRef(seatIndex >= 0);
 
@@ -19,7 +18,7 @@ function SeatSelection({seatId, opsConfigIndex, config, setConfig}) {
     checked.current = !checked.current;
     const tmp = JSON.parse(JSON.stringify(config));
     if (checked.current) {
-      if (!config.operationConfigs[opsConfigIndex].seats.find((s: {id: string, weight: number}) => s.id == seat.id)) {
+      if (config.operationConfigs[opsConfigIndex].seats.findIndex((s: {id: string, weight: number}) => s.id === seat.id) < 0) {
         tmp.operationConfigs[opsConfigIndex].seats.push({id: seat.id, weight: oldWeight.current});
       }
     } else {
@@ -54,7 +53,7 @@ function SeatSelection({seatId, opsConfigIndex, config, setConfig}) {
   return (
     <tr className="seatSelect">
       <td onClick={selectCheckbox}>
-        <input ref={checkRef} checked={checked.current} type={"checkbox"} />
+        <input onChange={() => {}} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{seat.name}</td>
       <td>
@@ -71,8 +70,6 @@ function CargoSelection({cargoAreaId, opsConfigIndex, config, setConfig}) {
   if (cI < 0) return;
   const cargoArea: cargoAreaT = config.cargoAreas[cI];
 
-  const checkRef = useRef(null);
-
   let cargoAreaIndex = config.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: {id: string, weight: number}) => s.id == cargoArea.id);
   const checked = useRef(cargoAreaIndex >= 0);
 
@@ -81,7 +78,7 @@ function CargoSelection({cargoAreaId, opsConfigIndex, config, setConfig}) {
     checked.current = !checked.current;
     const tmp = JSON.parse(JSON.stringify(config));
     if (checked.current) {
-      if (!config.operationConfigs[opsConfigIndex].cargoAreas.find((s: {id: string, weight: number}) => s.id == cargoArea.id)) {
+      if (config.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: {id: string, weight: number}) => s.id === cargoArea.id) < 0) {
         tmp.operationConfigs[opsConfigIndex].cargoAreas.push({id: cargoArea.id, weight: oldWeight.current});
       }
     } else {
@@ -115,7 +112,7 @@ function CargoSelection({cargoAreaId, opsConfigIndex, config, setConfig}) {
   return (
     <tr className="cargoAreaSelect">
       <td onClick={selectCheckbox}>
-        <input ref={checkRef} checked={checked.current} type={"checkbox"} />
+        <input onChange={() => {}} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{cargoArea.name}</td>
       <td>

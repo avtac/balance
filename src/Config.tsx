@@ -4,17 +4,16 @@ import { MultiPane, Subregion } from "./Layout";
 import type { aircraftConfigT, cargoAreaT, equipmentT, seatT } from "./Types";
 
 function SeatSelection({seat, configIndex, config, setConfig}) {
-  const checkRef = useRef(null);
   let seatIndex = -1;
   if (configIndex >= 0) seatIndex = config.aircraftConfigs[configIndex].seats.findIndex((s: string) => s == seat.id);
   const checked = useRef(seatIndex >= 0);
 
   function selectCheckbox() {
     if (configIndex < 0) return;
-    checkRef.current.checked = !checkRef.current.checked;
+    checked.current = !checked.current;
     const tmp = JSON.parse(JSON.stringify(config));
-    if (checkRef.current.checked) {
-      if (!tmp.aircraftConfigs[configIndex].seats.find((s: seatT) => s.id == seat.id))
+    if (checked.current) {
+      if (tmp.aircraftConfigs[configIndex].seats.findIndex((s: seatT) => s.id === seat.id) < 0)
         tmp.aircraftConfigs[configIndex].seats.push(seat.id);
     } else {
       tmp.aircraftConfigs[configIndex].seats.splice(seatIndex, 1);
@@ -27,7 +26,7 @@ function SeatSelection({seat, configIndex, config, setConfig}) {
   return (
     <tr className="seatSelect" onClick={selectCheckbox}>
       <td>
-        <input ref={checkRef} checked={checked.current} type={"checkbox"} />
+        <input onChange={() => {}} checked={checked.current} type={"checkbox"} />
       </td>
       <td>{seat.name}</td>
       <td>{seat.arm}</td>
@@ -38,17 +37,16 @@ function SeatSelection({seat, configIndex, config, setConfig}) {
 }
 
 function CargoSelection({cargoArea, configIndex, config, setConfig}) {
-  const checkRef = useRef(null);
   let cargoAreaIndex = -1;
   if (configIndex >= 0) cargoAreaIndex = config.aircraftConfigs[configIndex].cargoAreas.findIndex((s: string) => s == cargoArea.id);
   const checked = useRef(cargoAreaIndex >= 0);
 
   function selectCheckbox() {
     if (configIndex < 0) return;
-    checkRef.current.checked = !checkRef.current.checked;
+    checked.current = !checked.current;
     const tmp = JSON.parse(JSON.stringify(config));
-    if (checkRef.current.checked) {
-      if (!tmp.aircraftConfigs[configIndex].cargoAreas.find((s: cargoAreaT) => s.id == cargoArea.id))
+    if (checked.current) {
+      if (tmp.aircraftConfigs[configIndex].cargoAreas.findIndex((s: cargoAreaT) => s.id === cargoArea.id) < 0)
         tmp.aircraftConfigs[configIndex].cargoAreas.push(cargoArea.id);
     } else {
       tmp.aircraftConfigs[configIndex].cargoAreas.splice(cargoAreaIndex, 1);
@@ -61,7 +59,7 @@ function CargoSelection({cargoArea, configIndex, config, setConfig}) {
   return (
     <tr className="cargoAreaSelect" onClick={selectCheckbox}>
       <td>
-        <input ref={checkRef} checked={checked.current} type={"checkbox"} />
+        <input onChange={() => {}} checked={checked.current} type={"checkbox"} />
       </td>
       <td>{cargoArea.name}</td>
       <td>{cargoArea.arm}</td>
@@ -71,7 +69,6 @@ function CargoSelection({cargoArea, configIndex, config, setConfig}) {
 }
 
 function EquipmentSelection({equipment, configIndex, config, setConfig}) {
-  const checkRef = useRef(null);
   const oldCount = useRef(1);
   const [count, setCount] = useState(1);
   let equipmentIndex = -1;
@@ -83,7 +80,7 @@ function EquipmentSelection({equipment, configIndex, config, setConfig}) {
     checked.current = !checked.current;
     const tmp = JSON.parse(JSON.stringify(config));
     if (checked.current) {
-      if (!tmp.aircraftConfigs[configIndex].equipment.find((s: {id: string, count: number}) => s.id == equipment.id)) {
+      if (tmp.aircraftConfigs[configIndex].equipment.findIndex((s: {id: string, count: number}) => s.id === equipment.id) < 0) {
         tmp.aircraftConfigs[configIndex].equipment.push({id: equipment.id, count: Math.max(count, oldCount.current)});
         setCount(Math.max(count, oldCount.current));
       }
@@ -115,7 +112,7 @@ function EquipmentSelection({equipment, configIndex, config, setConfig}) {
   return (
     <tr className="equipmentSelect">
       <td onClick={selectCheckbox}>
-        <input ref={checkRef} onClick={selectCheckbox} checked={checked.current} type={"checkbox"} />
+        <input onChange={() => {}} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{equipment.name}</td>
       <td onClick={selectCheckbox}>{equipment.arm}</td>
