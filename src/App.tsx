@@ -156,11 +156,11 @@ function App() {
           <div id='graphHolder'>
             <Graph
               config={config}
-              selectedConfig={selectedPanel >= 3 ? selectedConfig : undefined}
-              selectedOpsConfig={selectedPanel === 4 ? selectedOpsConfig : undefined}/>
+              selectedConfig={selectedPanel >= 3 ? selectedConfig : ""}
+              selectedOpsConfig={selectedPanel === 4 ? selectedOpsConfig : ""}/>
           </div>
           <div id='diagramHolder'>
-            <Diagram 
+            <Diagram
               config={config}
               selectedPanel={selectedPanel}
               selectedConfig={selectedConfig}

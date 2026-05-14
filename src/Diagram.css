@@ -2,5 +2,7 @@
   background: #334;
   border-radius: 6px;
   user-select: none;
-  height: calc(100% - var(--margin-size) * 2);
+  max-height: calc(100% - var(--margin-size) * 2);
+  min-height: 50%;
+  overflow: visible;
 }

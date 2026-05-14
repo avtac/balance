@@ -219,7 +219,7 @@ function AircraftLimits({ config, setConfig }: configProps): ReactNode {
   }
 
   return (
-    <HorizontalRegion>
+    <HorizontalRegion fraction="1fr">
       <section id="limits">
         {config.limits.limits.map((limit: weightLimitT) => {
           return <WeightLimit key={limit.id} limit={limit} config={config} setConfig={setConfig} />

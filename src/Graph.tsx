@@ -501,7 +501,7 @@ function Graph({ config, selectedConfig, selectedOpsConfig }: graphProps): React
 
   data.limits = cleanLimits(data.limits);
   return (
-    <svg viewBox={'0 0 ' + width + ' ' + height}>
+    <svg className='graph' viewBox={'0 0 ' + width + ' ' + height}>
       <PlotArea width={width} height={height} />
       {title.current}
       {dataAvailable && horizontalBars}

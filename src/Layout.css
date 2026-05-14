@@ -17,6 +17,7 @@
   flex: 1;
   height: 100%;
   display: flex;
+  max-height: calc(100vh - 75px);
 }
 
 #split {
@@ -35,7 +36,7 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  height: 100%;
+  width: 40vw;
   svg {
     margin: var(--margin-size);
   }
@@ -45,7 +46,7 @@
 #graphHolder {
   display: flex;
   align-items: center;
-  flex: 2;
+  flex: 1.3;
 }
 
 #diagramHolder {

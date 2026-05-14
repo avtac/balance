@@ -6,6 +6,7 @@ import type { seatT, cargoAreaT, aircraftConfigT, operationConfigT, configT } fr
 // at the center of the seat
 const seatSize = 14;
 const cargoSize = 14;
+const fontSize = 4;
 
 interface cargoIconProps {
   name: string,
@@ -35,7 +36,7 @@ function CargoIcon({name, color='#CCCCCC', offX=0, offY=0, width=cargoSize}: car
         transform={`rotate(${90} ${offX} ${-offY})`}
         alignmentBaseline={'middle'}
         textAnchor="middle"
-        fontSize={4} fill={'blue'}>
+        fontSize={fontSize} fill={'blue'}>
         {name}
       </text>
    </>
@@ -100,7 +101,7 @@ function SeatIcon({count, name, color='#CCCCCC', offX=0, offY=0}: seatIconProps)
              transform={"scale(1,-1)"} />
         </>
       )})}
-      <text x={+left + seatSize / 2} y={-offY - (offY >= 0 ? 1 : -1) * (count / 2 + .2) * seatSize} alignmentBaseline={'middle'} textAnchor="middle" fontSize={4} fill={'blue'}>{name}</text>
+      <text x={+left + seatSize / 2} y={-offY - (offY >= 0 ? 1 : -1) * (count / 2 + .2) * seatSize} alignmentBaseline={'middle'} textAnchor="middle" fontSize={fontSize} fill={'blue'}>{name}</text>
     </>
   );
 }
@@ -156,14 +157,14 @@ function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}: dia
   const top = planeTop - canvasPadding;
   const planeBottom = maxDisplacement;
   const bottom = planeBottom + canvasPadding;
+  const height = bottom - top;
+  const planeHeight = planeBottom - planeTop;
   const planeLeft = minArm;
-  const left = planeLeft + canvasPadding + 10;
+  const left = planeLeft + canvasPadding + planeHeight / 3;
   const planeRight = maxArm;
   const right = planeRight - canvasPadding;
   const width = left - right;
-  const height = bottom - top;
   const planeWidth = planeLeft - planeRight;
-  const planeHeight = planeBottom - planeTop;
 
 
   const opsIndex: number = config.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig == o.id);
@@ -200,8 +201,8 @@ function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}: dia
   return (
     <svg
       viewBox={`${right} ${top} ${width} ${height}`}
-      overflow={"visible"} id="diagram">
-      <path d={`M ${planeLeft} ${planeTop} C 25 ${planeHeight / 2 + planeTop + planePadding / 2}, 25 ${planeHeight / 2 + planeTop} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'}/>
+      id="diagram">
+      <path d={`M ${planeLeft} ${planeTop} C ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop}, ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'}/>
       <rect x={planeRight} y={planeTop} width={planeWidth} height={planeHeight} fill={'white'} stroke={'none'} />
       {seatItems}
       {cargoItems}
