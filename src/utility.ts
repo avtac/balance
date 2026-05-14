@@ -1,13 +1,13 @@
-import type { configT } from './Types';
+import type { configT, maxMomentObjectT, momentObjectT } from './Types';
 
-export function getSortedByArm(data: (any[])) {
-  const tmp = JSON.parse(JSON.stringify(data));
-  return tmp.sort((a: seatT, b: seatT) => {
+export function getSortedByArm<T extends (maxMomentObjectT | momentObjectT)>(data: T[]) {
+  const tmp: T[] = JSON.parse(JSON.stringify(data));
+  return tmp.sort((a, b) => {
     return a.arm - b.arm;
-  }).filter(s => s != undefined);
+  }).filter((s: T) => s != undefined);
 }
 
-export function calculateEmptyBalanceForConfig(config: configT, selectedConfig: string) {
+export function calculateEmptyBalanceForConfig(config: configT, selectedConfig: string): [number, number] {
   let weight = config.config.emptyWeight;
   let moment = config.config.emptyWeight * config.config.emptyArm;
 
@@ -24,7 +24,7 @@ export function calculateEmptyBalanceForConfig(config: configT, selectedConfig: 
   return [weight, moment / weight]
 }
 
-export function calculateMaxBalanceForConfig(config: configT, selectedConfig: string) {
+export function calculateMaxBalanceForConfig(config: configT, selectedConfig: string): [number, number] {
   let weight = config.config.emptyWeight;
   let moment = config.config.emptyWeight * config.config.emptyArm;
 
@@ -63,7 +63,7 @@ export function calculateMaxBalanceForConfig(config: configT, selectedConfig: st
   return [weight, moment / weight]
 }
 
-export function calculateBalanceForOperationConfig(config: configT, selectedConfig: string, selectedOpsConfig: string) {
+export function calculateBalanceForOperationConfig(config: configT, selectedConfig: string, selectedOpsConfig: string): [number, number] {
   let [weight, arm] = calculateEmptyBalanceForConfig(config, selectedConfig);
   let moment = weight * arm;
 

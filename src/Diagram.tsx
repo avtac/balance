@@ -1,12 +1,21 @@
+import type { ReactNode } from "react";
 import "./Diagram.css"
-import type { seatT, cargoAreaT, aircraftConfigT, operationConfigT } from "./Types";
+import type { seatT, cargoAreaT, aircraftConfigT, operationConfigT, configT } from "./Types";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
 const seatSize = 14;
 const cargoSize = 14;
 
-function CargoIcon({name, color='#CCCCCC', offX=0, offY=0, width=cargoSize}) {
+interface cargoIconProps {
+  name: string,
+  color: string,
+  offX: number,
+  offY: number,
+  width: number
+}
+
+function CargoIcon({name, color='#CCCCCC', offX=0, offY=0, width=cargoSize}: cargoIconProps): ReactNode {
   const left = offX - cargoSize / 2;
   const top = -offY - width / 2;
   return (
@@ -33,8 +42,16 @@ function CargoIcon({name, color='#CCCCCC', offX=0, offY=0, width=cargoSize}) {
   );
 }
 
-// offX, offY are in pixel units
-function SeatIcon({count, name, color='#CCCCCC', offX=0, offY=0}) {
+interface seatIconProps {
+  name: string,
+  color: string,
+  offX: number,
+  offY: number,
+  count: number
+}
+
+// offX, offY are in canvas units
+function SeatIcon({count, name, color='#CCCCCC', offX=0, offY=0}: seatIconProps): ReactNode {
   const left = offX - seatSize / 2;
   return (
     <>
@@ -88,17 +105,24 @@ function SeatIcon({count, name, color='#CCCCCC', offX=0, offY=0}) {
   );
 }
 
-function getPixelFromArm(arm) {
+function getPixelFromArm(arm: number): number {
   const pixPerUnit = seatSize / seatSize;
   return arm * pixPerUnit;
 }
 
-function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}) {
+interface diagramProps {
+  config: configT,
+  selectedPanel: number,
+  selectedConfig: string,
+  selectedOpsConfig: string,
+}
+
+function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}: diagramProps): ReactNode {
   let seats = [...config.seats]
   let cargoAreas = [...config.cargoAreas]
 
   if (selectedPanel >= 3) {
-    const configIndex = config.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
+    const configIndex: number = config.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
     if (configIndex < 0) return;
 
     seats = config.aircraftConfigs[configIndex].seats.map((seatId: string) => {
@@ -142,8 +166,8 @@ function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}) {
   const planeHeight = planeBottom - planeTop;
 
 
-  const opsIndex = config.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig == o.id);
-  const seatItems = seats.map((seat: seatT) => {
+  const opsIndex: number = config.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig == o.id);
+  const seatItems = seats.map((seat: seatT): ReactNode => {
     const isOps = selectedPanel >= 4 && opsIndex >= 0
                && selectedOpsConfig != undefined
                && config.operationConfigs[opsIndex].seats.find(
@@ -158,7 +182,7 @@ function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}) {
       count={Number(seat.seatCount)}/>
   });
 
-  const cargoItems = cargoAreas.map((cargoArea: cargoAreaT) => {
+  const cargoItems = cargoAreas.map((cargoArea: cargoAreaT): ReactNode => {
     const isOps = selectedPanel >= 4 && opsIndex >= 0
                && selectedOpsConfig != undefined
                && config.operationConfigs[opsIndex].cargoAreas.find(

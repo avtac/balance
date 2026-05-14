@@ -1,12 +1,13 @@
+import type { ReactNode } from "react";
 import "./Geometry.css"
 import { HorizontalRegion, Subregion, Grouping } from "./Layout";
-import type { regionT, regionPointT, weightLimitT } from "./Types";
+import type { regionT, regionPointT, weightLimitT, configT, configProps, aircraftPropertiesT } from "./Types";
 
 const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
 
-function AircraftConfig({config, setConfig}) {
-  function setValue(key:string, value: (string | number)) {
-    const tmp = JSON.parse(JSON.stringify(config));
+function AircraftConfig({config, setConfig}: configProps): ReactNode {
+  function setValue<K extends keyof aircraftPropertiesT, V extends aircraftPropertiesT[K]>(key: K, value: V) {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.config[key] = value;
     setConfig(tmp);
   }
@@ -33,18 +34,22 @@ function AircraftConfig({config, setConfig}) {
   );
 }
 
-function WeightLimit({limit, config, setConfig}) {
+interface weightLimitProps extends configProps {
+  limit: weightLimitT
+}
+
+function WeightLimit({ limit, config, setConfig }: weightLimitProps): ReactNode {
   const index = config.limits.limits.findIndex((lim: weightLimitT) => lim.id === limit.id);
   if (index < 0) return;
 
-  function setValue(key: string, value: (string | number)) {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function setValue<K extends keyof weightLimitT, V extends weightLimitT[K]>(key: K, value: V): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.limits.limits[index][key] = value;
     setConfig(tmp);
   }
 
-  function removeLimit() {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function removeLimit(): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.limits.limits.splice(index, 1);
     setConfig(tmp);
   }
@@ -52,7 +57,7 @@ function WeightLimit({limit, config, setConfig}) {
   return (
     <div className="weightLimit grouping">
       <input placeholder="Limit Name" defaultValue={limit.name} onChange={e => setValue("name", e.target.value)}/>
-      <input placeholder="Weight" type="number" defaultValue={limit.value} onChange={e => setValue("value", Number(e.target.value))}/>
+      <input placeholder="Weight" type="number" defaultValue={limit.weight ?? 0} onChange={e => setValue("weight", Number(e.target.value))}/>
       <input type="color" value={limit.color} onChange={e => setValue('color', e.target.value)} />
       <select value={limit.lineStyle} onChange={e => setValue('lineStyle', e.target.value)}>
         {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
@@ -62,28 +67,28 @@ function WeightLimit({limit, config, setConfig}) {
   );
 }
 
-function WeightRegionRow({data, config, setConfig, regionIndex, index, isLast = false }) {
+interface weightRegionRowProps extends configProps {
+  regionPoint: regionPointT,
+  regionIndex: number,
+  index: number,
+}
 
-  function setWeight(weight: number) {
-    const tmp = JSON.parse(JSON.stringify(config));
-    tmp.limits.regions[regionIndex].data[index].weight = weight;
+function WeightRegionRow({ regionPoint, config, setConfig, regionIndex, index }: weightRegionRowProps): ReactNode {
+
+  function setValue<K extends keyof regionPointT, V extends regionPointT[K]>(key: K, value: V): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.limits.regions[regionIndex].data[index][key] = value;
     setConfig(tmp);
   }
 
-  function setArm(arm: number) {
-    const tmp = JSON.parse(JSON.stringify(config));
-    tmp.limits.regions[regionIndex].data[index].arm = arm;
+  function addPoint(): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.limits.regions[regionIndex].data.splice(index, 0, {arm: regionPoint.arm, weight: regionPoint.weight, id: crypto.randomUUID()});
     setConfig(tmp);
   }
 
-  function addPoint() {
-    const tmp = JSON.parse(JSON.stringify(config));
-    tmp.limits.regions[regionIndex].data.splice(index, 0, {arm: data.arm, weight: data.weight, id: crypto.randomUUID()});
-    setConfig(tmp);
-  }
-
-  function deletePoint() {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function deletePoint(): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.limits.regions[regionIndex].data.splice(index, 1);
     setConfig(tmp);
   }
@@ -96,13 +101,13 @@ function WeightRegionRow({data, config, setConfig, regionIndex, index, isLast = 
         min={0}
         step={10}
         type="number"
-        defaultValue={data.weight}
-        onChange={e => setWeight(Number(e.target.value))}/>
+        defaultValue={regionPoint.weight}
+        onChange={e => setValue('weight', Number(e.target.value))}/>
       <input
         placeholder="Arm"
         type="number"
-        defaultValue={data.arm}
-        onChange={e => setArm(Number(e.target.value))}/>
+        defaultValue={regionPoint.arm}
+        onChange={e => setValue('arm', Number(e.target.value))}/>
       {config.limits.regions[regionIndex].data.length > 3 &&
         <button onClick={deletePoint}>X</button>}
       {<button className="addButton" onClick={addPoint}></button>}
@@ -111,33 +116,37 @@ function WeightRegionRow({data, config, setConfig, regionIndex, index, isLast = 
   );
 }
 
-function WeightRegion({region, config, setConfig, nameString = ""}) {
+interface weightRegionProps extends configProps {
+  region: regionT
+}
+
+function WeightRegion({ region, config, setConfig }: weightRegionProps): ReactNode {
   const regionIndex = config.limits.regions.findIndex((reg: regionT) => reg.id === region.id);
   if (regionIndex < 0) {
     console.log("Warning: Did not find region index in config");
     return;
   }
 
-  function setName(name: string) {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function setName(name: string): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.limits.regions[regionIndex].name = name;
     setConfig(tmp);
   }
 
-  function removeRegion() {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function removeRegion(): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.limits.regions.splice(regionIndex, 1);
     setConfig(tmp);
   }
 
-  function setColor(color: string) {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function setColor(color: string): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.limits.regions[regionIndex].color = color;
     setConfig(tmp);
   }
 
-  function setStyle(style: string) {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function setStyle(style: string): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.limits.regions[regionIndex].lineStyle = style;
     setConfig(tmp);
   }
@@ -165,36 +174,35 @@ function WeightRegion({region, config, setConfig, nameString = ""}) {
         </select>
         <button onClick={removeRegion}>X</button>
       </div>
-      {region.data.map((data: regionPointT, index: number) => {
+      {region.data.map((regionPoint: regionPointT, index: number) => {
         return <WeightRegionRow
-                key={data.id}
+                key={regionPoint.id}
                 config={config}
                 regionIndex={regionIndex}
                 setConfig={setConfig}
                 index={index}
-                data={data}
-                isLast={index === region.data.length - 1}/>
+                regionPoint={regionPoint}/>
       })}
     </div>
     </Grouping>
   );
 }
 
-function AircraftLimits({config, setConfig}) {
-  function addLimit() {
-    const tmp = JSON.parse(JSON.stringify(config));
+function AircraftLimits({ config, setConfig }: configProps): ReactNode {
+  function addLimit(): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     const newLimit: weightLimitT = {
       name: "",
       id: crypto.randomUUID(),
-      value: null,
+      weight: 0,
       color: '#FFFFFF'
     };
     tmp.limits.limits.push(newLimit);
     setConfig(tmp);
   }
 
-  function addRegion() {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function addRegion(): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     const newLimit: regionT = {
       name: "",
       id: crypto.randomUUID(),
@@ -211,25 +219,24 @@ function AircraftLimits({config, setConfig}) {
   }
 
   return (
-      <HorizontalRegion>
-        <section id="limits">
-          {config.limits.limits.map((limit: weightLimitT) => {
-            return <WeightLimit key={limit.id} limit={limit} config={config} setConfig={setConfig} />
-          })}
-          <button onClick={() => addLimit()}>Add Limit</button>
-        </section>
-        <section id="regions">
-          {config.limits.regions.map((region: regionT) => (
-            <WeightRegion key={region.id} region={region} config={config} setConfig={setConfig}/>
-          ))}
-          <button onClick={addRegion}>Add Region</button>
-        </section>
-      </HorizontalRegion>
+    <HorizontalRegion>
+      <section id="limits">
+        {config.limits.limits.map((limit: weightLimitT) => {
+          return <WeightLimit key={limit.id} limit={limit} config={config} setConfig={setConfig} />
+        })}
+        <button onClick={() => addLimit()}>Add Limit</button>
+      </section>
+      <section id="regions">
+        {config.limits.regions.map((region: regionT) => (
+          <WeightRegion key={region.id} region={region} config={config} setConfig={setConfig}/>
+        ))}
+        <button onClick={addRegion}>Add Region</button>
+      </section>
+    </HorizontalRegion>
   );
 }
 
-function Geometry({config, setConfig}) {
-
+function Geometry({ config, setConfig } : configProps): ReactNode {
   return (
     <>
       <div style={{flex: 0}}>

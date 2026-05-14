@@ -1,20 +1,25 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactElement } from 'react';
 import './Config.css'
 import { MultiPane, Subregion } from "./Layout";
-import type { aircraftConfigT, cargoAreaT, equipmentT, seatT } from "./Types";
+import type { aircraftConfigT, cargoAreaT, configProps, configT, equipmentT, seatT } from "./Types";
 import { getSortedByArm } from './utility';
 
-function SeatSelection({seat, configIndex, config, setConfig}) {
-  let seatIndex = -1;
+interface seatSelectionProps extends configProps {
+  seat: seatT,
+  configIndex: number
+}
+
+function SeatSelection({seat, configIndex, config, setConfig}: seatSelectionProps): ReactElement {
+  let seatIndex: number = -1;
   if (configIndex >= 0) seatIndex = config.aircraftConfigs[configIndex].seats.findIndex((s: string) => s == seat.id);
   const checked = useRef(seatIndex >= 0);
 
-  function selectCheckbox() {
+  function selectCheckbox(): void {
     if (configIndex < 0) return;
     checked.current = !checked.current;
-    const tmp = JSON.parse(JSON.stringify(config));
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     if (checked.current) {
-      if (tmp.aircraftConfigs[configIndex].seats.findIndex((s: seatT) => s.id === seat.id) < 0)
+      if (tmp.aircraftConfigs[configIndex].seats.findIndex((s: string) => s === seat.id) < 0)
         tmp.aircraftConfigs[configIndex].seats.push(seat.id);
     } else {
       tmp.aircraftConfigs[configIndex].seats.splice(seatIndex, 1);
@@ -45,17 +50,22 @@ function SeatSelection({seat, configIndex, config, setConfig}) {
   );
 }
 
-function CargoSelection({cargoArea, configIndex, config, setConfig}) {
+interface cargoSelectionProps extends configProps {
+  cargoArea: cargoAreaT,
+  configIndex: number
+}
+
+function CargoSelection({cargoArea, configIndex, config, setConfig}: cargoSelectionProps): ReactElement {
   let cargoAreaIndex = -1;
   if (configIndex >= 0) cargoAreaIndex = config.aircraftConfigs[configIndex].cargoAreas.findIndex((s: string) => s == cargoArea.id);
   const checked = useRef(cargoAreaIndex >= 0);
 
-  function selectCheckbox() {
+  function selectCheckbox(): void {
     if (configIndex < 0) return;
     checked.current = !checked.current;
-    const tmp = JSON.parse(JSON.stringify(config));
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     if (checked.current) {
-      if (tmp.aircraftConfigs[configIndex].cargoAreas.findIndex((s: cargoAreaT) => s.id === cargoArea.id) < 0)
+      if (tmp.aircraftConfigs[configIndex].cargoAreas.findIndex((s: string) => s === cargoArea.id) < 0)
         tmp.aircraftConfigs[configIndex].cargoAreas.push(cargoArea.id);
     } else {
       tmp.aircraftConfigs[configIndex].cargoAreas.splice(cargoAreaIndex, 1);
@@ -85,17 +95,24 @@ function CargoSelection({cargoArea, configIndex, config, setConfig}) {
   );
 }
 
-function EquipmentSelection({equipment, configIndex, config, setConfig}) {
+interface EquipmentSelectionProps {
+  equipment: equipmentT,
+  configIndex: number,
+  config: configT,
+  setConfig: (arg0: configT) => void
+}
+
+function EquipmentSelection({equipment, configIndex, config, setConfig}: EquipmentSelectionProps): ReactElement {
   const oldCount = useRef(1);
   const [count, setCount] = useState(1);
   let equipmentIndex = -1;
   if (configIndex >= 0) equipmentIndex = config.aircraftConfigs[configIndex].equipment.findIndex((s: {id: string, count: number}) => s.id == equipment.id);
   const checked = useRef(equipmentIndex >= 0);
 
-  function selectCheckbox() {
+  function selectCheckbox(): void {
     if (configIndex < 0) return;
     checked.current = !checked.current;
-    const tmp = JSON.parse(JSON.stringify(config));
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     if (checked.current) {
       if (tmp.aircraftConfigs[configIndex].equipment.findIndex((s: {id: string, count: number}) => s.id === equipment.id) < 0) {
         tmp.aircraftConfigs[configIndex].equipment.push({id: equipment.id, count: Math.max(count, oldCount.current)});
@@ -109,9 +126,9 @@ function EquipmentSelection({equipment, configIndex, config, setConfig}) {
     setConfig(tmp);
   }
 
-  function setConfigCount(value) {
+  function setConfigCount(value: number): void {
     if (!checked.current) return;
-    const tmp = JSON.parse(JSON.stringify(config));
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.aircraftConfigs[configIndex].equipment[equipmentIndex].count = value;
     if (value === 0) {
       selectCheckbox();
@@ -141,11 +158,18 @@ function EquipmentSelection({equipment, configIndex, config, setConfig}) {
   );
 }
 
-function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig}) {
+interface AircraftConfigsProps {
+  config: configT,
+  setConfig: (arg0: configT) => void,
+  selectedConfig: string,
+  setSelectedConfig: (arg0: string) => void
+}
+
+function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig}: AircraftConfigsProps): ReactElement {
   const configIndex = config.aircraftConfigs.findIndex(c => c.id === selectedConfig);
 
-  function addConfig() {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function addConfig(): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     const newConfig: aircraftConfigT = {
       id: crypto.randomUUID(),
       name: "Name",
@@ -160,8 +184,8 @@ function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig})
   }
 
   function duplicateConfig() {
-    const tmp = JSON.parse(JSON.stringify(config));
     if (configIndex < 0) return;
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     const newConfig: aircraftConfigT = JSON.parse(JSON.stringify(tmp.aircraftConfigs[configIndex]));
     newConfig.id = crypto.randomUUID();
     newConfig.name = newConfig.name + " - Copy";
@@ -170,9 +194,9 @@ function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig})
     setConfig(tmp);
   }
 
-  function deleteConfig() {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function deleteConfig(): void {
     if (configIndex < 0) return;
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     const oldConfig = tmp.aircraftConfigs.splice(configIndex, 1)[0].id;
     const newConfig = tmp.aircraftConfigs.length > 0 ? tmp.aircraftConfigs[0].id : "";
     for (const [index, opsConf] of tmp.operationConfigs.entries()) {
@@ -189,8 +213,8 @@ function AircraftConfigs({config, setConfig, selectedConfig, setSelectedConfig})
     setConfig(tmp);
   }
 
-  function setName(name) {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function setName(name: string): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.aircraftConfigs[configIndex].name = name;
     setConfig(tmp);
   }

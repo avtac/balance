@@ -9,7 +9,7 @@ import { SeatConfig } from './Seats'
 import { CargoConfig } from './Cargo'
 import { Equipment } from './Equipment'
 import AircraftConfigs from './Config'
-import AircraftOperationConfig from './BOW.tsx'
+import AircraftOperationConfig from './BOW'
 
 function App() {
   const defaultValue: configT = {
@@ -88,19 +88,23 @@ function App() {
     }],
     operationConfigs: [{
         id: crypto.randomUUID(),
-        config: undefined,
+        config: "",
         name: "Standard",
         seats: [],
         cargoAreas: []
     }]
   };
 
-  const storageConfig = JSON.parse(localStorage.getItem("config"));
+  defaultValue.operationConfigs[0].config = defaultValue.aircraftConfigs[0].id;
 
-  const [config, setConfig] = useState(storageConfig ?? defaultValue);
-  // const [config, setConfig] = useState(defaultValue);
+  let storageConfig: configT = defaultValue;
+  const local = localStorage.getItem("config");
+  if (local != null)
+    storageConfig = JSON.parse(local);
 
-  function setConfigSpecial(value: configT) {
+  const [config, setConfig] = useState(storageConfig);
+
+  function setConfigSpecial(value: configT): void {
     localStorage.setItem("config", JSON.stringify(value));
     setConfig(value);
   }
@@ -110,9 +114,9 @@ function App() {
 
   const [selectedPanel, setSelectedPanel] = useState(0);
 
-  function setOpsConfig(opsConfigId: string) {
+  function setOpsConfig(opsConfigId: string): void {
     setSelectedOpsConfig(opsConfigId);
-    const oI = config.operationConfigs.findIndex(c => c.id === opsConfigId);
+    const oI = config.operationConfigs.findIndex((c: operationConfigT) => c.id === opsConfigId);
     if (oI >= 0 && config.operationConfigs[oI].config != selectedConfig)
       setSelectedConfig(config.operationConfigs[oI].config);
   }

@@ -1,6 +1,7 @@
+import type { ReactNode } from 'react';
 import './Header.css'
 
-function Header() {
+function Header(): ReactNode {
   const title = "Teeter Config"
   return (
     <header id='header'>

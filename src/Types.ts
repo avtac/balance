@@ -1,7 +1,25 @@
+// Types to be extended
+export interface configProps {
+  config: configT,
+  setConfig: (arg0: configT) => void
+}
+
+export interface momentObjectT {
+  arm: number,
+  weight: number
+}
+
+// Data structure interfaces
+
+export interface maxMomentObjectT {
+  arm: number,
+  maxWeight: number
+}
+
 export interface operationConfigT {
   id: string,
   name: string,
-  config: (string | undefined),
+  config: string,
   seats: {id: string, weight: number}[],
   cargoAreas: {id: string, weight: number}[],
 }
@@ -15,11 +33,9 @@ export interface aircraftConfigT {
   fuelTanks: string[]
 }
 
-export interface equipmentT {
+export interface equipmentT extends momentObjectT {
   id: string,
   name: string,
-  weight: number,
-  arm: number
 }
 
 export interface weightLimitT {
@@ -27,13 +43,11 @@ export interface weightLimitT {
   name: string,
   color?: string,
   lineStyle?: string,
-  value: number | null
+  weight: number | null
 }
 
-export interface regionPointT {
+export interface regionPointT extends momentObjectT {
   id: string,
-  arm: number,
-  weight: number
 }
 
 export interface regionT {
@@ -49,20 +63,16 @@ export interface aircraftLimitsT {
   limits: weightLimitT[]
 }
 
-export interface seatT {
+export interface seatT extends maxMomentObjectT {
   id: string,
   name: string,
-  maxWeight: number,
-  arm: number,
   lateralDist: number,
   seatCount: number
 }
 
-export interface cargoAreaT {
+export interface cargoAreaT extends maxMomentObjectT {
   id: string,
   name: string,
-  maxWeight: number,
-  arm: number,
 }
 
 export interface aircraftPropertiesT {

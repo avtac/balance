@@ -1,16 +1,21 @@
 import { Grouping, Subregion } from "./Layout";
-import type { cargoAreaT } from "./Types";
+import type { cargoAreaT, configProps, configT } from "./Types";
 
-function CargoInput({area, index, config, setConfig}) {
+interface cargoInputProps extends configProps {
+  area: cargoAreaT,
+  index: number
+}
 
-  function setValue(name: string, value: (string | number)) {
-    const tmp = JSON.parse(JSON.stringify(config));
+function CargoInput({area, index, config, setConfig}: cargoInputProps) {
+
+  function setValue<T extends keyof cargoAreaT, V extends cargoAreaT[T]>(name: T, value: V): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.cargoAreas[index][name] = value;
     setConfig(tmp);
   }
 
-  function removeCargo() {
-    const tmp = JSON.parse(JSON.stringify(config));
+  function removeCargo(): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.cargoAreas.splice(index, 1);
     // TODO: check if any configs use this cargo id and remove it
     setConfig(tmp);
@@ -18,19 +23,38 @@ function CargoInput({area, index, config, setConfig}) {
 
   return (
     <div className="cargoInput">
-      <input name={"name" + index} placeholder="Name" value={area.name ? area.name : ""} onChange={e => setValue('name', e.target.value)}/>
-      <input name={"arm" + index} placeholder="Arm" type="number" value={area.arm ? area.arm : ""} onChange={e => setValue('arm', Number(e.target.value))}/>
-      <input name={"maxWeight" + index} placeholder="Max Weight" type="number" value={area.maxWeight ? area.maxWeight : ""} onChange={e => setValue('maxWeight', Number(e.target.value))}/>
+      <input
+        name={"name" + index}
+        placeholder="Name"
+        value={area.name ? area.name : ""}
+        onChange={e => setValue('name', e.target.value)}/>
+      <input
+        name={"arm" + index}
+        placeholder="Arm"
+        type="number"
+        value={area.arm ? area.arm : ""}
+        onChange={e => setValue('arm', Number(e.target.value))}/>
+      <input
+        name={"maxWeight" + index}
+        placeholder="Max Weight"
+        type="number"
+        value={area.maxWeight ? area.maxWeight : ""}
+        onChange={e => setValue('maxWeight', Number(e.target.value))}/>
       <button onClick={() => removeCargo()}>X</button>
     </div>
   );
 }
 
-function CargoConfig({config, setConfig}) {
+function CargoConfig({config, setConfig}: configProps) {
 
-  function addCargo() {
-    const tmp = JSON.parse(JSON.stringify(config));
-    tmp.cargoAreas.push({ id: crypto.randomUUID(), name: "", arm: 0, maxWeight: 300});
+  function addCargo(): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.cargoAreas.push({
+      id: crypto.randomUUID(),
+      name: "",
+      arm: 0,
+      maxWeight: 300
+    });
     setConfig(tmp);
   }
 
@@ -42,7 +66,11 @@ function CargoConfig({config, setConfig}) {
         <form id="cargoForm">
           {config.cargoAreas.map((area: cargoAreaT, index: number) => (
             <Grouping key={area.id}>
-              <CargoInput area={area} index={index} config={config} setConfig={setConfig}/>
+              <CargoInput
+                area={area}
+                index={index}
+                config={config}
+                setConfig={setConfig}/>
             </Grouping>
           ))}
         </form>
