@@ -36,6 +36,7 @@ export interface aircraftConfigT {
 export interface equipmentT extends momentObjectT {
   id: string,
   name: string,
+  area: string
 }
 
 export interface weightLimitT {
