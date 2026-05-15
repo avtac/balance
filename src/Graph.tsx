@@ -155,7 +155,7 @@ function PlotLimit({data, limits}: plotLimitProps): ReactNode {
     </text>
     {data.name.split(";").map((name: string, i: number) => {
       return <text 
-              key={name}
+              key={data.id + "TEXT" + i}
               x={x2 + 1}
               y={y + i * 2}
               alignmentBaseline='before-edge'
