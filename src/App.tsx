@@ -57,23 +57,25 @@ function App() {
         id: crypto.randomUUID(),
         color: '#D11F1F',
         data: [
-          {id: crypto.randomUUID(), arm: 30, weight: 1400},
-          {id: crypto.randomUUID(), arm: 30, weight: 2000},
-          {id: crypto.randomUUID(), arm: 35, weight: 2550},
-          {id: crypto.randomUUID(), arm: 50, weight: 2550},
-          {id: crypto.randomUUID(), arm: 50, weight: 1400}
-        ]},
-        {
+          { id: crypto.randomUUID(), arm: 30, weight: 1400 },
+          { id: crypto.randomUUID(), arm: 30, weight: 2000 },
+          { id: crypto.randomUUID(), arm: 35, weight: 2550 },
+          { id: crypto.randomUUID(), arm: 50, weight: 2550 },
+          { id: crypto.randomUUID(), arm: 50, weight: 1400 }
+        ]
+      },
+      {
         name: "Utility",
         id: crypto.randomUUID(),
         color: '#4294FF',
         data: [
-          {id: crypto.randomUUID(), arm: 30, weight: 1400},
-          {id: crypto.randomUUID(), arm: 30, weight: 2000},
-          {id: crypto.randomUUID(), arm: 31.85, weight: 2200},
-          {id: crypto.randomUUID(), arm: 34, weight: 2200},
-          {id: crypto.randomUUID(), arm: 34, weight: 1400}
-        ]}
+          { id: crypto.randomUUID(), arm: 30, weight: 1400 },
+          { id: crypto.randomUUID(), arm: 30, weight: 2000 },
+          { id: crypto.randomUUID(), arm: 31.85, weight: 2200 },
+          { id: crypto.randomUUID(), arm: 34, weight: 2200 },
+          { id: crypto.randomUUID(), arm: 34, weight: 1400 }
+        ]
+      }
 
       ],
       limits: []
@@ -88,11 +90,11 @@ function App() {
       fuelTanks: []
     }],
     operationConfigs: [{
-        id: crypto.randomUUID(),
-        config: "",
-        name: "Standard",
-        seats: [],
-        cargoAreas: []
+      id: crypto.randomUUID(),
+      config: "",
+      name: "Standard",
+      seats: [],
+      cargoAreas: []
     }]
   };
 
