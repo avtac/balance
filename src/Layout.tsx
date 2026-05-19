@@ -5,7 +5,7 @@ interface childrenProps {
   children: ReactNode
 }
 
-function Region({children}: childrenProps) {
+function Region({ children }: childrenProps) {
   return (
     <div className='region'>
       <div className='internalPadding'>
@@ -19,7 +19,7 @@ interface subregionProps extends childrenProps {
   name?: string,
 }
 
-function Subregion({children, name}: subregionProps) {
+function Subregion({ children, name }: subregionProps) {
   name;
   return (
     <div className='subregion'>
@@ -30,7 +30,7 @@ function Subregion({children, name}: subregionProps) {
   );
 }
 
-function Grouping({children}: childrenProps) {
+function Grouping({ children }: childrenProps) {
   return (
     <div className='grouping'>
       {children}
@@ -48,7 +48,7 @@ declare module 'react' {
   }
 }
 
-function HorizontalRegion({children, fraction="1fr"}: splitRegionProps) {
+function HorizontalRegion({ children, fraction = "1fr" }: splitRegionProps) {
   return (
     <div className='horizontalRegion' style={{ '--fraction': fraction }}>
       {children}
@@ -56,7 +56,7 @@ function HorizontalRegion({children, fraction="1fr"}: splitRegionProps) {
   );
 }
 
-function VerticalRegion({children, fraction="1fr"}: splitRegionProps) {
+function VerticalRegion({ children, fraction = "1fr" }: splitRegionProps) {
   return (
     <div className='verticalRegion' style={{ '--fraction': fraction }}>
       {children}
@@ -80,10 +80,10 @@ function MultiPane({ selected, setSelected, children }: MultiPaneProps) {
 
     let name = child.props.name ?? 'Missing Component Name';
     return <button
-              className={'topButton' + (selected === index ? ' selected' : '')}
-              onClick={() => setSelected(index)}>
-              {name}
-            </button>
+      className={'topButton' + (selected === index ? ' selected' : '')}
+      onClick={() => setSelected(index)}>
+      {name}
+    </button>
   }
 
   return (
