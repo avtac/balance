@@ -1,9 +1,13 @@
 import type { ReactNode } from 'react';
 import './Header.css'
 import { saveStringToFile } from './utility';
-import type { configProps } from './Types';
+import type { aircraftT } from './Types';
 
-function Header({ config, setConfig }: configProps): ReactNode {
+interface headerProps {
+  setAircraft: (arg0: aircraftT) => void;
+}
+
+function Header({ setAircraft }: headerProps): ReactNode {
   function saveFile() {
     const data = localStorage.getItem("config");
     if (data == undefined) return;
@@ -25,7 +29,7 @@ function Header({ config, setConfig }: configProps): ReactNode {
       fileReader.onload = () => {
         const data: string = fileReader.result as string;
         if (!data) return;
-        setConfig(JSON.parse(data));
+        setAircraft(JSON.parse(data));
         localStorage.setItem('config', data)
       };
     };

@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useRef, type ReactNode } from 'react';
 import './Graph.css'
-import type { aircraftLimitsT, cargoAreaT, configT, momentObjectT, regionPointT, regionT, seatT, weightLimitT } from './Types';
+import type { aircraftLimitsT, cargoAreaT, aircraftT, momentObjectT, regionPointT, regionT, seatT, weightLimitT } from './Types';
 import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMaxBalanceForConfig } from './utility';
 
 let width = 140;
@@ -43,39 +43,39 @@ function cleanLimits(limits: weightLimitT[]): weightLimitT[] {
   return ret;
 }
 
-function generateConfigArea(config: configT, limits: limitsT, selectedConfig: string): string[] {
-  const selectedConfigIndex: number = config.aircraftConfigs.findIndex(v => v.id === selectedConfig);
+function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig: string): string[] {
+  const selectedConfigIndex: number = aircraft.aircraftConfigs.findIndex(v => v.id === selectedConfig);
   if (selectedConfigIndex < 0) return [];
 
-  const [configEmptyWeight, configEmptyArm] = calculateEmptyBalanceForConfig(config, selectedConfig);
+  const [configEmptyWeight, configEmptyArm] = calculateEmptyBalanceForConfig(aircraft, selectedConfig);
 
   // Create list of used seats and cargoAreas from smallest to largest arm
   let positions: momentObjectT[] = [];
 
   const pointData: momentObjectT[] = [];
-  config.aircraftConfigs[selectedConfigIndex].seats.map((s: string) => {
-    const seat = config.seats.find((S: seatT) => S.id == s);
+  aircraft.aircraftConfigs[selectedConfigIndex].seats.map((s: string) => {
+    const seat = aircraft.seats.find((S: seatT) => S.id == s);
     if (!seat) return;
-    pointData.push({weight: seat.maxWeight * seat.seatCount, arm: seat.arm});
+    pointData.push({ weight: seat.maxWeight * seat.seatCount, arm: seat.arm });
   })
-  .filter(s => s != undefined)
+    .filter(s => s != undefined)
 
-  config.aircraftConfigs[selectedConfigIndex].cargoAreas.map((c: string) => {
-    const cargoArea = config.cargoAreas.find((C: cargoAreaT) => C.id == c);
+  aircraft.aircraftConfigs[selectedConfigIndex].cargoAreas.map((c: string) => {
+    const cargoArea = aircraft.cargoAreas.find((C: cargoAreaT) => C.id == c);
     if (!cargoArea) return;
-    pointData.push({weight: cargoArea.maxWeight, arm: cargoArea.arm});
+    pointData.push({ weight: cargoArea.maxWeight, arm: cargoArea.arm });
   })
-  .filter(s => s != undefined)
+    .filter(s => s != undefined)
 
   // Generate bottom
   pointData.sort((a, b) => a.arm - b.arm);
 
   let totalWeight = configEmptyWeight;
   let totalArm = configEmptyArm;
-  pointData.map((s: {weight: number, arm: number}) => {
+  pointData.map((s: { weight: number, arm: number }) => {
     totalArm = calculateArm(totalWeight, totalArm, s.weight, s.arm);
     totalWeight += s.weight;
-    positions.push({weight: totalWeight, arm: totalArm})
+    positions.push({ weight: totalWeight, arm: totalArm })
   });
 
   let x = calculatePointX(limits, configEmptyArm);
@@ -95,10 +95,10 @@ function generateConfigArea(config: configT, limits: limitsT, selectedConfig: st
   totalWeight = configEmptyWeight;
   totalArm = configEmptyArm;
 
-  pointData.map((s: {weight: number, arm: number}) => {
+  pointData.map((s: { weight: number, arm: number }) => {
     totalArm = calculateArm(totalWeight, totalArm, s.weight, s.arm);
     totalWeight += s.weight;
-    positions.push({weight: totalWeight, arm: totalArm})
+    positions.push({ weight: totalWeight, arm: totalArm })
   });
 
   for (let i = positions.length - 1; i >= 0; i--) {
@@ -116,7 +116,7 @@ interface plotAreaProps {
   height: number
 }
 
-function PlotArea({width, height}: plotAreaProps): ReactNode {
+function PlotArea({ width, height }: plotAreaProps): ReactNode {
   return (
     <rect
       className='background'
@@ -124,7 +124,7 @@ function PlotArea({width, height}: plotAreaProps): ReactNode {
       height={height - padding * 2}
       x={padding}
       y={padding}
-      />
+    />
   );
 }
 
@@ -133,7 +133,7 @@ interface plotLimitProps {
   limits: limitsT
 }
 
-function PlotLimit({data, limits}: plotLimitProps): ReactNode {
+function PlotLimit({ data, limits }: plotLimitProps): ReactNode {
   if (!data.weight) return;
   let x1 = padding;
   let x2 = width - padding;
@@ -141,28 +141,28 @@ function PlotLimit({data, limits}: plotLimitProps): ReactNode {
   let points = `${x1},${y} ${x2},${y}`;
   return (
     <>
-    <polyline
-      points={points}
-      stroke={data.color ?? 'white'}
-      strokeDasharray={data.lineStyle ?? ''}
-      strokeWidth='.3'/>
-    <text
-      x={x2 + 1}
-      y={y}
-      alignmentBaseline={data.name != "" ? 'after-edge' : 'middle'}
-      fill={data.color ?? 'white'}>
-      {data.weight}
-    </text>
-    {data.name.split(";").map((name: string, i: number) => {
-      return <text 
-              key={data.id + "TEXT" + i}
-              x={x2 + 1}
-              y={y + i * 2}
-              alignmentBaseline='before-edge'
-              fill={data.color ?? 'white'}>
-              {name}
-            </text>
-    })}
+      <polyline
+        points={points}
+        stroke={data.color ?? 'white'}
+        strokeDasharray={data.lineStyle ?? ''}
+        strokeWidth='.3' />
+      <text
+        x={x2 + 1}
+        y={y}
+        alignmentBaseline={data.name != "" ? 'after-edge' : 'middle'}
+        fill={data.color ?? 'white'}>
+        {data.weight}
+      </text>
+      {data.name.split(";").map((name: string, i: number) => {
+        return <text
+          key={data.id + "TEXT" + i}
+          x={x2 + 1}
+          y={y + i * 2}
+          alignmentBaseline='before-edge'
+          fill={data.color ?? 'white'}>
+          {name}
+        </text>
+      })}
     </>
   );
 }
@@ -172,9 +172,10 @@ interface plotRegionProps {
   limits: limitsT
 }
 
-function PlotRegion({data, limits}: plotRegionProps): ReactNode {
+function PlotRegion({ data, limits }: plotRegionProps): ReactNode {
   const withEnd = [...data.data, data.data[0]];
-  let points = withEnd.map((point: regionPointT) => {;
+  let points = withEnd.map((point: regionPointT) => {
+    ;
     let x = calculatePointX(limits, point.arm);
     let y = calculatePointY(limits, point.weight);
     return [x, y];
@@ -182,44 +183,44 @@ function PlotRegion({data, limits}: plotRegionProps): ReactNode {
   let pointsString = points.map((p: number[]) => `${p[0]},${p[1]}`).join(' ');
   let middleX = (
     Math.max(...points.map((p: number[]) => p[0]))
-  + Math.min(...points.map((p: number[]) => p[0]))
+    + Math.min(...points.map((p: number[]) => p[0]))
   ) / 2;
   let middleY = (
     Math.max(...points.map((p: number[]) => p[1]))
-  + Math.min(...points.map((p: number[]) => p[1]))
+    + Math.min(...points.map((p: number[]) => p[1]))
   ) / 2;
 
   return (
     <>
-    <polyline
-      className='region'
-      points={pointsString}
-      stroke={data.color ?? 'black'}
-      strokeDasharray={data.lineStyle ?? ''}
-      strokeWidth='.3'
-      fill={(data.color ?? 'black') + "33"}/>
-    <text
-      x={middleX}
-      y={middleY}
-      fill={data.color}
-      textAnchor='middle'
-      alignmentBaseline='middle'>
-      {data.name}
-    </text>
+      <polyline
+        className='region'
+        points={pointsString}
+        stroke={data.color ?? 'black'}
+        strokeDasharray={data.lineStyle ?? ''}
+        strokeWidth='.3'
+        fill={(data.color ?? 'black') + "33"} />
+      <text
+        x={middleX}
+        y={middleY}
+        fill={data.color}
+        textAnchor='middle'
+        alignmentBaseline='middle'>
+        {data.name}
+      </text>
     </>
   );
 }
 
 interface plotRegionsProps {
-  config: aircraftLimitsT,
+  aircraft: aircraftLimitsT,
   limits: limitsT
 }
 
-function PlotRegions({config, limits}: plotRegionsProps): ReactNode {
+function PlotRegions({ aircraft, limits }: plotRegionsProps): ReactNode {
   return (
     <>
-      {config.regions.map((region: regionT) => <PlotRegion key={region.id} data={region} limits={limits}/>)}
-      {config.limits.map((limit: weightLimitT) => <PlotLimit key={limit.id} data={limit} limits={limits}/>)}
+      {aircraft.regions.map((region: regionT) => <PlotRegion key={region.id} data={region} limits={limits} />)}
+      {aircraft.limits.map((limit: weightLimitT) => <PlotLimit key={limit.id} data={limit} limits={limits} />)}
     </>
   );
 }
@@ -235,7 +236,7 @@ interface plotGridProps {
   gridSpacing: number
 }
 
-function PlotHorizontalGrid({limits, gridSpacing}: plotGridProps): ReactNode {
+function PlotHorizontalGrid({ limits, gridSpacing }: plotGridProps): ReactNode {
   const gapBetweenGrid = gridSpacing * limits.xRatio;
   const smallestGridValue = Math.ceil((limits.minX - graphInsetPadding / limits.xRatio) / gridSpacing) * gridSpacing;
   const largestGridValue = Math.floor((limits.maxX + graphInsetPadding / limits.xRatio) / gridSpacing) * gridSpacing;
@@ -244,10 +245,12 @@ function PlotHorizontalGrid({limits, gridSpacing}: plotGridProps): ReactNode {
   const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid)) + 1;
   if (!numGrid) return;
   const startValue = truncateNumber(smallestGridValue);
-  let positions: {pos: number, value: number}[] = Array(numGrid).fill(0).map((_, index) => {return {
-    pos: gapBetweenGrid * index + smallestGridPosition,
-    value: startValue + truncateNumber(index * gridSpacing)
-  }});
+  let positions: { pos: number, value: number }[] = Array(numGrid).fill(0).map((_, index) => {
+    return {
+      pos: gapBetweenGrid * index + smallestGridPosition,
+      value: startValue + truncateNumber(index * gridSpacing)
+    }
+  });
   return (
     <>
       {positions.map((x, i) => (
@@ -272,7 +275,7 @@ function PlotHorizontalGrid({limits, gridSpacing}: plotGridProps): ReactNode {
   );
 }
 
-function PlotVerticalGrid({limits, gridSpacing}: plotGridProps): ReactNode {
+function PlotVerticalGrid({ limits, gridSpacing }: plotGridProps): ReactNode {
   const gapBetweenGrid = gridSpacing * limits.yRatio;
   const smallestGridValue = Math.ceil((limits.minY - graphInsetPadding / limits.yRatio) / gridSpacing) * gridSpacing;
   const largestGridValue = Math.floor((limits.maxY + graphInsetPadding / limits.yRatio) / gridSpacing) * gridSpacing;
@@ -281,30 +284,32 @@ function PlotVerticalGrid({limits, gridSpacing}: plotGridProps): ReactNode {
   const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid)) + 1;
   if (!numGrid) return;
   const startValue = truncateNumber(smallestGridValue);
-  let positions: {pos: number, value: number}[] = Array(numGrid).fill(0).map((_, index) => {return {
-    pos: largestGridPosition - gapBetweenGrid * index,
-    value: startValue + truncateNumber(index * gridSpacing)
-  }});
+  let positions: { pos: number, value: number }[] = Array(numGrid).fill(0).map((_, index) => {
+    return {
+      pos: largestGridPosition - gapBetweenGrid * index,
+      value: startValue + truncateNumber(index * gridSpacing)
+    }
+  });
   return (
     <>
       {positions.map((y, i) =>
-        (
+      (
         <Fragment key={i}>
           <polyline
             className='gridLines'
             points={`${padding},${y.pos} ${width - padding},${y.pos}`}
             strokeWidth='.2'
-            strokeDasharray={".5"}/>)
+            strokeDasharray={".5"} />)
           <text
             className='gridLines'
             x={1}
             y={y.pos}
             alignmentBaseline='middle'>
             {y.value}
-            </text>
+          </text>
         </Fragment>
-        )
-       )};
+      )
+      )};
     </>
   );
 }
@@ -313,11 +318,11 @@ interface plotTitleProps {
   title: string
 }
 
-function PlotTitle({title}: plotTitleProps): ReactNode {
+function PlotTitle({ title }: plotTitleProps): ReactNode {
   return (
     <text
       className='title'
-      x={width / 2} 
+      x={width / 2}
       y={4}
       fill='white'
       textAnchor='middle'
@@ -340,34 +345,34 @@ interface plotPointProps {
   limits: limitsT
 }
 
-function PlotPoint({point, limits}: plotPointProps): ReactNode {
+function PlotPoint({ point, limits }: plotPointProps): ReactNode {
   const x = calculatePointX(limits, point.arm)
   const y = calculatePointY(limits, point.weight)
   let shape = <circle
-                className='point'
-                cx={x}
-                cy={y}
-                r={point.size}
-                fill='#59C'
-                stroke='black'
-                strokeWidth={.3}/>;
+    className='point'
+    cx={x}
+    cy={y}
+    r={point.size}
+    fill='#59C'
+    stroke='black'
+    strokeWidth={.3} />;
 
   if (point.style == 'square') {
     shape = <rect
-              className='point'
-              x={x - point.size / 2}
-              y={y - point.size / 2}
-              width={point.size}
-              height={point.size}
-              fill='#59C'
-              stroke='black'
-              strokeWidth={.2}/>;
+      className='point'
+      x={x - point.size / 2}
+      y={y - point.size / 2}
+      width={point.size}
+      height={point.size}
+      fill='#59C'
+      stroke='black'
+      strokeWidth={.2} />;
   }
 
   return (
     <>
       {shape}
-      {point.label != undefined && 
+      {point.label != undefined &&
         <text
           className='point'
           x={x + point.size / 2}
@@ -381,33 +386,33 @@ function PlotPoint({point, limits}: plotPointProps): ReactNode {
 }
 
 interface graphProps {
-  config: configT,
+  aircraft: aircraftT,
   selectedConfig: string,
   selectedOpsConfig: string
 }
 
-function Graph({ config, selectedConfig, selectedOpsConfig }: graphProps): ReactNode {
-  if (config === undefined) return;
-  let data: aircraftLimitsT = JSON.parse(JSON.stringify(config.limits));
+function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): ReactNode {
+  if (aircraft === undefined) return;
+  let data: aircraftLimitsT = JSON.parse(JSON.stringify(aircraft.limits));
   const configAreaPoints = useRef("");
 
   // Add any desired points to graph
   const points: plotPointT[] = []
   // Add any desired lines to graph
-  const lines: {weight1: number, arm1: number, weight2: number, arm2: number, color: string, style?: string}[] = []
+  const lines: { weight1: number, arm1: number, weight2: number, arm2: number, color: string, style?: string }[] = []
 
   points.push({
-    weight: config.config.emptyWeight,
-    arm: config.config.emptyArm,
+    weight: aircraft.config.emptyWeight,
+    arm: aircraft.config.emptyArm,
     style: 'square',
     size: 2,
     label: "Empty Aircraft"
   });
 
   if (selectedConfig) {
-    const [weight, arm] = calculateEmptyBalanceForConfig(config, selectedConfig);
-    const [weightFull, armFull] = calculateMaxBalanceForConfig(config, selectedConfig);
-    if (weight != config.config.emptyWeight || arm != config.config.emptyArm)
+    const [weight, arm] = calculateEmptyBalanceForConfig(aircraft, selectedConfig);
+    const [weightFull, armFull] = calculateMaxBalanceForConfig(aircraft, selectedConfig);
+    if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
       points.push({
         weight: weight,
         arm: arm,
@@ -415,7 +420,7 @@ function Graph({ config, selectedConfig, selectedOpsConfig }: graphProps): React
         size: 1,
         label: "Empty Config"
       });
-    if (weightFull != config.config.emptyWeight || armFull != config.config.emptyArm)
+    if (weightFull != aircraft.config.emptyWeight || armFull != aircraft.config.emptyArm)
       points.push({
         weight: weightFull,
         arm: armFull,
@@ -427,8 +432,8 @@ function Graph({ config, selectedConfig, selectedOpsConfig }: graphProps): React
   }
 
   if (selectedOpsConfig) {
-    const [weight, arm] = calculateBalanceForOperationConfig(config, selectedConfig, selectedOpsConfig);
-    if (weight != config.config.emptyWeight || arm != config.config.emptyArm)
+    const [weight, arm] = calculateBalanceForOperationConfig(aircraft, selectedConfig, selectedOpsConfig);
+    if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
       points.push({
         weight: weight,
         arm: arm,
@@ -447,14 +452,14 @@ function Graph({ config, selectedConfig, selectedOpsConfig }: graphProps): React
 
   if (data.regions.length > 0) {
     minX = Math.min(...data.regions.map((r: regionT) => Math.min(...r.data.filter((v: regionPointT) => v.arm !== null).map(p => p.arm))));
-    maxX = Math.max(...data.regions.map((r: regionT) => Math.max(...r.data.filter((v: regionPointT)=> v.arm !== null).map(p => p.arm))));
+    maxX = Math.max(...data.regions.map((r: regionT) => Math.max(...r.data.filter((v: regionPointT) => v.arm !== null).map(p => p.arm))));
     minY = Math.min(...data.regions.map((r: regionT) => Math.min(...r.data.filter((v: regionPointT) => v.weight !== null).map(p => p.weight))));
     maxY = Math.max(...data.regions.map((r: regionT) => Math.max(...r.data.filter((v: regionPointT) => v.weight !== null).map(p => p.weight))));
   }
 
   if (data.limits.length > 0) {
-    maxY = Math.max(...data.limits.map((lim: weightLimitT) => lim.weight).filter((v: (number|null)) => v !== null), maxY) ?? maxY;
-    minY = Math.min(...data.limits.map((lim: weightLimitT) => lim.weight).filter((v: (number|null)) => v !== null), minY) ?? minY;
+    maxY = Math.max(...data.limits.map((lim: weightLimitT) => lim.weight).filter((v: (number | null)) => v !== null), maxY) ?? maxY;
+    minY = Math.min(...data.limits.map((lim: weightLimitT) => lim.weight).filter((v: (number | null)) => v !== null), minY) ?? minY;
   }
 
   if (points.length > 0) {
@@ -475,11 +480,11 @@ function Graph({ config, selectedConfig, selectedOpsConfig }: graphProps): React
 
   useMemo(() => {
     if (selectedConfig)
-      configAreaPoints.current = generateConfigArea(config, limits, selectedConfig).join(" ");
-  }, [config, selectedConfig]);
+      configAreaPoints.current = generateConfigArea(aircraft, limits, selectedConfig).join(" ");
+  }, [aircraft, selectedConfig]);
 
   // Convert interval to spacing of 1, 2, or 5 * 10^x
-  function getCleanInterval( width: number, desiredTicks: number ): number {
+  function getCleanInterval(width: number, desiredTicks: number): number {
     const desiredInterval = (width / desiredTicks);
     const power = Math.ceil(Math.log10(desiredInterval))
     const spacing = desiredInterval / Math.pow(10, power - 1);
@@ -506,8 +511,8 @@ function Graph({ config, selectedConfig, selectedOpsConfig }: graphProps): React
       {title.current}
       {dataAvailable && horizontalBars}
       {dataAvailable && verticalBars}
-      {dataAvailable && selectedConfig && <polyline className="configArea" points={configAreaPoints.current}/>}
-      {dataAvailable && <PlotRegions config={data} limits={limits}/>}
+      {dataAvailable && selectedConfig && <polyline className="configArea" points={configAreaPoints.current} />}
+      {dataAvailable && <PlotRegions aircraft={data} limits={limits} />}
       {dataAvailable && lines.map((l, i) => {
         return <line
           key={[l.arm1, l.weight2, i].join(" ")}

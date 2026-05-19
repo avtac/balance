@@ -1,45 +1,45 @@
 import './BOW.css'
 import { useEffect, useRef, type ReactNode } from "react";
 import { Subregion, MultiPane } from "./Layout";
-import type { aircraftConfigT, cargoAreaT, configProps, configT, operationConfigT, seatT } from "./Types";
+import type { aircraftConfigT, cargoAreaT, aircraftProps, aircraftT, operationConfigT, seatT } from "./Types";
 import { getSortedByArm } from './utility';
 
-interface seatSelectionProps extends configProps {
+interface seatSelectionProps extends aircraftProps {
   seat: seatT,
   opsConfigIndex: number
 }
 
-function SeatSelection({seat, opsConfigIndex, config, setConfig}: seatSelectionProps) {
+function SeatSelection({ seat, opsConfigIndex, aircraft, setAircraft }: seatSelectionProps) {
   if (opsConfigIndex < 0) return;
 
-  let seatIndex = config.operationConfigs[opsConfigIndex].seats.findIndex((s: {id: string, weight: number}) => s.id == seat.id);
+  let seatIndex = aircraft.operationConfigs[opsConfigIndex].seats.findIndex((s: { id: string, weight: number }) => s.id == seat.id);
   const checked = useRef(seatIndex >= 0);
 
   function selectCheckbox(): void {
     if (opsConfigIndex < 0) return;
     checked.current = !checked.current;
-    const tmp: configT = JSON.parse(JSON.stringify(config));
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     if (checked.current) {
-      if (config.operationConfigs[opsConfigIndex].seats.findIndex((s: {id: string, weight: number}) => s.id === seat.id) < 0) {
-        tmp.operationConfigs[opsConfigIndex].seats.push({id: seat.id, weight: oldWeight.current});
+      if (aircraft.operationConfigs[opsConfigIndex].seats.findIndex((s: { id: string, weight: number }) => s.id === seat.id) < 0) {
+        tmp.operationConfigs[opsConfigIndex].seats.push({ id: seat.id, weight: oldWeight.current });
       }
     } else {
       tmp.operationConfigs[opsConfigIndex].seats.splice(seatIndex, 1);
     }
-    setConfig(tmp);
+    setAircraft(tmp);
   }
 
   function setWeight(weight: number): void {
-    const tmp: configT = JSON.parse(JSON.stringify(config));
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.operationConfigs[opsConfigIndex].seats[seatIndex].weight = weight;
     oldWeight.current = weight;
-    setConfig(tmp);
+    setAircraft(tmp);
   }
 
   let weight = 0;
   let oldWeight = useRef(seat.maxWeight);
   if (seatIndex >= 0) {
-    weight = config.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
+    weight = aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
     oldWeight.current = weight;
   }
   checked.current = seatIndex >= 0;
@@ -48,14 +48,14 @@ function SeatSelection({seat, opsConfigIndex, config, setConfig}: seatSelectionP
 
   useEffect(() => {
     let newWeight = seat.maxWeight * seat.seatCount;
-    if (seatIndex >= 0) newWeight = config.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
+    if (seatIndex >= 0) newWeight = aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
     oldWeight.current = newWeight;
   }, [opsConfigIndex]);
 
   return (
     <tr className="seatSelect">
       <td onClick={selectCheckbox}>
-        <input onChange={() => {}} checked={checked.current} type={"checkbox"} />
+        <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{seat.name}</td>
       <td>
@@ -65,48 +65,48 @@ function SeatSelection({seat, opsConfigIndex, config, setConfig}: seatSelectionP
   );
 }
 
-interface cargoSelectionProps extends configProps {
+interface cargoSelectionProps extends aircraftProps {
   cargoArea: cargoAreaT,
   opsConfigIndex: number
 }
 
-function CargoSelection({cargoArea, opsConfigIndex, config, setConfig}: cargoSelectionProps) {
+function CargoSelection({ cargoArea, opsConfigIndex, aircraft, setAircraft }: cargoSelectionProps) {
   if (opsConfigIndex < 0) return;
 
-  let cargoAreaIndex = config.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: {id: string, weight: number}) => s.id == cargoArea.id);
+  let cargoAreaIndex = aircraft.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: { id: string, weight: number }) => s.id == cargoArea.id);
   const checked = useRef(cargoAreaIndex >= 0);
 
   function selectCheckbox(): void {
     if (opsConfigIndex < 0) return;
     checked.current = !checked.current;
-    const tmp: configT = JSON.parse(JSON.stringify(config));
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     if (checked.current) {
-      if (config.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: {id: string, weight: number}) => s.id === cargoArea.id) < 0) {
-        tmp.operationConfigs[opsConfigIndex].cargoAreas.push({id: cargoArea.id, weight: oldWeight.current});
+      if (aircraft.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: { id: string, weight: number }) => s.id === cargoArea.id) < 0) {
+        tmp.operationConfigs[opsConfigIndex].cargoAreas.push({ id: cargoArea.id, weight: oldWeight.current });
       }
     } else {
       tmp.operationConfigs[opsConfigIndex].cargoAreas.splice(cargoAreaIndex, 1);
     }
-    setConfig(tmp);
+    setAircraft(tmp);
   }
 
   function setWeight(weight: number): void {
-    const tmp: configT = JSON.parse(JSON.stringify(config));
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight = weight;
     oldWeight.current = weight;
-    setConfig(tmp);
+    setAircraft(tmp);
   }
 
   let weight = 0;
   const oldWeight = useRef(cargoArea.maxWeight);
   if (cargoAreaIndex >= 0) {
-    weight = config.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
-    oldWeight.current = config.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
+    weight = aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
+    oldWeight.current = aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
   }
 
   useEffect(() => {
     let newWeight = cargoArea.maxWeight;
-    if (cargoAreaIndex >= 0) newWeight =  config.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
+    if (cargoAreaIndex >= 0) newWeight = aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
     oldWeight.current = newWeight;
   }, [opsConfigIndex]);
 
@@ -115,7 +115,7 @@ function CargoSelection({cargoArea, opsConfigIndex, config, setConfig}: cargoSel
   return (
     <tr className="cargoAreaSelect">
       <td onClick={selectCheckbox}>
-        <input onChange={() => {}} checked={checked.current} type={"checkbox"} />
+        <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{cargoArea.name}</td>
       <td>
@@ -125,20 +125,20 @@ function CargoSelection({cargoArea, opsConfigIndex, config, setConfig}: cargoSel
   );
 }
 
-interface aircraftOperationConfigProps extends configProps {
+interface aircraftOperationConfigProps extends aircraftProps {
   selectedConfig: string,
   setSelectedConfig: (arg0: string) => void,
   selectedOpsConfig: string,
   setSelectedOpsConfig: (arg0: string) => void
 }
 
-function AircraftOperationConfig({config, setConfig, selectedConfig, setSelectedConfig, selectedOpsConfig, setSelectedOpsConfig}: aircraftOperationConfigProps): ReactNode {
+function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSelectedConfig, selectedOpsConfig, setSelectedOpsConfig }: aircraftOperationConfigProps): ReactNode {
   const configSelectRef = useRef(null);
-  const configIndex: number    = config.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
-  const opsConfigIndex: number = config.operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
+  const configIndex: number = aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
+  const opsConfigIndex: number = aircraft.operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
 
   function addOpsConfig(): void {
-    const tmp: configT = JSON.parse(JSON.stringify(config));
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     const newConfig: operationConfigT = {
       id: crypto.randomUUID(),
       name: "New Ops Config",
@@ -147,56 +147,56 @@ function AircraftOperationConfig({config, setConfig, selectedConfig, setSelected
       cargoAreas: [],
     };
     tmp.operationConfigs.push(newConfig);
-    setConfig(tmp);
+    setAircraft(tmp);
     setSelectedOpsConfig(newConfig.id);
   }
 
   function duplicateOpsConfig(): void {
-    const tmp: configT = JSON.parse(JSON.stringify(config));
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     if (opsConfigIndex < 0) return;
     const newConfig: operationConfigT = JSON.parse(JSON.stringify(tmp.operationConfigs[opsConfigIndex]));
     newConfig.id = crypto.randomUUID();
     newConfig.name = newConfig.name + " - Copy";
     tmp.operationConfigs.push(newConfig);
     setSelectedOpsConfig(newConfig.id);
-    setConfig(tmp);
+    setAircraft(tmp);
   }
 
   function deleteOpsConfig(): void {
-    const tmp: configT = JSON.parse(JSON.stringify(config));
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     if (opsConfigIndex < 0) return;
     tmp.operationConfigs.splice(opsConfigIndex, 1);
     if (tmp.operationConfigs.length > 0)
       setSelectedOpsConfig(tmp.operationConfigs[0].id);
-    else 
+    else
       setSelectedOpsConfig("");
-    setConfig(tmp);
+    setAircraft(tmp);
   }
 
   function setName(name: string): void {
-    const tmp: configT = JSON.parse(JSON.stringify(config));
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.operationConfigs[opsConfigIndex].name = name;
-    setConfig(tmp);
+    setAircraft(tmp);
   }
 
   function setAircraftConfig(configId: string): void {
-    const tmp: configT = JSON.parse(JSON.stringify(config));
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.operationConfigs[opsConfigIndex].config = configId;
     tmp.operationConfigs[opsConfigIndex].seats = [];
     tmp.operationConfigs[opsConfigIndex].cargoAreas = [];
     setSelectedConfig(configId)
-    setConfig(tmp);
+    setAircraft(tmp);
   }
 
   let seats: seatT[] = []
   let cargoAreas: cargoAreaT[] = []
   if (configIndex >= 0) {
-    seats = config.aircraftConfigs[configIndex].seats.map((s: string) => {
-      return config.seats.find((S: seatT) => S.id === s);
+    seats = aircraft.aircraftConfigs[configIndex].seats.map((s: string) => {
+      return aircraft.seats.find((S: seatT) => S.id === s);
     }).filter(s => s != undefined);
 
-    cargoAreas = config.aircraftConfigs[configIndex].cargoAreas.map((s: string) => {
-      return config.cargoAreas.find((S: cargoAreaT) => S.id === s);
+    cargoAreas = aircraft.aircraftConfigs[configIndex].cargoAreas.map((s: string) => {
+      return aircraft.cargoAreas.find((S: cargoAreaT) => S.id === s);
     }).filter(c => c != undefined);
   }
 
@@ -208,34 +208,34 @@ function AircraftOperationConfig({config, setConfig, selectedConfig, setSelected
             onChange={(e) => setSelectedOpsConfig(e.target.value)}
             value={selectedOpsConfig}
           >
-            {config.operationConfigs.map((conf) => {
+            {aircraft.operationConfigs.map((conf) => {
               return <option key={conf.id + "selectOption"} value={conf.id}>{conf.name}</option>
             })}
           </select>
           <input
-            value={opsConfigIndex >= 0 ? config.operationConfigs[opsConfigIndex].name : ""}
-            onChange={(e) => setName(e.target.value)}/>
+            value={opsConfigIndex >= 0 ? aircraft.operationConfigs[opsConfigIndex].name : ""}
+            onChange={(e) => setName(e.target.value)} />
           <select
             ref={configSelectRef}
-            disabled={config.aircraftConfigs.length == 0}
+            disabled={aircraft.aircraftConfigs.length == 0}
             onChange={(e) => setAircraftConfig(e.target.value)}
             value={selectedConfig}
           >
-            {config.aircraftConfigs.map((conf) => {
+            {aircraft.aircraftConfigs.map((conf) => {
               return <option key={conf.id + "selectOption"} value={conf.id}>{conf.name}</option>
             })}
           </select>
           <button
-            disabled={config.aircraftConfigs.length == 0}
+            disabled={aircraft.aircraftConfigs.length == 0}
             onClick={addOpsConfig}
           >Add</button>
           <button
-            disabled={config.aircraftConfigs.length == 0}
+            disabled={aircraft.aircraftConfigs.length == 0}
             onClick={duplicateOpsConfig}
           >Duplicate</button>
           <button
             onClick={deleteOpsConfig}
-            disabled={config.aircraftConfigs.length == 0}
+            disabled={aircraft.aircraftConfigs.length == 0}
           >Delete</button>
         </div>
       </Subregion>
@@ -243,38 +243,38 @@ function AircraftOperationConfig({config, setConfig, selectedConfig, setSelected
         <Subregion name={"Seats"}>
           <table id="configSeats">
             <tbody>
-            <tr>
-              <th>✔</th>
-              <th style={{width: "10rem"}}>Name</th>
-              <th style={{width: "3rem"}}>Weight</th>
-            </tr>
-            {getSortedByArm(seats).map((seat: seatT) => {
-              return <SeatSelection
-                      key={seat.id + " seatSelect"}
-                      opsConfigIndex={opsConfigIndex}
-                      seat={seat}
-                      config={config}
-                      setConfig={setConfig}/>
-            })}
+              <tr>
+                <th>✔</th>
+                <th style={{ width: "10rem" }}>Name</th>
+                <th style={{ width: "3rem" }}>Weight</th>
+              </tr>
+              {getSortedByArm(seats).map((seat: seatT) => {
+                return <SeatSelection
+                  key={seat.id + " seatSelect"}
+                  opsConfigIndex={opsConfigIndex}
+                  seat={seat}
+                  aircraft={aircraft}
+                  setAircraft={setAircraft} />
+              })}
             </tbody>
           </table>
         </Subregion>
         <Subregion name={"Cargo Areas"}>
-          <table id="configCargo">
+          <table id="aircraftCargo">
             <tbody>
-            <tr>
-              <th>✔</th>
-              <th style={{width: "10rem"}}>Name</th>
-              <th style={{width: "3rem"}}>Weight</th>
-            </tr>
-            {getSortedByArm(cargoAreas).map((cargoArea: cargoAreaT) => {
-              return <CargoSelection
-                      key={cargoArea.id + " cargoSelect"}
-                      opsConfigIndex={opsConfigIndex}
-                      cargoArea={cargoArea}
-                      config={config}
-                      setConfig={setConfig}/>
-            })}
+              <tr>
+                <th>✔</th>
+                <th style={{ width: "10rem" }}>Name</th>
+                <th style={{ width: "3rem" }}>Weight</th>
+              </tr>
+              {getSortedByArm(cargoAreas).map((cargoArea: cargoAreaT) => {
+                return <CargoSelection
+                  key={cargoArea.id + " cargoSelect"}
+                  opsConfigIndex={opsConfigIndex}
+                  cargoArea={cargoArea}
+                  aircraft={aircraft}
+                  setAircraft={setAircraft} />
+              })}
             </tbody>
           </table>
         </Subregion>

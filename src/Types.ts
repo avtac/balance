@@ -1,4 +1,9 @@
 // Types to be extended
+export interface aircraftProps {
+  aircraft: aircraftT,
+  setAircraft: (arg0: aircraftT) => void
+}
+
 export interface configProps {
   config: configT,
   setConfig: (arg0: configT) => void
@@ -20,8 +25,8 @@ export interface operationConfigT {
   id: string,
   name: string,
   config: string,
-  seats: {id: string, weight: number}[],
-  cargoAreas: {id: string, weight: number}[],
+  seats: { id: string, weight: number }[],
+  cargoAreas: { id: string, weight: number }[],
 }
 
 export interface aircraftConfigT {
@@ -29,7 +34,7 @@ export interface aircraftConfigT {
   name: string,
   seats: string[],
   cargoAreas: string[],
-  equipment: {id: string, count: number}[],
+  equipment: { id: string, count: number }[],
   fuelTanks: string[]
 }
 
@@ -81,9 +86,12 @@ export interface aircraftPropertiesT {
   type: string,
   emptyWeight: number,
   emptyArm: number
+  leadingEdgeMAC?: number,
+  mac?: number
 }
 
-export interface configT {
+export interface aircraftT {
+  id: string,
   config: aircraftPropertiesT,
   limits: aircraftLimitsT,
   seats: seatT[],
@@ -91,4 +99,9 @@ export interface configT {
   equipment: equipmentT[],
   aircraftConfigs: aircraftConfigT[],
   operationConfigs: operationConfigT[]
+}
+
+export interface configT {
+  name?: string,
+  aircraft: aircraftT[]
 }

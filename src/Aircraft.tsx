@@ -1,0 +1,132 @@
+import './Aircraft.css'
+import type { ReactNode } from "react";
+import type { aircraftPropertiesT, configProps, aircraftT, configT } from "./Types";
+import { Subregion } from "./Layout";
+
+interface aircraftConfigProps extends configProps {
+  selectedAircraft: string,
+  setSelectedAircraft: (arg0: string) => void
+}
+
+function getNewAircraft(): aircraftT {
+  return {
+    id: crypto.randomUUID(),
+    config: {
+      tailNumber: "",
+      type: "",
+      emptyArm: 0,
+      emptyWeight: 0
+    },
+    seats: [{
+      id: crypto.randomUUID(),
+      name: "Pilot Seat",
+      arm: 0,
+      seatCount: 1,
+      lateralDist: 0,
+      maxWeight: 200
+    }],
+    cargoAreas: [],
+    limits: {
+      regions: [],
+      limits: []
+    },
+    equipment: [],
+    aircraftConfigs: [],
+    operationConfigs: []
+  }
+}
+
+function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircraft }: aircraftConfigProps): ReactNode {
+  const aircraftIndex = config.aircraft.findIndex(a => a.id === selectedAircraft);
+
+  function setValue<K extends keyof aircraftPropertiesT, V extends aircraftPropertiesT[K]>(key: K, value: V) {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.aircraft[aircraftIndex].config[key] = value;
+    setConfig(tmp);
+  }
+
+  function addAircraft(): void {
+    const emptyAircraft = getNewAircraft();
+
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.aircraft.push(emptyAircraft);
+    setSelectedAircraft(tmp.aircraft[tmp.aircraft.length - 1].id)
+    setConfig(tmp);
+  }
+
+  function duplicateAircraft() {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.aircraft.push({ ...tmp.aircraft[aircraftIndex], id: crypto.randomUUID() });
+    setSelectedAircraft(tmp.aircraft[tmp.aircraft.length - 1].id)
+    setConfig(tmp);
+  }
+
+  function deleteAircraft() {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.aircraft.splice(aircraftIndex, 1);
+    if (tmp.aircraft.length === 0) {
+      tmp.aircraft.push(getNewAircraft());
+    }
+    setSelectedAircraft(tmp.aircraft.length > 0 ? tmp.aircraft[0].id : "")
+    setConfig(tmp);
+  }
+
+  const options = config.aircraft.sort((a, b) => a.config.tailNumber.localeCompare(b.config.tailNumber)).map(a => {
+    return <option key={a.id} value={a.id}>{(a.config.type != "" ? a.config.type + ": " : "") + a.config.tailNumber}</option>
+  })
+
+  return (
+    <>
+      <Subregion>
+        <div id='aircraftSelectRow'>
+          <label>Aircraft</label>
+          <select value={selectedAircraft} onChange={e => setSelectedAircraft(e.target.value)}>
+            {options}
+          </select>
+          <button onClick={addAircraft}>Add Aircraft</button>
+          <button onClick={duplicateAircraft}>Duplicate Aircraft</button>
+          <button onClick={deleteAircraft}>Delete Aircraft</button>
+        </div>
+        <div id='aircraftCopyRow'>
+          <button>Copy Geometry</button>
+          <button>Copy Seats/Cargo</button>
+          <button>Copy Equipment</button>
+          <button>Copy Configs</button>
+          <button>Copy Ops Configs</button>
+        </div>
+      </Subregion>
+      <Subregion>
+        <div className="rows">
+          <div>
+            <h3>Tail Number *</h3>
+            <input value={config.aircraft[aircraftIndex].config.tailNumber} placeholder="Tail Number" onChange={(e) => setValue('tailNumber', e.target.value)} />
+          </div>
+          <div>
+            <h3>Aircraft Type *</h3>
+            <input value={config.aircraft[aircraftIndex].config.type} placeholder="Type" onChange={(e) => setValue('type', e.target.value)} />
+          </div>
+          <div>
+            <h3>Empty Weight *</h3>
+            <input value={config.aircraft[aircraftIndex].config.emptyWeight} type="number" placeholder="Empty Weight" onChange={(e) => setValue('emptyWeight', Number(e.target.value))} />
+          </div>
+          <div>
+            <h3>Empty Arm *</h3>
+            <input value={config.aircraft[aircraftIndex].config.emptyArm} type="number" placeholder="Empty Arm" onChange={(e) => setValue('emptyArm', Number(e.target.value))} />
+          </div>
+        </div>
+        <div className='rows'>
+          <div>
+            <h3>Leading MAC</h3>
+            <input value={config.aircraft[aircraftIndex].config.leadingEdgeMAC} type="number" placeholder="Leading Edge MAC" onChange={(e) => setValue('leadingEdgeMAC', Number(e.target.value))} />
+          </div>
+          <div>
+            <h3>MAC</h3>
+            <input value={config.aircraft[aircraftIndex].config.mac} type="number" placeholder="Mean Aerodynamic Chord" onChange={(e) => setValue('mac', Number(e.target.value))} />
+          </div>
+        </div>
+      </Subregion>
+    </>
+  );
+}
+
+export default AircraftConfig;

@@ -1,0 +1,29 @@
+.rows {
+  display: flex;
+  gap: 8px;
+
+  input {
+    width: 13vw;
+    min-width: 8rem;
+  }
+}
+
+#aircraftSelectRow {
+  margin: 3px;
+  display: grid;
+  grid-template-columns: 5rem 18rem 8rem 8rem 8rem;
+  justify-content: space-between;
+  text-align: center;
+
+  label {
+    margin: auto;
+  }
+}
+
+#aircraftCopyRow {
+  margin: 3px;
+  display: grid;
+  grid-template-columns: repeat(5, 8rem);
+  justify-content: space-between;
+  text-align: center;
+}

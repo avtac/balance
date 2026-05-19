@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import "./Diagram.css"
-import type { seatT, cargoAreaT, aircraftConfigT, operationConfigT, configT } from "./Types";
+import type { seatT, cargoAreaT, aircraftConfigT, operationConfigT, aircraftT } from "./Types";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
@@ -16,7 +16,7 @@ interface cargoIconProps {
   width: number
 }
 
-function CargoIcon({name, color='#CCCCCC', offX=0, offY=0, width=cargoSize}: cargoIconProps): ReactNode {
+function CargoIcon({ name, color = '#CCCCCC', offX = 0, offY = 0, width = cargoSize }: cargoIconProps): ReactNode {
   const left = offX - cargoSize / 2;
   const top = -offY - width / 2;
   return (
@@ -30,7 +30,7 @@ function CargoIcon({name, color='#CCCCCC', offX=0, offY=0, width=cargoSize}: car
         x={left}
         y={top}
         ry={.4105551} />
-      <text 
+      <text
         x={offX}
         y={-offY}
         transform={`rotate(${90} ${offX} ${-offY})`}
@@ -39,7 +39,7 @@ function CargoIcon({name, color='#CCCCCC', offX=0, offY=0, width=cargoSize}: car
         fontSize={fontSize} fill={'blue'}>
         {name}
       </text>
-   </>
+    </>
   );
 }
 
@@ -52,55 +52,56 @@ interface seatIconProps {
 }
 
 // offX, offY are in canvas units
-function SeatIcon({count, name, color='#CCCCCC', offX=0, offY=0}: seatIconProps): ReactNode {
+function SeatIcon({ count, name, color = '#CCCCCC', offX = 0, offY = 0 }: seatIconProps): ReactNode {
   const left = offX - seatSize / 2;
   return (
     <>
-    {...Array(count).fill(0).map((_, i: number) => {
-      const top = offY - (i - count / 2) * seatSize;
-      return (
-        <>
-          <rect
-             fill={color}
-             stroke={"#000000"}
-             strokeWidth={0.5}
-             width={seatSize}
-             height={seatSize}
-             x={left}
-             y={-top}
-             ry={.4105551} />
-          <rect
-             fill={color}
-             stroke={"#000000"}
-             strokeWidth={0.5}
-             width={seatSize / 2}
-             height={seatSize / 8}
-             x={seatSize * 1 / 6 + left}
-             y={-seatSize + top}
-             ry={0.29849526}
-             transform={"scale(1,-1)"} />
-          <rect
-             fill={color}
-             stroke={"#000000"}
-             strokeWidth={0.5}
-             width={seatSize / 2}
-             height={seatSize / 8}
-             x={seatSize * 1 / 6 + left}
-             y={-seatSize / 8 + top}
-             ry={0.29849526}
-             transform={"scale(1,-1)"} />
-          <rect
-             fill={color}
-             stroke={"#000000"}
-             strokeWidth={0.5}
-             width={seatSize * 3 / 8}
-             height={seatSize}
-             x={left}
-             y={-seatSize + top}
-             ry={2.3889797}
-             transform={"scale(1,-1)"} />
-        </>
-      )})}
+      {...Array(count).fill(0).map((_, i: number) => {
+        const top = offY - (i - count / 2) * seatSize;
+        return (
+          <>
+            <rect
+              fill={color}
+              stroke={"#000000"}
+              strokeWidth={0.5}
+              width={seatSize}
+              height={seatSize}
+              x={left}
+              y={-top}
+              ry={.4105551} />
+            <rect
+              fill={color}
+              stroke={"#000000"}
+              strokeWidth={0.5}
+              width={seatSize / 2}
+              height={seatSize / 8}
+              x={seatSize * 1 / 6 + left}
+              y={-seatSize + top}
+              ry={0.29849526}
+              transform={"scale(1,-1)"} />
+            <rect
+              fill={color}
+              stroke={"#000000"}
+              strokeWidth={0.5}
+              width={seatSize / 2}
+              height={seatSize / 8}
+              x={seatSize * 1 / 6 + left}
+              y={-seatSize / 8 + top}
+              ry={0.29849526}
+              transform={"scale(1,-1)"} />
+            <rect
+              fill={color}
+              stroke={"#000000"}
+              strokeWidth={0.5}
+              width={seatSize * 3 / 8}
+              height={seatSize}
+              x={left}
+              y={-seatSize + top}
+              ry={2.3889797}
+              transform={"scale(1,-1)"} />
+          </>
+        )
+      })}
       <text x={+left + seatSize / 2} y={-offY - (offY >= 0 ? 1 : -1) * (count / 2 + .2) * seatSize} alignmentBaseline={'middle'} textAnchor="middle" fontSize={fontSize} fill={'blue'}>{name}</text>
     </>
   );
@@ -112,28 +113,28 @@ function getPixelFromArm(arm: number): number {
 }
 
 interface diagramProps {
-  config: configT,
+  aircraft: aircraftT,
   selectedPanel: number,
   selectedConfig: string,
   selectedOpsConfig: string,
 }
 
-function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}: diagramProps): ReactNode {
-  let seats = [...config.seats]
-  let cargoAreas = [...config.cargoAreas]
+function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
+  let seats = [...aircraft.seats]
+  let cargoAreas = [...aircraft.cargoAreas]
 
   if (selectedPanel >= 3) {
-    const configIndex: number = config.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
+    const configIndex: number = aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
     if (configIndex < 0) return;
 
-    seats = config.aircraftConfigs[configIndex].seats.map((seatId: string) => {
-      const seatIndex: number = config.seats.findIndex((s: seatT) => s.id === seatId);
-      return config.seats[seatIndex];
+    seats = aircraft.aircraftConfigs[configIndex].seats.map((seatId: string) => {
+      const seatIndex: number = aircraft.seats.findIndex((s: seatT) => s.id === seatId);
+      return aircraft.seats[seatIndex];
     }).filter(v => v != undefined);
 
-    cargoAreas = config.aircraftConfigs[configIndex].cargoAreas.map((cargoAreaId: string) => {
-      const cargoAreaIndex: number = config.cargoAreas.findIndex((s: cargoAreaT) => s.id === cargoAreaId);
-      return config.cargoAreas[cargoAreaIndex];
+    cargoAreas = aircraft.aircraftConfigs[configIndex].cargoAreas.map((cargoAreaId: string) => {
+      const cargoAreaIndex: number = aircraft.cargoAreas.findIndex((s: cargoAreaT) => s.id === cargoAreaId);
+      return aircraft.cargoAreas[cargoAreaIndex];
     }).filter(v => v != undefined);
   }
 
@@ -145,8 +146,8 @@ function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}: dia
   let maxArm = -seats.reduce((max, item) => Math.max(max, item.arm), seats[0].arm) - planePadding - seatSize / 2;
 
   if (cargoAreas.length !== 0) {
-      minArm = Math.max(minArm, -cargoAreas.reduce((min, item) => Math.min(min, item.arm), cargoAreas[0].arm) + planePadding + cargoSize / 2);
-      maxArm = Math.min(maxArm, -cargoAreas.reduce((max, item) => Math.max(max, item.arm), cargoAreas[0].arm) - planePadding - cargoSize / 2);
+    minArm = Math.max(minArm, -cargoAreas.reduce((min, item) => Math.min(min, item.arm), cargoAreas[0].arm) + planePadding + cargoSize / 2);
+    maxArm = Math.min(maxArm, -cargoAreas.reduce((max, item) => Math.max(max, item.arm), cargoAreas[0].arm) - planePadding - cargoSize / 2);
   }
 
   let minDisplacement = seats.reduce((min, item) => Math.min(min, item.lateralDist - item.seatCount * seatSize / 2), seats[0].lateralDist - seats[0].seatCount * seatSize / 2) - planePadding;
@@ -167,28 +168,28 @@ function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}: dia
   const planeWidth = planeLeft - planeRight;
 
 
-  const opsIndex: number = config.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig == o.id);
+  const opsIndex: number = aircraft.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig == o.id);
   const seatItems = seats.map((seat: seatT): ReactNode => {
     const isOps = selectedPanel >= 4 && opsIndex >= 0
-               && selectedOpsConfig != undefined
-               && config.operationConfigs[opsIndex].seats.find(
-                    (v: {id: string, weight: number}) => v.id == seat.id
-                  )
+      && selectedOpsConfig != undefined
+      && aircraft.operationConfigs[opsIndex].seats.find(
+        (v: { id: string, weight: number }) => v.id == seat.id
+      )
     return <SeatIcon
       key={seat.id}
       name={seat.name}
       color={isOps ? "#6688AA" : "#D6D7E3"}
       offX={-getPixelFromArm(seat.arm)}
       offY={getPixelFromArm(-seat.lateralDist)}
-      count={Number(seat.seatCount)}/>
+      count={Number(seat.seatCount)} />
   });
 
   const cargoItems = cargoAreas.map((cargoArea: cargoAreaT): ReactNode => {
     const isOps = selectedPanel >= 4 && opsIndex >= 0
-               && selectedOpsConfig != undefined
-               && config.operationConfigs[opsIndex].cargoAreas.find(
-                    (v: {id: string, weight: number}) => v.id == cargoArea.id
-                  )
+      && selectedOpsConfig != undefined
+      && aircraft.operationConfigs[opsIndex].cargoAreas.find(
+        (v: { id: string, weight: number }) => v.id == cargoArea.id
+      )
     return <CargoIcon
       key={cargoArea.id}
       name={cargoArea.name}
@@ -202,7 +203,7 @@ function Diagram({config, selectedPanel, selectedConfig, selectedOpsConfig}: dia
     <svg
       viewBox={`${right} ${top} ${width} ${height}`}
       id="diagram">
-      <path d={`M ${planeLeft} ${planeTop} C ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop}, ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'}/>
+      <path d={`M ${planeLeft} ${planeTop} C ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop}, ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'} />
       <rect x={planeRight} y={planeTop} width={planeWidth} height={planeHeight} fill={'white'} stroke={'none'} />
       {seatItems}
       {cargoItems}

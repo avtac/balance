@@ -37,6 +37,7 @@
   flex-direction: column;
   align-items: stretch;
   width: 40vw;
+
   svg {
     margin: var(--margin-size);
   }
@@ -78,6 +79,7 @@
   #topBar {
     width: 100%;
     display: flex;
+
     .topButton {
       padding: 3px;
       flex: 1;
@@ -85,15 +87,17 @@
       background: none;
       font-size: 1.1rem;
     }
+
     .topButton:hover {
       background: #77777733
     }
+
     .topButton:active {
       background: #77777722
     }
+
     .selected {
       border-bottom: 2px solid var(--accent);
     }
   }
 }
-
