@@ -2,7 +2,8 @@
   background: #1c1d24;
   height: 75px;
   display: grid;
-  grid-template-columns: 9rem 1fr 9rem;
+  grid-template-columns: 9rem 20rem 9rem;
+  justify-content: space-between;
 
   h1 {
     font-size: 36px;
