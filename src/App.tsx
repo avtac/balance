@@ -157,7 +157,7 @@ function App() {
         <div id="split">
           <div id='leftPanel'>
             <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
-              <AircraftConfig name={"Aircraft Setup"}
+              <AircraftConfig name={"Aircraft"}
                 config={config}
                 setConfig={setConfigSpecial}
                 selectedAircraft={selectedAircraft}

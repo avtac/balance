@@ -61,16 +61,18 @@ function AircraftMerging({ config, setConfig, selectedAircraft }: aircraftMergin
 
   return (
     <Subregion>
-      <select id='childAircraftSelect' multiple ref={selectRef}>
-        {options}
-      </select>
-      <div id='aircraftCopyRow'>
-        <button onClick={() => copyConfig(['limits', 'seats', 'cargoAreas', 'equipment', 'aircraftConfigs', 'operationConfigs'])}>Copy Full Config</button>
-        <button onClick={() => copyConfig(['limits'])}>Copy Geometry</button>
-        <button onClick={() => copyConfig(['seats', 'cargoAreas'])}>Copy Seats/Cargo</button>
-        <button onClick={() => copyConfig(['equipment'])}>Copy Equipment</button>
-        <button onClick={() => copyConfig(['aircraftConfigs'])}>Copy Configs</button>
-        <button onClick={() => copyConfig(['operationConfigs'])}>Copy Ops Configs</button>
+      <div id='aircraftMergeHolder'>
+        <select id='childAircraftSelect' multiple ref={selectRef}>
+          {options}
+        </select>
+        <div id='aircraftCopyRow'>
+          <button onClick={() => copyConfig(['limits', 'seats', 'cargoAreas', 'equipment', 'aircraftConfigs', 'operationConfigs'])}>Copy Full Config</button>
+          <button onClick={() => copyConfig(['limits'])}>Copy Geometry</button>
+          <button onClick={() => copyConfig(['seats', 'cargoAreas'])}>Copy Seats/Cargo</button>
+          <button onClick={() => copyConfig(['equipment'])}>Copy Equipment</button>
+          <button onClick={() => copyConfig(['aircraftConfigs'])}>Copy Configs</button>
+          <button onClick={() => copyConfig(['operationConfigs'])}>Copy Ops Configs</button>
+        </div>
       </div>
     </Subregion >
   );
@@ -119,13 +121,17 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
     <>
       <Subregion>
         <div id='aircraftSelectRow'>
-          <label>Aircraft</label>
-          <select value={selectedAircraft} onChange={e => setSelectedAircraft(e.target.value)}>
-            {options}
-          </select>
-          <button onClick={addAircraft}>Add Aircraft</button>
-          <button onClick={duplicateAircraft}>Duplicate Aircraft</button>
-          <button onClick={deleteAircraft}>Delete Aircraft</button>
+          <div id='selector'>
+            <label>Aircraft</label>
+            <select value={selectedAircraft} onChange={e => setSelectedAircraft(e.target.value)}>
+              {options}
+            </select>
+          </div>
+          <div id='buttons'>
+            <button onClick={addAircraft}>Add Aircraft</button>
+            <button onClick={duplicateAircraft}>Duplicate Aircraft</button>
+            <button onClick={deleteAircraft}>Delete Aircraft</button>
+          </div>
         </div>
       </Subregion>
       <AircraftMerging config={config} setConfig={setConfig} selectedAircraft={selectedAircraft} />

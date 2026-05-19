@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from "react";
 import "./Geometry.css"
-import { HorizontalRegion, Subregion, Grouping } from "./Layout";
+import { VerticalRegion, Subregion, Grouping } from "./Layout";
 import type { regionT, regionPointT, weightLimitT, aircraftProps, aircraftT } from "./Types";
 
 const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
@@ -199,7 +199,7 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
   }
 
   return (
-    <HorizontalRegion fraction="1fr">
+    <div>
       <section id="limits">
         {aircraft.limits.limits.map((limit: weightLimitT) => {
           return <WeightLimit key={limit.id} limit={limit} aircraft={aircraft} setAircraft={setAircraft} />
@@ -212,7 +212,7 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
         ))}
         <button onClick={addRegion}>Add Region</button>
       </section>
-    </HorizontalRegion>
+    </div>
   );
 }
 
