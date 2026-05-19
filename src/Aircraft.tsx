@@ -1,5 +1,5 @@
 import './Aircraft.css'
-import type { ReactNode } from "react";
+import { useRef, type ReactNode, type RefObject } from "react";
 import type { aircraftPropertiesT, configProps, aircraftT, configT } from "./Types";
 import { Subregion } from "./Layout";
 
@@ -34,6 +34,46 @@ function getNewAircraft(): aircraftT {
     aircraftConfigs: [],
     operationConfigs: []
   }
+}
+
+interface aircraftMergingProps extends configProps {
+  selectedAircraft: string
+}
+
+function AircraftMerging({ config, setConfig, selectedAircraft }: aircraftMergingProps): ReactNode {
+  const selectRef: RefObject<HTMLSelectElement | null> = useRef(null);
+
+  function copyConfig<K extends keyof aircraftT>(key: K[]): void {
+    const aircraftIndex = config.aircraft.findIndex(a => a.id === selectedAircraft);
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    Array.from(selectRef.current!.selectedOptions).forEach(child => {
+      const childAircraftIndex = config.aircraft.findIndex(a => a.id === child.value);
+
+      key.forEach(k => tmp.aircraft[childAircraftIndex][k] = JSON.parse(JSON.stringify(tmp.aircraft[aircraftIndex][k])));
+    });
+    setConfig(tmp);
+  }
+
+  const options = config.aircraft.map(a => {
+    if (a.id === selectedAircraft) return;
+    return <option key={a.id} value={a.id}>{(a.config.type != "" ? a.config.type + ": " : "") + a.config.tailNumber}</option>;
+  });
+
+  return (
+    <Subregion>
+      <select id='childAircraftSelect' multiple ref={selectRef}>
+        {options}
+      </select>
+      <div id='aircraftCopyRow'>
+        <button onClick={() => copyConfig(['limits', 'seats', 'cargoAreas', 'equipment', 'aircraftConfigs', 'operationConfigs'])}>Copy Full Config</button>
+        <button onClick={() => copyConfig(['limits'])}>Copy Geometry</button>
+        <button onClick={() => copyConfig(['seats', 'cargoAreas'])}>Copy Seats/Cargo</button>
+        <button onClick={() => copyConfig(['equipment'])}>Copy Equipment</button>
+        <button onClick={() => copyConfig(['aircraftConfigs'])}>Copy Configs</button>
+        <button onClick={() => copyConfig(['operationConfigs'])}>Copy Ops Configs</button>
+      </div>
+    </Subregion >
+  );
 }
 
 function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircraft }: aircraftConfigProps): ReactNode {
@@ -87,14 +127,8 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
           <button onClick={duplicateAircraft}>Duplicate Aircraft</button>
           <button onClick={deleteAircraft}>Delete Aircraft</button>
         </div>
-        <div id='aircraftCopyRow'>
-          <button>Copy Geometry</button>
-          <button>Copy Seats/Cargo</button>
-          <button>Copy Equipment</button>
-          <button>Copy Configs</button>
-          <button>Copy Ops Configs</button>
-        </div>
       </Subregion>
+      <AircraftMerging config={config} setConfig={setConfig} selectedAircraft={selectedAircraft} />
       <Subregion>
         <div className="rows">
           <div>
