@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import "./Geometry.css"
 import { HorizontalRegion, Subregion, Grouping } from "./Layout";
 import type { regionT, regionPointT, weightLimitT, aircraftProps, aircraftT } from "./Types";
@@ -11,11 +11,21 @@ interface weightLimitProps extends aircraftProps {
 
 function WeightLimit({ limit, aircraft, setAircraft }: weightLimitProps): ReactNode {
   const index = aircraft.limits.limits.findIndex((lim: weightLimitT) => lim.id === limit.id);
+  const timeRef = useRef(0);
   if (index < 0) return;
 
   function setValue<K extends keyof weightLimitT, V extends weightLimitT[K]>(key: K, value: V): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.limits.limits[index][key] = value;
+    setAircraft(tmp);
+  }
+
+  function setColor(color: string) {
+    const now = Date.now();
+    if (now - timeRef.current < 100) return;
+    timeRef.current = now;
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    tmp.limits.limits[index]['color'] = color;
     setAircraft(tmp);
   }
 
@@ -29,7 +39,7 @@ function WeightLimit({ limit, aircraft, setAircraft }: weightLimitProps): ReactN
     <div className="weightLimit grouping">
       <input placeholder="Limit Name" defaultValue={limit.name} onChange={e => setValue("name", e.target.value)} />
       <input placeholder="Weight" type="number" defaultValue={limit.weight ?? 0} onChange={e => setValue("weight", Number(e.target.value))} />
-      <input type="color" value={limit.color} onChange={e => setValue('color', e.target.value)} />
+      <input type="color" value={limit.color} onChange={e => setColor(e.target.value)} />
       <select value={limit.lineStyle} onChange={e => setValue('lineStyle', e.target.value)}>
         {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
       </select>
@@ -93,14 +103,16 @@ interface weightRegionProps extends aircraftProps {
 
 function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): ReactNode {
   const regionIndex = aircraft.limits.regions.findIndex((reg: regionT) => reg.id === region.id);
+  const timeRef = useRef(0);
+
   if (regionIndex < 0) {
     console.log("Warning: Did not find region index in config");
     return;
   }
 
-  function setName(name: string): void {
+  function setValue<K extends keyof regionT, V extends regionT[K]>(key: K, value: V): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    tmp.limits.regions[regionIndex].name = name;
+    tmp.limits.regions[regionIndex][key] = value;
     setAircraft(tmp);
   }
 
@@ -111,14 +123,11 @@ function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): Rea
   }
 
   function setColor(color: string): void {
+    const now = Date.now();
+    if (now - timeRef.current < 100) return;
+    timeRef.current = now;
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.limits.regions[regionIndex].color = color;
-    setAircraft(tmp);
-  }
-
-  function setStyle(style: string): void {
-    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    tmp.limits.regions[regionIndex].lineStyle = style;
     setAircraft(tmp);
   }
 
@@ -131,14 +140,14 @@ function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): Rea
           <input
             placeholder="Name"
             defaultValue={name}
-            onChange={e => setName(e.target.value)} />
+            onChange={e => setValue('name', e.target.value)} />
           <input
             type="color"
             value={region.color}
             onChange={e => setColor(e.target.value)} />
           <select
             value={region.lineStyle}
-            onChange={e => setStyle(e.target.value)}>
+            onChange={e => setValue('lineStyle', e.target.value)}>
             {availableStyles.map((style: string[]) =>
               <option key={style[0]} value={style[1]}>{style[0]}</option>
             )}
@@ -166,7 +175,7 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
       name: "",
       id: crypto.randomUUID(),
       weight: 0,
-      color: '#FFFFFF'
+      color: '#444444'
     };
     tmp.limits.limits.push(newLimit);
     setAircraft(tmp);
