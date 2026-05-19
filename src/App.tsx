@@ -183,8 +183,8 @@ function App() {
             <div id='graphHolder'>
               <Graph
                 aircraft={config.aircraft[aircraftIndex]}
-                selectedConfig={selectedPanel >= 3 ? selectedConfig : ""}
-                selectedOpsConfig={selectedPanel === 4 ? selectedOpsConfig : ""} />
+                selectedConfig={selectedPanel >= 4 ? selectedConfig : ""}
+                selectedOpsConfig={selectedPanel === 5 ? selectedOpsConfig : ""} />
             </div>
             <div id='diagramHolder'>
               <Diagram
