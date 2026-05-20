@@ -2,11 +2,11 @@ import { Grouping, Subregion } from "./Layout";
 import type { fuelTankT, aircraftProps, aircraftT } from "./Types";
 
 interface fuelInputProps extends aircraftProps {
-  area: fuelTankT,
+  tank: fuelTankT,
   index: number
 }
 
-function FuelInput({ area, index, aircraft, setAircraft }: fuelInputProps) {
+function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
 
   function setValue<T extends keyof fuelTankT, V extends fuelTankT[T]>(name: T, value: V): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
@@ -26,26 +26,30 @@ function FuelInput({ area, index, aircraft, setAircraft }: fuelInputProps) {
       <input
         name={"name" + index}
         placeholder="Name"
-        value={area.name ? area.name : ""}
+        value={tank.name ? tank.name : ""}
         onChange={e => setValue('name', e.target.value)} />
       <input
         name={"arm" + index}
         placeholder="Arm"
         type="number"
-        value={area.arm ? area.arm : ""}
+        value={tank.arm ? tank.arm : ""}
         onChange={e => setValue('arm', Number(e.target.value))} />
       <input
         name={"maxWeight" + index}
         placeholder="Max Weight"
         type="number"
-        value={area.maxWeight ? area.maxWeight : ""}
+        value={tank.maxWeight ? tank.maxWeight : ""}
         onChange={e => setValue('maxWeight', Number(e.target.value))} />
       <input
         name={"unusable" + index}
         placeholder="Unusable"
         type="number"
-        value={area.unusable ? area.unusable : ""}
+        value={tank.unusable ? tank.unusable : ""}
         onChange={e => setValue('unusable', Number(e.target.value))} />
+      <input
+        type="checkbox" defaultChecked={true}
+        checked={aircraft.fuelTanks[index].removable}
+        onChange={e => setValue('removable', e.target.checked)} />
       <button onClick={() => removeFuel()}>X</button>
     </div>
   );
@@ -61,6 +65,7 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
       arm: 0,
       maxWeight: 300,
       unusable: 0,
+      removable: false
     });
     setAircraft(tmp);
   }
@@ -70,11 +75,18 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
       <div id="fuelConfig">
         <h3>Fuel Config</h3>
         <button onClick={addFuel}>Add Fuel Tank</button>
+        <div className="fuelInput">
+          <p>Name</p>
+          <p>Arm</p>
+          <p>Max Weight</p>
+          <p>Unusable Weight</p>
+          <p>Removable?</p>
+        </div>
         <form id="fuelForm">
-          {aircraft.fuelTanks.map((area: fuelTankT, index: number) => (
-            <Grouping key={area.id}>
+          {aircraft.fuelTanks.map((tank: fuelTankT, index: number) => (
+            <Grouping key={tank.id}>
               <FuelInput
-                area={area}
+                tank={tank}
                 index={index}
                 aircraft={aircraft}
                 setAircraft={setAircraft} />

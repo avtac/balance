@@ -20,6 +20,7 @@
   grid-template-columns: 8.5rem 3.5rem 3.5rem 3.5rem 2.5rem 2rem;
   gap: 6px;
   margin: 3px;
+  align-items: center;
 }
 
 .weightLimit,
@@ -32,9 +33,15 @@
 
 .fuelInput {
   display: grid;
-  grid-template-columns: 11rem 5rem 5rem 5.2rem 2rem;
+  grid-template-columns: 11rem 5rem 5rem 5.2rem 5rem 2rem;
   gap: 6px;
   padding: 3px;
+  align-items: center;
+  text-align: center;
+
+  .removeButton {
+    display: grid;
+  }
 }
 
 .weightLimit {

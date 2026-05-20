@@ -103,10 +103,10 @@ interface fuelSelectionProps extends aircraftProps {
 function FuelSelection({ fuelTank, configIndex, aircraft, setAircraft }: fuelSelectionProps): ReactElement {
   let fuelTankIndex = -1;
   if (configIndex >= 0) fuelTankIndex = aircraft.aircraftConfigs[configIndex].fuelTanks.findIndex((s: string) => s == fuelTank.id);
-  const checked = useRef(fuelTankIndex >= 0);
+  const checked = useRef(fuelTankIndex >= 0 || !fuelTank.removable);
 
   function selectCheckbox(): void {
-    if (configIndex < 0) return;
+    if (configIndex < 0 || !fuelTank.removable) return;
     checked.current = !checked.current;
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     if (checked.current) {
@@ -123,7 +123,11 @@ function FuelSelection({ fuelTank, configIndex, aircraft, setAircraft }: fuelSel
   return (
     <tr className="fuelTankSelect" onClick={selectCheckbox}>
       <td>
-        <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
+        <input
+          disabled={!fuelTank.removable}
+          onChange={() => { }}
+          checked={!fuelTank.removable || checked.current}
+          type={"checkbox"} />
       </td>
       <td>{fuelTank.name}</td>
       <td>{fuelTank.arm}</td>
