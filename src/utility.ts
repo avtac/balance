@@ -11,8 +11,19 @@ export function calculateEmptyBalanceForConfig(config: aircraftT, selectedConfig
   let weight = config.config.emptyWeight;
   let moment = config.config.emptyWeight * config.config.emptyArm;
 
-  // Equipment
   const selectedConfigIndex = config.aircraftConfigs.findIndex(v => v.id === selectedConfig);
+
+  // Fuel
+  config.aircraftConfigs[selectedConfigIndex].fuelTanks.map(
+    (fuelTank) => {
+      const fuelTankIndex = config.fuelTanks.findIndex(c => c.id === fuelTank);
+      if (fuelTankIndex < 0) return;
+      const fuelTankData = config.fuelTanks[fuelTankIndex];
+      weight += fuelTankData.unusable;
+      moment += fuelTankData.unusable * fuelTankData.arm;
+    });
+
+  // Equipment
   if (selectedConfigIndex < 0) return [weight, moment / weight];
   config.aircraftConfigs[selectedConfigIndex].equipment.map(
     (equipment) => {
@@ -49,6 +60,16 @@ export function calculateMaxBalanceForConfig(config: aircraftT, selectedConfig: 
       const cargoAreaData = config.cargoAreas[cargoAreaIndex];
       weight += cargoAreaData.maxWeight;
       moment += cargoAreaData.maxWeight * cargoAreaData.arm;
+    });
+
+  // Fuel
+  config.aircraftConfigs[selectedConfigIndex].fuelTanks.map(
+    (fuelTank) => {
+      const fuelTankIndex = config.fuelTanks.findIndex(c => c.id === fuelTank);
+      if (fuelTankIndex < 0) return;
+      const fuelTankData = config.fuelTanks[fuelTankIndex];
+      weight += fuelTankData.maxWeight;
+      moment += fuelTankData.maxWeight * fuelTankData.arm;
     });
 
   // Equipment

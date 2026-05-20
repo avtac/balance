@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 9rem 9rem 9rem;
   gap: 8px;
+
   input {
     min-width: 5rem;
   }
@@ -9,13 +10,14 @@
 
 #configEquipment,
 #configCargo,
+#configFuel,
 #configSeats {
   border-collapse: collapse;
   user-select: none;
 
   th {
     border-bottom: 1px solid black;
-    height: 2.2rem;
+    height: 2.4rem;
   }
 
   tr:nth-child(even) {
@@ -27,7 +29,8 @@
     cursor: pointer;
   }
 
-  th, td {
+  th,
+  td {
     padding: 6px;
     text-align: center;
   }

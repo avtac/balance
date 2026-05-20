@@ -12,6 +12,7 @@ import AircraftConfigs from './Config'
 import AircraftOperationConfig from './BOW'
 import Header from './Header.tsx'
 import AircraftConfig from './Aircraft.tsx'
+import { FuelConfig } from './Fuel.tsx'
 
 function App() {
   const defaultValue: configT = {
@@ -54,6 +55,7 @@ function App() {
         name: "C 3",
         maxWeight: 225
       }],
+      fuelTanks: [],
       limits: {
         regions: [{
           name: "Normal",
@@ -166,6 +168,7 @@ function App() {
               <div name={"Seats/Cargo"}>
                 <SeatConfig aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
                 <CargoConfig aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
+                <FuelConfig aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
               </div>
               <Equipment name={"Equipment"} aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
               <AircraftConfigs name={"Configs"} aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} selectedConfig={selectedConfig} setSelectedConfig={setSelectedConfig} />

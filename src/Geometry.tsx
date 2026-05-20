@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from "react";
 import "./Geometry.css"
-import { VerticalRegion, Subregion, Grouping } from "./Layout";
+import { Subregion, Grouping } from "./Layout";
 import type { regionT, regionPointT, weightLimitT, aircraftProps, aircraftT } from "./Types";
 
 const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]

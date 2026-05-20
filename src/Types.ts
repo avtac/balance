@@ -81,6 +81,12 @@ export interface cargoAreaT extends maxMomentObjectT {
   name: string,
 }
 
+export interface fuelTankT extends maxMomentObjectT {
+  id: string,
+  name: string,
+  unusable: number
+}
+
 export interface aircraftPropertiesT {
   tailNumber: string,
   type: string,
@@ -96,6 +102,7 @@ export interface aircraftT {
   limits: aircraftLimitsT,
   seats: seatT[],
   cargoAreas: cargoAreaT[],
+  fuelTanks: fuelTankT[],
   equipment: equipmentT[],
   aircraftConfigs: aircraftConfigT[],
   operationConfigs: operationConfigT[]

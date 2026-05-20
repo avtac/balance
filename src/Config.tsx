@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import './Config.css'
 import { MultiPane, Subregion } from "./Layout";
-import type { aircraftConfigT, cargoAreaT, aircraftT, equipmentT, seatT, aircraftProps } from "./Types";
+import type { aircraftConfigT, cargoAreaT, aircraftT, equipmentT, seatT, aircraftProps, fuelTankT } from "./Types";
 import { getSortedByArm } from './utility';
 
 interface seatSelectionProps extends aircraftProps {
@@ -91,6 +91,44 @@ function CargoSelection({ cargoArea, configIndex, aircraft, setAircraft }: cargo
       <td>{cargoArea.name}</td>
       <td>{cargoArea.arm}</td>
       <td>{cargoArea.maxWeight}</td>
+    </tr>
+  );
+}
+
+interface fuelSelectionProps extends aircraftProps {
+  fuelTank: fuelTankT,
+  configIndex: number
+}
+
+function FuelSelection({ fuelTank, configIndex, aircraft, setAircraft }: fuelSelectionProps): ReactElement {
+  let fuelTankIndex = -1;
+  if (configIndex >= 0) fuelTankIndex = aircraft.aircraftConfigs[configIndex].fuelTanks.findIndex((s: string) => s == fuelTank.id);
+  const checked = useRef(fuelTankIndex >= 0);
+
+  function selectCheckbox(): void {
+    if (configIndex < 0) return;
+    checked.current = !checked.current;
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    if (checked.current) {
+      if (tmp.aircraftConfigs[configIndex].fuelTanks.findIndex((s: string) => s === fuelTank.id) < 0)
+        tmp.aircraftConfigs[configIndex].fuelTanks.push(fuelTank.id);
+    } else {
+      tmp.aircraftConfigs[configIndex].fuelTanks.splice(fuelTankIndex, 1);
+    }
+    checked.current = !checked.current;
+    setAircraft(tmp);
+  }
+
+  checked.current = fuelTankIndex >= 0;
+  return (
+    <tr className="fuelTankSelect" onClick={selectCheckbox}>
+      <td>
+        <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
+      </td>
+      <td>{fuelTank.name}</td>
+      <td>{fuelTank.arm}</td>
+      <td>{fuelTank.maxWeight}</td>
+      <td>{fuelTank.unusable}</td>
     </tr>
   );
 }
@@ -266,6 +304,22 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
             </tbody>
           </table>
         </Subregion>
+        <Subregion name={"Fuel Tanks"}>
+          <table id="configFuel">
+            <tbody>
+              <tr>
+                <th>✔</th>
+                <th style={{ width: "10rem" }}>Name</th>
+                <th style={{ width: "3rem" }}>Arm</th>
+                <th style={{ width: "3rem" }}>Max Weight</th>
+                <th style={{ width: "3rem" }}>Unusable Weight</th>
+              </tr>
+              {getSortedByArm(aircraft.fuelTanks).map((fuel: fuelTankT) => {
+                return <FuelSelection key={fuel.id + " fuelSelect"} configIndex={configIndex} fuelTank={fuel} aircraft={aircraft} setAircraft={setAircraft} />
+              })}
+            </tbody>
+          </table>
+        </Subregion>
         <Subregion name={"Equipment"}>
           <table id="configEquipment">
             <tbody>
@@ -277,7 +331,7 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
                 <th style={{ width: "3rem" }}>Count</th>
               </tr>
               {getSortedByArm(aircraft.equipment).map((equipment: equipmentT) => {
-                return <EquipmentSelection key={equipment.id + " cargoSelect"} configIndex={configIndex} equipment={equipment} aircraft={aircraft} setAircraft={setAircraft} />
+                return <EquipmentSelection key={equipment.id + " equipSelect"} configIndex={configIndex} equipment={equipment} aircraft={aircraft} setAircraft={setAircraft} />
               })}
             </tbody>
           </table>

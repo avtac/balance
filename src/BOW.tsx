@@ -145,6 +145,7 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
       config: selectedConfig,
       seats: [],
       cargoAreas: [],
+      fuelTanks: []
     };
     tmp.operationConfigs.push(newConfig);
     setAircraft(tmp);
@@ -260,7 +261,7 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
           </table>
         </Subregion>
         <Subregion name={"Cargo Areas"}>
-          <table id="aircraftCargo">
+          <table id="configCargo">
             <tbody>
               <tr>
                 <th>✔</th>

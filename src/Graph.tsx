@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useRef, type ReactNode } from 'react';
 import './Graph.css'
-import type { aircraftLimitsT, cargoAreaT, aircraftT, momentObjectT, regionPointT, regionT, seatT, weightLimitT } from './Types';
+import type { aircraftLimitsT, cargoAreaT, aircraftT, momentObjectT, regionPointT, regionT, seatT, weightLimitT, fuelTankT } from './Types';
 import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMaxBalanceForConfig } from './utility';
 
 let width = 140;
@@ -64,6 +64,13 @@ function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig
     const cargoArea = aircraft.cargoAreas.find((C: cargoAreaT) => C.id == c);
     if (!cargoArea) return;
     pointData.push({ weight: cargoArea.maxWeight, arm: cargoArea.arm });
+  })
+    .filter(s => s != undefined)
+
+  aircraft.aircraftConfigs[selectedConfigIndex].fuelTanks.map((c: string) => {
+    const fuelTank = aircraft.fuelTanks.find((C: fuelTankT) => C.id == c);
+    if (!fuelTank) return;
+    pointData.push({ weight: fuelTank.maxWeight, arm: fuelTank.arm });
   })
     .filter(s => s != undefined)
 

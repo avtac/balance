@@ -1,8 +1,10 @@
 #geometry {
   display: flex;
+
   div {
     margin: 3px;
   }
+
   input {
     width: 80%;
   }
@@ -23,7 +25,14 @@
 .weightLimit,
 .cargoInput {
   display: grid;
-  grid-template-columns: 11rem 4rem 4rem 2rem;
+  grid-template-columns: 11rem 5rem 5rem 2rem;
+  gap: 6px;
+  padding: 3px;
+}
+
+.fuelInput {
+  display: grid;
+  grid-template-columns: 11rem 5rem 5rem 5.2rem 2rem;
   gap: 6px;
   padding: 3px;
 }
@@ -36,9 +45,11 @@
   display: flex;
   flex-direction: column;
   padding: 4px;
+
   h4 {
     margin: 8px 0px;
   }
+
   .title {
     display: grid;
     grid-template-columns: 10rem 3rem 5rem 3rem;
@@ -64,6 +75,7 @@
     grid-column: span 3;
   }
 }
+
 .weightRegionRow:has(input:focus) .addButton,
 .addButton:hover {
   opacity: 1;
