@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useRef, type ReactNode } from 'react';
 import './Graph.css'
 import type { aircraftLimitsT, cargoAreaT, aircraftT, momentObjectT, regionPointT, regionT, seatT, weightLimitT, fuelTankT } from './Types';
-import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMaxBalanceForConfig } from './utility';
+import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMAC, calculateMaxBalanceForConfig } from './utility';
 
 let width = 140;
 let height = 80;
@@ -85,12 +85,12 @@ function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig
     positions.push({ weight: totalWeight, arm: totalArm })
   });
 
-  let x = calculatePointX(limits, configEmptyArm);
+  let x = calculatePointX(limits, calculateMAC(configEmptyArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC));
   let y = calculatePointY(limits, configEmptyWeight);
   const points: string[] = [`${x},${y}`];
 
   for (let i = 0; i < positions.length; i++) {
-    x = calculatePointX(limits, positions[i].arm);
+    x = calculatePointX(limits, calculateMAC(positions[i].arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC));
     y = calculatePointY(limits, positions[i].weight);
     points.push(`${x},${y}`);
   }
@@ -109,7 +109,7 @@ function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig
   });
 
   for (let i = positions.length - 1; i >= 0; i--) {
-    x = calculatePointX(limits, positions[i].arm);
+    x = calculatePointX(limits, calculateMAC(positions[i].arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC));
     y = calculatePointY(limits, positions[i].weight);
     points.push(`${x},${y}`);
   }
@@ -182,7 +182,6 @@ interface plotRegionProps {
 function PlotRegion({ data, limits }: plotRegionProps): ReactNode {
   const withEnd = [...data.data, data.data[0]];
   let points = withEnd.map((point: regionPointT) => {
-    ;
     let x = calculatePointX(limits, point.arm);
     let y = calculatePointY(limits, point.weight);
     return [x, y];
@@ -240,10 +239,11 @@ function truncateNumber(n: number): number {
 
 interface plotGridProps {
   limits: limitsT,
-  gridSpacing: number
+  gridSpacing: number,
+  units: string
 }
 
-function PlotHorizontalGrid({ limits, gridSpacing }: plotGridProps): ReactNode {
+function PlotHorizontalGrid({ limits, gridSpacing, units }: plotGridProps): ReactNode {
   const gapBetweenGrid = gridSpacing * limits.xRatio;
   const smallestGridValue = Math.ceil((limits.minX - graphInsetPadding / limits.xRatio) / gridSpacing) * gridSpacing;
   const largestGridValue = Math.floor((limits.maxX + graphInsetPadding / limits.xRatio) / gridSpacing) * gridSpacing;
@@ -252,10 +252,10 @@ function PlotHorizontalGrid({ limits, gridSpacing }: plotGridProps): ReactNode {
   const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid)) + 1;
   if (!numGrid) return;
   const startValue = truncateNumber(smallestGridValue);
-  let positions: { pos: number, value: number }[] = Array(numGrid).fill(0).map((_, index) => {
+  let positions: { pos: number, value: string }[] = Array(numGrid).fill(0).map((_, index) => {
     return {
       pos: gapBetweenGrid * index + smallestGridPosition,
-      value: startValue + truncateNumber(index * gridSpacing)
+      value: startValue + truncateNumber(index * gridSpacing) + units
     }
   });
   return (
@@ -282,7 +282,7 @@ function PlotHorizontalGrid({ limits, gridSpacing }: plotGridProps): ReactNode {
   );
 }
 
-function PlotVerticalGrid({ limits, gridSpacing }: plotGridProps): ReactNode {
+function PlotVerticalGrid({ limits, gridSpacing, units }: plotGridProps): ReactNode {
   const gapBetweenGrid = gridSpacing * limits.yRatio;
   const smallestGridValue = Math.ceil((limits.minY - graphInsetPadding / limits.yRatio) / gridSpacing) * gridSpacing;
   const largestGridValue = Math.floor((limits.maxY + graphInsetPadding / limits.yRatio) / gridSpacing) * gridSpacing;
@@ -291,10 +291,10 @@ function PlotVerticalGrid({ limits, gridSpacing }: plotGridProps): ReactNode {
   const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid)) + 1;
   if (!numGrid) return;
   const startValue = truncateNumber(smallestGridValue);
-  let positions: { pos: number, value: number }[] = Array(numGrid).fill(0).map((_, index) => {
+  let positions: { pos: number, value: string }[] = Array(numGrid).fill(0).map((_, index) => {
     return {
       pos: largestGridPosition - gapBetweenGrid * index,
-      value: startValue + truncateNumber(index * gridSpacing)
+      value: startValue + truncateNumber(index * gridSpacing) + units
     }
   });
   return (
@@ -398,19 +398,34 @@ interface graphProps {
   selectedOpsConfig: string
 }
 
+interface lineProps {
+  weight1: number,
+  arm1: number,
+  weight2: number,
+  arm2: number,
+  color: string,
+  style?: string
+}
+
 function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): ReactNode {
   if (aircraft === undefined) return;
   let data: aircraftLimitsT = JSON.parse(JSON.stringify(aircraft.limits));
+
+  // Ensure that the arm is in MAC or distance units
+  data.regions = [...data.regions.map(a => {
+    const newData = a.data.map(d => ({ ...d, arm: calculateMAC(d.arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC) }));
+    return { ...a, data: newData };
+  })];
   const configAreaPoints = useRef("");
 
   // Add any desired points to graph
   const points: plotPointT[] = []
   // Add any desired lines to graph
-  const lines: { weight1: number, arm1: number, weight2: number, arm2: number, color: string, style?: string }[] = []
+  const lines: lineProps[] = []
 
   points.push({
     weight: aircraft.config.emptyWeight,
-    arm: aircraft.config.emptyArm,
+    arm: calculateMAC(aircraft.config.emptyArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC),
     style: 'square',
     size: 2,
     label: "Empty Aircraft"
@@ -422,7 +437,7 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
     if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
       points.push({
         weight: weight,
-        arm: arm,
+        arm: calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC),
         style: 'circle',
         size: 1,
         label: "Empty Config"
@@ -430,7 +445,7 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
     if (weightFull != aircraft.config.emptyWeight || armFull != aircraft.config.emptyArm)
       points.push({
         weight: weightFull,
-        arm: armFull,
+        arm: calculateMAC(armFull, aircraft.config.mac, aircraft.config.leadingEdgeMAC),
         style: 'circle',
         size: 1,
         label: "Max Config"
@@ -443,7 +458,7 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
     if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
       points.push({
         weight: weight,
-        arm: arm,
+        arm: calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC),
         style: 'square',
         size: 2,
         label: "Ops Config"
@@ -506,10 +521,33 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
 
   // Gird base components
   const title = useRef(<PlotTitle title="Weight vs Arm" />);
-  const horizontalBars = <PlotHorizontalGrid limits={limits} gridSpacing={horSpacing} />;
-  const verticalBars = <PlotVerticalGrid limits={limits} gridSpacing={verSpacing} />;
+  const horizontalBars = <PlotHorizontalGrid limits={limits} gridSpacing={horSpacing} units={(!aircraft.config.mac || !aircraft.config.leadingEdgeMAC) ? "" : "%"} />;
+  const verticalBars = <PlotVerticalGrid limits={limits} gridSpacing={verSpacing} units='' />;
 
   const dataAvailable = isFinite(limits.xRatio) && isFinite(limits.yRatio);
+
+  // lines
+  const lineComponents = lines.map((l, i) => {
+    return <line
+      key={[l.arm1, l.weight2, i].join(" ")}
+      x1={calculatePointX(limits, l.arm1)}
+      y1={calculatePointY(limits, l.weight1)}
+      x2={calculatePointX(limits, l.arm2)}
+      y2={calculatePointY(limits, l.weight2)}
+      stroke={l.color}
+      strokeWidth={.3}
+      strokeDasharray={l.style}
+    />
+  })
+
+  // points
+  const pointComponents = points.map((p, i) => {
+    return <PlotPoint
+      key={[p.weight, p.arm, i].join(' ')}
+      point={p}
+      limits={limits}
+    />
+  })
 
   data.limits = cleanLimits(data.limits);
   return (
@@ -520,25 +558,8 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
       {dataAvailable && verticalBars}
       {dataAvailable && selectedConfig && <polyline className="configArea" points={configAreaPoints.current} />}
       {dataAvailable && <PlotRegions aircraft={data} limits={limits} />}
-      {dataAvailable && lines.map((l, i) => {
-        return <line
-          key={[l.arm1, l.weight2, i].join(" ")}
-          x1={calculatePointX(limits, l.arm1)}
-          y1={calculatePointY(limits, l.weight1)}
-          x2={calculatePointX(limits, l.arm2)}
-          y2={calculatePointY(limits, l.weight2)}
-          stroke={l.color}
-          strokeWidth={.3}
-          strokeDasharray={l.style}
-        />
-      })}
-      {dataAvailable && points.map((p, i) => {
-        return <PlotPoint
-          key={[p.weight, p.arm, i].join(' ')}
-          point={p}
-          limits={limits}
-        />
-      })}
+      {dataAvailable && lineComponents}
+      {dataAvailable && pointComponents}
     </svg>
   );
 }

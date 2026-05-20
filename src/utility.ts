@@ -7,6 +7,11 @@ export function getSortedByArm<T extends (maxMomentObjectT | momentObjectT)>(dat
   }).filter((s: T) => s != undefined);
 }
 
+export function calculateMAC(arm: number, mac: (number | undefined), leadingMac: (number | undefined)): number {
+  if (!leadingMac || !mac) return arm;
+  return (arm - leadingMac) / mac * 100;
+}
+
 export function calculateEmptyBalanceForConfig(config: aircraftT, selectedConfig: string): [number, number] {
   let weight = config.config.emptyWeight;
   let moment = config.config.emptyWeight * config.config.emptyArm;

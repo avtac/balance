@@ -26,6 +26,7 @@ function getNewAircraft(): aircraftT {
       maxWeight: 200
     }],
     cargoAreas: [],
+    fuelTanks: [],
     limits: {
       regions: [],
       limits: []
