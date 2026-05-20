@@ -267,9 +267,9 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
             })}
           </select>
           <input value={configIndex >= 0 ? aircraft.aircraftConfigs[configIndex].name : ""} onChange={(e) => setName(e.target.value)} />
-          <button onClick={addConfig}>Add Config</button>
-          <button onClick={duplicateConfig}>Duplicate Config</button>
-          <button onClick={deleteConfig}>Delete Config</button>
+          <button onClick={addConfig}>Add</button>
+          <button onClick={duplicateConfig}>Duplicate</button>
+          <button onClick={deleteConfig}>Delete</button>
         </div>
       </Subregion>
       <MultiPane>
