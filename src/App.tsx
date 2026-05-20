@@ -115,8 +115,8 @@ function App() {
   const [selectedAircraft, setSelectedAircraft] = useState(config.aircraft.length > 0 ? config.aircraft[0].id : "")
   const aircraftIndex = config.aircraft.findIndex(a => a.id === selectedAircraft);
 
-  const [selectedConfig, setSelectedConfig] = useState(config.aircraft[aircraftIndex].aircraftConfigs.length > 0 ? config.aircraft[aircraftIndex].aircraftConfigs[0].id : "");
-  const [selectedOpsConfig, setSelectedOpsConfig] = useState(config.aircraft[aircraftIndex].operationConfigs.length > 0 ? config.aircraft[aircraftIndex].operationConfigs[0].id : "")
+  const [selectedConfig, setSelectedConfig] = useState(aircraftIndex >= 0 && config.aircraft[aircraftIndex].aircraftConfigs.length > 0 ? config.aircraft[aircraftIndex].aircraftConfigs[0].id : "");
+  const [selectedOpsConfig, setSelectedOpsConfig] = useState(aircraftIndex >= 0 && config.aircraft[aircraftIndex].operationConfigs.length > 0 ? config.aircraft[aircraftIndex].operationConfigs[0].id : "")
   const [selectedPanel, setSelectedPanel] = useState(0);
 
   function setSelectedAircraftSpecial(aircraftId: string): void {
@@ -154,7 +154,7 @@ function App() {
 
   return (
     <>
-      <Header aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
+      <Header setConfig={setConfigSpecial} />
       <section id="content">
         <div id="split">
           <div id='leftPanel'>

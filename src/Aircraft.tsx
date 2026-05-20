@@ -157,11 +157,11 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
         <div className='rows'>
           <div>
             <h3>Leading MAC</h3>
-            <input value={config.aircraft[aircraftIndex].config.leadingEdgeMAC} type="number" placeholder="Leading Edge MAC" onChange={(e) => setValue('leadingEdgeMAC', Number(e.target.value))} />
+            <input value={config.aircraft[aircraftIndex].config.leadingEdgeMAC ?? 0} type="number" placeholder="Leading Edge MAC" onChange={(e) => setValue('leadingEdgeMAC', Number(e.target.value))} />
           </div>
           <div>
             <h3>MAC</h3>
-            <input value={config.aircraft[aircraftIndex].config.mac} type="number" placeholder="Mean Aerodynamic Chord" onChange={(e) => setValue('mac', Number(e.target.value))} />
+            <input value={config.aircraft[aircraftIndex].config.mac ?? 0} type="number" placeholder="Mean Aerodynamic Chord" onChange={(e) => setValue('mac', Number(e.target.value))} />
           </div>
         </div>
       </Subregion>
