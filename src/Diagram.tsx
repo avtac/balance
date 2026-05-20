@@ -10,20 +10,29 @@ const fontSize = 4;
 
 interface cargoIconProps {
   name: string,
-  color: string,
+  color?: string,
   offX: number,
   offY: number,
   width: number
+  opsPercent?: number,
 }
 
-function CargoIcon({ name, color = '#CCCCCC', offX = 0, offY = 0, width = cargoSize }: cargoIconProps): ReactNode {
+function CargoIcon({ name, color = '#CCCCCC', offX = 0, offY = 0, width = cargoSize, opsPercent = 0 }: cargoIconProps): ReactNode {
   const left = offX - cargoSize / 2;
   const top = -offY - width / 2;
   return (
     <>
       <rect
-        fill={color + "CC"}
-        stroke={"#000000"}
+        fill={color}
+        strokeWidth={0}
+        width={cargoSize}
+        height={width * opsPercent}
+        x={left}
+        y={top + width * (1 - opsPercent)}
+        ry={.4105551} />
+      <rect
+        fill={"transparent"}
+        stroke={"black"}
         strokeWidth={0.5}
         width={cargoSize}
         height={width}
@@ -48,56 +57,58 @@ interface seatIconProps {
   color: string,
   offX: number,
   offY: number,
-  count: number
+  count: number,
+  opsPercent?: number,
 }
 
 // offX, offY are in canvas units
-function SeatIcon({ count, name, color = '#CCCCCC', offX = 0, offY = 0 }: seatIconProps): ReactNode {
+function SeatIcon({ count, name, color = '#CCCCCC', offX = 0, offY = 0, opsPercent = 0 }: seatIconProps): ReactNode {
   const left = offX - seatSize / 2;
   return (
     <>
       {...Array(count).fill(0).map((_, i: number) => {
         const top = offY - (i - count / 2) * seatSize;
+        const c = opsPercent > ((count - 1 - i) / count) ? color : "white";
         return (
           <>
             <rect
-              fill={color}
+              fill={c}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize}
               height={seatSize}
               x={left}
               y={-top}
-              ry={.4105551} />
+              ry={2} />
             <rect
-              fill={color}
+              fill={c}
               stroke={"#000000"}
               strokeWidth={0.5}
-              width={seatSize / 2}
+              width={seatSize / 3}
               height={seatSize / 8}
-              x={seatSize * 1 / 6 + left}
+              x={seatSize * 1 / 3 + left}
               y={-seatSize + top}
               ry={0.29849526}
               transform={"scale(1,-1)"} />
             <rect
-              fill={color}
+              fill={c}
               stroke={"#000000"}
               strokeWidth={0.5}
-              width={seatSize / 2}
+              width={seatSize / 3}
               height={seatSize / 8}
-              x={seatSize * 1 / 6 + left}
+              x={seatSize * 1 / 3 + left}
               y={-seatSize / 8 + top}
               ry={0.29849526}
               transform={"scale(1,-1)"} />
             <rect
-              fill={color}
+              fill={c}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize * 3 / 8}
               height={seatSize}
               x={left}
               y={-seatSize + top}
-              ry={2.3889797}
+              ry={2}
               transform={"scale(1,-1)"} />
           </>
         )
@@ -170,30 +181,38 @@ function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }:
 
   const opsIndex: number = aircraft.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig == o.id);
   const seatItems = seats.map((seat: seatT): ReactNode => {
+    const seatIndex = aircraft.operationConfigs[opsIndex].seats.findIndex(
+      (v: { id: string, weight: number }) => v.id == seat.id
+    )
+
     const isOps = selectedPanel >= 4 && opsIndex >= 0
       && selectedOpsConfig != undefined
-      && aircraft.operationConfigs[opsIndex].seats.find(
-        (v: { id: string, weight: number }) => v.id == seat.id
-      )
+      && seatIndex >= 0;
+
+    const opsPercentUsed = isOps ? aircraft.operationConfigs[opsIndex].seats[seatIndex].weight / seat.maxWeight / seat.seatCount : 0;
     return <SeatIcon
       key={seat.id}
       name={seat.name}
-      color={isOps ? "#6688AA" : "#D6D7E3"}
+      color={"#7799CC"}
+      opsPercent={opsPercentUsed}
       offX={-getPixelFromArm(seat.arm)}
       offY={getPixelFromArm(-seat.lateralDist)}
       count={Number(seat.seatCount)} />
   });
 
   const cargoItems = cargoAreas.map((cargoArea: cargoAreaT): ReactNode => {
+    const cargoIndex = aircraft.operationConfigs[opsIndex].cargoAreas.findIndex(
+      (v: { id: string, weight: number }) => v.id == cargoArea.id
+    )
     const isOps = selectedPanel >= 4 && opsIndex >= 0
       && selectedOpsConfig != undefined
-      && aircraft.operationConfigs[opsIndex].cargoAreas.find(
-        (v: { id: string, weight: number }) => v.id == cargoArea.id
-      )
+      && cargoIndex >= 0;
+    const opsPercentUsed = isOps ? aircraft.operationConfigs[opsIndex].cargoAreas[cargoIndex].weight / cargoArea.maxWeight : 0;
     return <CargoIcon
       key={cargoArea.id}
       name={cargoArea.name}
-      color={isOps ? "#6688AA" : "#D6D7E3"}
+      color="#7799CC"
+      opsPercent={opsPercentUsed}
       offX={-getPixelFromArm(cargoArea.arm)}
       offY={-planeTop - planeHeight / 2}
       width={planeHeight - planePadding * 2} />
