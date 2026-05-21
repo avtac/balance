@@ -1,5 +1,5 @@
-import { Grouping, Subregion } from "./Layout";
-import type { aircraftT, seatT, aircraftProps } from "./Types";
+import { Grouping, Subregion } from "../Layout";
+import type { aircraftT, seatT, aircraftProps } from "../Types";
 
 interface seatInputProps extends aircraftProps {
   seat: seatT,

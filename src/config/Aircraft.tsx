@@ -1,7 +1,7 @@
 import './Aircraft.css'
 import { useRef, type ReactNode, type RefObject } from "react";
 import type { aircraftPropertiesT, configProps, aircraftT, configT } from "./Types";
-import { Subregion } from "./Layout";
+import { Subregion } from "../Layout";
 
 interface aircraftConfigProps extends configProps {
   selectedAircraft: string,

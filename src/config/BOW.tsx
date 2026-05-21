@@ -1,8 +1,8 @@
 import './BOW.css'
 import { useEffect, useRef, type ReactNode } from "react";
-import { Subregion, MultiPane } from "./Layout";
+import { Subregion, MultiPane } from "../Layout";
 import type { aircraftConfigT, cargoAreaT, aircraftProps, aircraftT, operationConfigT, seatT } from "./Types";
-import { getSortedByArm } from './utility';
+import { getSortedByArm } from '../utility';
 
 interface seatSelectionProps extends aircraftProps {
   seat: seatT,

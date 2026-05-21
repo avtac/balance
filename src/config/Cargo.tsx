@@ -1,5 +1,5 @@
-import { Grouping, Subregion } from "./Layout";
-import type { cargoAreaT, aircraftProps, aircraftT } from "./Types";
+import { Grouping, Subregion } from "../Layout";
+import type { cargoAreaT, aircraftProps, aircraftT } from "../Types";
 
 interface cargoInputProps extends aircraftProps {
   area: cargoAreaT,

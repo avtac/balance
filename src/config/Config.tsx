@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import './Config.css'
-import { MultiPane, Subregion } from "./Layout";
-import type { aircraftConfigT, cargoAreaT, aircraftT, equipmentT, seatT, aircraftProps, fuelTankT } from "./Types";
-import { getSortedByArm } from './utility';
+import { MultiPane, Subregion } from "../Layout";
+import type { aircraftConfigT, cargoAreaT, aircraftT, equipmentT, seatT, aircraftProps, fuelTankT } from "../Types";
+import { getSortedByArm } from '../utility';
 
 interface seatSelectionProps extends aircraftProps {
   seat: seatT,

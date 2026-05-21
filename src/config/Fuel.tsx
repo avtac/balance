@@ -1,5 +1,5 @@
-import { Grouping, Subregion } from "./Layout";
-import type { fuelTankT, aircraftProps, aircraftT } from "./Types";
+import { Grouping, Subregion } from "../Layout";
+import type { fuelTankT, aircraftProps, aircraftT } from "../Types";
 
 interface fuelInputProps extends aircraftProps {
   tank: fuelTankT,
@@ -47,7 +47,7 @@ function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
         value={tank.unusable ? tank.unusable : ""}
         onChange={e => setValue('unusable', Number(e.target.value))} />
       <input
-        type="checkbox" defaultChecked={true}
+        type="checkbox"
         checked={aircraft.fuelTanks[index].removable}
         onChange={e => setValue('removable', e.target.checked)} />
       <button onClick={() => removeFuel()}>X</button>

@@ -1,7 +1,7 @@
 import './Equipment.css'
-import { Subregion, Grouping } from './Layout'
-import type { cargoAreaT, aircraftT, equipmentT, seatT } from './Types'
-import { getSortedByArm } from './utility';
+import { Subregion, Grouping } from '../Layout'
+import type { cargoAreaT, aircraftT, equipmentT, seatT } from '../Types'
+import { getSortedByArm } from '../utility';
 
 interface equipmentRowProps {
   setAircraft: (arg0: aircraftT) => void,
