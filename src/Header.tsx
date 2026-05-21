@@ -36,12 +36,15 @@ function Header({ setConfig }: headerProps): ReactNode {
     input.click();
   }
 
-  const title = "Teeter Config"
+  const title = "Teeter"
   return (
     <header id='header'>
-      <button onClick={openFile}>Open Config</button>
+      <button onClick={() => window.location.href = '/'}>Home</button>
       <h1>{title}</h1>
-      <button onClick={saveFile}>Save Config</button>
+      <div>
+        <button onClick={openFile}>Open Config</button>
+        <button onClick={saveFile}>Save Config</button>
+      </div>
     </header>
   );
 }
