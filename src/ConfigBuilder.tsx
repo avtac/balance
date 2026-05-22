@@ -31,36 +31,36 @@ export function getNewConfig(): configT {
       config: {
         tailNumber: "",
         type: "",
-        emptyArm: 32,
-        emptyWeight: 1450
+        emptyArm: 35.5,
+        emptyWeight: 1550
       },
       seats: [{
         id: crypto.randomUUID(),
         name: "Pilot Seat",
-        arm: 35,
+        arm: 37,
         seatCount: 2,
         lateralDist: 0,
         maxWeight: 200
       }, {
         id: crypto.randomUUID(),
         name: "Back Seat",
-        arm: 54,
+        arm: 73,
         seatCount: 2,
         lateralDist: 0,
         maxWeight: 200
       }],
       cargoAreas: [{
-        arm: 73,
+        arm: 93,
         id: crypto.randomUUID(),
         name: "C 1",
         maxWeight: 75
       }, {
-        arm: 91,
+        arm: 123,
         id: crypto.randomUUID(),
         name: "C 2",
         maxWeight: 25
       }, {
-        arm: 54,
+        arm: 73,
         id: crypto.randomUUID(),
         name: "C 3",
         maxWeight: 225
@@ -72,11 +72,11 @@ export function getNewConfig(): configT {
           id: crypto.randomUUID(),
           color: '#D11F1F',
           data: [
-            { id: crypto.randomUUID(), arm: 30, weight: 1400 },
-            { id: crypto.randomUUID(), arm: 30, weight: 2000 },
-            { id: crypto.randomUUID(), arm: 35, weight: 2550 },
-            { id: crypto.randomUUID(), arm: 50, weight: 2550 },
-            { id: crypto.randomUUID(), arm: 50, weight: 1400 }
+            { id: crypto.randomUUID(), arm: 35, weight: 1500 },
+            { id: crypto.randomUUID(), arm: 35, weight: 1950 },
+            { id: crypto.randomUUID(), arm: 41, weight: 2550 },
+            { id: crypto.randomUUID(), arm: 47.5, weight: 2550 },
+            { id: crypto.randomUUID(), arm: 47.5, weight: 1500 }
           ]
         },
         {
@@ -84,11 +84,11 @@ export function getNewConfig(): configT {
           id: crypto.randomUUID(),
           color: '#4294FF',
           data: [
-            { id: crypto.randomUUID(), arm: 30, weight: 1400 },
-            { id: crypto.randomUUID(), arm: 30, weight: 2000 },
-            { id: crypto.randomUUID(), arm: 31.85, weight: 2200 },
-            { id: crypto.randomUUID(), arm: 34, weight: 2200 },
-            { id: crypto.randomUUID(), arm: 34, weight: 1400 }
+            { id: crypto.randomUUID(), arm: 35, weight: 1500 },
+            { id: crypto.randomUUID(), arm: 35, weight: 1950 },
+            { id: crypto.randomUUID(), arm: 37.5, weight: 2200 },
+            { id: crypto.randomUUID(), arm: 40.5, weight: 2200 },
+            { id: crypto.randomUUID(), arm: 40.5, weight: 1500 }
           ]
         }
 

@@ -31,8 +31,8 @@ function SeatSelection({ seat, opsConfigIndex, aircraft, setAircraft }: seatSele
 
   function setWeight(weight: number): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    tmp.operationConfigs[opsConfigIndex].seats[seatIndex].weight = weight;
-    oldWeight.current = weight;
+    tmp.operationConfigs[opsConfigIndex].seats[seatIndex].weight = Math.min(seat.maxWeight * seat.seatCount, weight);
+    oldWeight.current = Math.min(seat.maxWeight * seat.seatCount, weight);
     setAircraft(tmp);
   }
 
@@ -92,8 +92,8 @@ function CargoSelection({ cargoArea, opsConfigIndex, aircraft, setAircraft }: ca
 
   function setWeight(weight: number): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    tmp.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight = weight;
-    oldWeight.current = weight;
+    tmp.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight = Math.min(cargoArea.maxWeight, weight);
+    oldWeight.current = Math.min(cargoArea.maxWeight, weight);
     setAircraft(tmp);
   }
 
