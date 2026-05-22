@@ -4,7 +4,7 @@ import Geometry from './config/Geometry.tsx'
 import Diagram from './Diagram'
 import Graph from './Graph.tsx'
 import { useMemo, useState } from 'react'
-import type { configT, aircraftT, operationConfigT } from './Types'
+import type { configT, aircraftT, operationConfigT, configProps, nameProps, aircraftProps } from './Types'
 import { SeatConfig } from './config/Seats.tsx'
 import { CargoConfig } from './config/Cargo.tsx'
 import { Equipment } from './config/Equipment.tsx'
@@ -13,9 +13,19 @@ import AircraftOperationConfig from './config/BOW.tsx'
 import Header from './Header.tsx'
 import AircraftConfig from './config/Aircraft.tsx'
 import { FuelConfig } from './config/Fuel.tsx'
+import Setup from './config/Setup.tsx'
 
-function ConfigBuilder() {
-  const defaultValue: configT = {
+export function getNewConfig(): configT {
+  return {
+    id: crypto.randomUUID(),
+    name: "",
+    setup: {
+      weightUnits: 'lbs',
+      lengthUnits: 'in',
+      fuelUnits: 'lbs',
+      useMAC: false,
+      fuelDensity: 6,
+    },
     aircraft: [{
       id: crypto.randomUUID(),
       config: {
@@ -103,7 +113,20 @@ function ConfigBuilder() {
       }]
     }]
   };
+}
 
+function SeatCargoFuelConfig({ aircraft, setAircraft }: aircraftProps & nameProps) {
+  return (
+    <div>
+      <SeatConfig aircraft={aircraft} setAircraft={setAircraft} />
+      <CargoConfig aircraft={aircraft} setAircraft={setAircraft} />
+      <FuelConfig aircraft={aircraft} setAircraft={setAircraft} />
+    </div>
+  )
+}
+
+function ConfigBuilder() {
+  const defaultValue = getNewConfig();
   defaultValue.aircraft[0].operationConfigs[0].config = defaultValue.aircraft[0].aircraftConfigs[0].id;
 
   let storageConfig: configT = defaultValue;
@@ -118,6 +141,16 @@ function ConfigBuilder() {
   const [selectedConfig, setSelectedConfig] = useState(aircraftIndex >= 0 && config.aircraft[aircraftIndex].aircraftConfigs.length > 0 ? config.aircraft[aircraftIndex].aircraftConfigs[0].id : "");
   const [selectedOpsConfig, setSelectedOpsConfig] = useState(aircraftIndex >= 0 && config.aircraft[aircraftIndex].operationConfigs.length > 0 ? config.aircraft[aircraftIndex].operationConfigs[0].id : "")
   const [selectedPanel, setSelectedPanel] = useState(0);
+
+  useMemo(() => {
+    if (config.aircraft.findIndex(a => a.id === selectedAircraft) < 0)
+      setSelectedAircraft(config.aircraft[0].id);
+    else return;
+    if (config.aircraft[0].aircraftConfigs.findIndex(a => a.id === selectedConfig) < 0)
+      setSelectedConfig(config.aircraft[0].aircraftConfigs[0].id);
+    if (config.aircraft[0].operationConfigs.findIndex(a => a.id === selectedOpsConfig) < 0)
+      setSelectedOpsConfig(config.aircraft[0].operationConfigs[0].id);
+  }, [config])
 
   function setSelectedAircraftSpecial(aircraftId: string): void {
     if (aircraftId === selectedAircraft) return;
@@ -154,24 +187,38 @@ function ConfigBuilder() {
 
   return (
     <>
-      <Header setConfig={setConfigSpecial} />
+      <Header />
       <section id="content">
         <div id="split">
           <div id='leftPanel'>
             <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
+              <Setup
+                name={"Setup"}
+                config={config}
+                setConfig={setConfigSpecial} />
               <AircraftConfig name={"Aircraft"}
                 config={config}
                 setConfig={setConfigSpecial}
                 selectedAircraft={selectedAircraft}
                 setSelectedAircraft={setSelectedAircraftSpecial} />
-              <Geometry name={"Geometry"} aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
-              <div name={"Seats/Cargo"}>
-                <SeatConfig aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
-                <CargoConfig aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
-                <FuelConfig aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
-              </div>
-              <Equipment name={"Equipment"} aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} />
-              <AircraftConfigs name={"Configs"} aircraft={config.aircraft[aircraftIndex]} setAircraft={setAircraftSpecial} selectedConfig={selectedConfig} setSelectedConfig={setSelectedConfig} />
+              <Geometry
+                name={"Geometry"}
+                aircraft={config.aircraft[aircraftIndex]}
+                setAircraft={setAircraftSpecial} />
+              <SeatCargoFuelConfig
+                name={"Seat/Cargo/Fuel"}
+                aircraft={config.aircraft[aircraftIndex]}
+                setAircraft={setAircraftSpecial} />
+              <Equipment
+                name={"Equipment"}
+                aircraft={config.aircraft[aircraftIndex]}
+                setAircraft={setAircraftSpecial} />
+              <AircraftConfigs
+                name={"Configs"}
+                aircraft={config.aircraft[aircraftIndex]}
+                setAircraft={setAircraftSpecial}
+                selectedConfig={selectedConfig}
+                setSelectedConfig={setSelectedConfig} />
               <AircraftOperationConfig
                 name={"Ops Config"}
                 aircraft={config.aircraft[aircraftIndex]}
@@ -186,8 +233,8 @@ function ConfigBuilder() {
             <div id='graphHolder'>
               <Graph
                 aircraft={config.aircraft[aircraftIndex]}
-                selectedConfig={selectedPanel >= 4 ? selectedConfig : ""}
-                selectedOpsConfig={selectedPanel === 5 ? selectedOpsConfig : ""} />
+                selectedConfig={selectedPanel >= 5 ? selectedConfig : ""}
+                selectedOpsConfig={selectedPanel === 6 ? selectedOpsConfig : ""} />
             </div>
             <div id='diagramHolder'>
               <Diagram

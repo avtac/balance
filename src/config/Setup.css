@@ -1,0 +1,14 @@
+#configSelectRow {
+  display: flex;
+  justify-content: space-between;
+
+  select {
+    margin: 0px 6px;
+    width: 14rem;
+  }
+
+  #buttons {
+    display: flex;
+    gap: 6px;
+  }
+}

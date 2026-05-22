@@ -1,4 +1,4 @@
-import type { aircraftT, maxMomentObjectT, momentObjectT } from './Types';
+import { volumeUnits, weightUnits, type aircraftT, type fuelUnitsT, type lengthUnitsT, type maxMomentObjectT, type momentObjectT, type volumeUnitsT, type weightUnitsT } from './Types';
 
 export function getSortedByArm<T extends (maxMomentObjectT | momentObjectT)>(data: T[]) {
   const tmp: T[] = JSON.parse(JSON.stringify(data));
@@ -126,3 +126,63 @@ export const saveStringToFile = (content: string, filename: string) => {
   a.click();
   URL.revokeObjectURL(url);
 };
+
+const weightUnitsToPounds: { [K in weightUnitsT]: number } = {
+  "kg": 2.2046226218,
+  "lbs": 1,
+}
+
+export function convertWeightUnit(value: number, oldUnit: weightUnitsT, newUnit: weightUnitsT): number {
+  if (oldUnit === newUnit) return value;
+  const inPounds = value * weightUnitsToPounds[oldUnit];
+  return inPounds / weightUnitsToPounds[newUnit];
+}
+
+const lengthUnitsToIn: { [K in lengthUnitsT]: number } = {
+  "in": 1,
+  "m": 0.0254,
+  "mm": 2.54,
+}
+
+export function convertLengthUnit(value: number, oldUnit: lengthUnitsT, newUnit: lengthUnitsT): number {
+  if (oldUnit === newUnit) return value;
+  const inInches = value * lengthUnitsToIn[oldUnit];
+  return inInches / lengthUnitsToIn[newUnit];
+}
+
+const volumeUnitsToLiters: { [K in volumeUnitsT]: number } = {
+  "liters": 1,
+  "gal": 3.785411784,
+}
+
+export function convertVolumeUnits(value: number, oldUnit: volumeUnitsT, newUnit: volumeUnitsT): number {
+  if (oldUnit === newUnit) return value;
+  const inLiters = value * volumeUnitsToLiters[oldUnit];
+  return inLiters / volumeUnitsToLiters[newUnit];
+}
+
+export function convertFuelUnits(value: number, oldUnit: fuelUnitsT, newUnit: fuelUnitsT): number {
+  const select: (HTMLSelectElement | null) = document.getElementById("fuelDensity") as HTMLSelectElement;
+  if (!select) return -1;
+  let density = Number(select.value)
+  if (!density) {
+    const input: (HTMLInputElement | null) = document.getElementById("fuelDensityInput") as HTMLInputElement;
+    if (!input) return -1;
+    density = Number(input.value)
+  }
+  if (oldUnit === newUnit) return value;
+  if (volumeUnits.includes(oldUnit as volumeUnitsT) && volumeUnits.includes(newUnit as volumeUnitsT)) {
+    return convertVolumeUnits(value, oldUnit as volumeUnitsT, newUnit as volumeUnitsT);
+  }
+  if (weightUnits.includes(oldUnit as weightUnitsT) && weightUnits.includes(newUnit as weightUnitsT)) {
+    return convertWeightUnit(value, oldUnit as weightUnitsT, newUnit as weightUnitsT);
+  }
+  if (!density) {
+    console.error("ERROR: Missing density for fuel units conversion")
+    return -1;
+  }
+  if (weightUnits.includes(oldUnit as weightUnitsT))
+    return convertVolumeUnits(convertWeightUnit(value, oldUnit as weightUnitsT, 'lbs') / density, 'gal', newUnit as volumeUnitsT);
+  else
+    return convertWeightUnit(convertVolumeUnits(value, oldUnit as volumeUnitsT, 'gal') * density, 'lbs', newUnit as weightUnitsT);
+}

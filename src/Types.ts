@@ -113,7 +113,26 @@ export interface aircraftT {
   operationConfigs: operationConfigT[];
 }
 
+export const weightUnits = ['lbs', 'kg'] as const;
+export const lengthUnits = ["in", "m", "mm"] as const;
+export const volumeUnits = ['liters', 'gal'] as const;
+export const fuelUnits = [...volumeUnits, ...weightUnits] as const;
+export type weightUnitsT = typeof weightUnits[number];
+export type lengthUnitsT = typeof lengthUnits[number];
+export type volumeUnitsT = typeof volumeUnits[number];
+export type fuelUnitsT = (volumeUnitsT | weightUnitsT);
+
+export interface setupT {
+  weightUnits: typeof weightUnits[number];
+  lengthUnits: typeof lengthUnits[number];
+  fuelUnits: typeof fuelUnits[number];
+  useMAC: boolean;
+  fuelDensity: number;
+}
+
 export interface configT {
-  name?: string;
+  id: string;
+  name: string;
   aircraft: aircraftT[];
+  setup: setupT;
 }

@@ -134,7 +134,7 @@ function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }:
   let seats = [...aircraft.seats]
   let cargoAreas = [...aircraft.cargoAreas]
 
-  if (selectedPanel >= 3) {
+  if (selectedPanel >= 5) {
     const configIndex: number = aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
     if (configIndex < 0) return;
 
