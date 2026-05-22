@@ -1,7 +1,7 @@
 import { useRef, type ReactNode } from "react";
 import "./Geometry.css"
 import { Subregion, Grouping } from "../Layout";
-import type { regionT, regionPointT, weightLimitT, aircraftProps, aircraftT } from "../Types";
+import type { regionT, regionPointT, weightLimitT, aircraftProps, aircraftT, nameProps } from "../Types";
 
 const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
 
@@ -216,7 +216,7 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
   );
 }
 
-function Geometry({ aircraft, setAircraft }: aircraftProps): ReactNode {
+function Geometry({ aircraft, setAircraft }: aircraftProps & nameProps): ReactNode {
   return (
     <Subregion>
       <AircraftLimits aircraft={aircraft} setAircraft={setAircraft} />

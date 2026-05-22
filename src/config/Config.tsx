@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import './Config.css'
 import { MultiPane, Subregion } from "../Layout";
-import type { aircraftConfigT, cargoAreaT, aircraftT, equipmentT, seatT, aircraftProps, fuelTankT } from "../Types";
+import type { aircraftConfigT, cargoAreaT, aircraftT, equipmentT, seatT, aircraftProps, fuelTankT, nameProps } from "../Types";
 import { getSortedByArm } from '../utility';
 
 interface seatSelectionProps extends aircraftProps {
@@ -207,7 +207,7 @@ interface AircraftConfigsProps {
   setSelectedConfig: (arg0: string) => void
 }
 
-function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedConfig }: AircraftConfigsProps): ReactElement {
+function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedConfig }: AircraftConfigsProps & nameProps): ReactElement {
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === selectedConfig);
 
   function addConfig(): void {

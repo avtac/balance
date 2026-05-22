@@ -1,7 +1,8 @@
 import './Equipment.css'
 import { Subregion, Grouping } from '../Layout'
-import type { cargoAreaT, aircraftT, equipmentT, seatT } from '../Types'
+import type { cargoAreaT, aircraftT, equipmentT, seatT, nameProps } from '../Types'
 import { getSortedByArm } from '../utility';
+import type { ReactElement } from 'react';
 
 interface equipmentRowProps {
   setAircraft: (arg0: aircraftT) => void,
@@ -73,7 +74,7 @@ interface equipmentProps {
   setAircraft: (arg0: aircraftT) => void
 }
 
-function Equipment({ aircraft, setAircraft }: equipmentProps) {
+function Equipment({ aircraft, setAircraft }: equipmentProps & nameProps): ReactElement {
   // S or C are appended to the start of the area id in the equipment type to denote seat or cargoArea in selection value
   const values = getSortedByArm([...aircraft.seats.map(s => { return { ...s, id: "S" + s.id } }), ...aircraft.cargoAreas.map(c => { return { ...c, id: "C" + c.id } })])
 

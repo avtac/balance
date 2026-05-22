@@ -1,7 +1,7 @@
 import './BOW.css'
 import { useEffect, useRef, type ReactNode } from "react";
 import { Subregion, MultiPane } from "../Layout";
-import type { aircraftConfigT, cargoAreaT, aircraftProps, aircraftT, operationConfigT, seatT } from "./Types";
+import type { aircraftConfigT, cargoAreaT, aircraftProps, aircraftT, operationConfigT, seatT, nameProps } from "../Types";
 import { getSortedByArm } from '../utility';
 
 interface seatSelectionProps extends aircraftProps {
@@ -12,7 +12,7 @@ interface seatSelectionProps extends aircraftProps {
 function SeatSelection({ seat, opsConfigIndex, aircraft, setAircraft }: seatSelectionProps) {
   if (opsConfigIndex < 0) return;
 
-  let seatIndex = aircraft.operationConfigs[opsConfigIndex].seats.findIndex((s: { id: string, weight: number }) => s.id == seat.id);
+  const seatIndex = aircraft.operationConfigs[opsConfigIndex].seats.findIndex((s: { id: string, weight: number }) => s.id == seat.id);
   const checked = useRef(seatIndex >= 0);
 
   function selectCheckbox(): void {
@@ -37,7 +37,7 @@ function SeatSelection({ seat, opsConfigIndex, aircraft, setAircraft }: seatSele
   }
 
   let weight = 0;
-  let oldWeight = useRef(seat.maxWeight);
+  const oldWeight = useRef(seat.maxWeight);
   if (seatIndex >= 0) {
     weight = aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
     oldWeight.current = weight;
@@ -73,7 +73,7 @@ interface cargoSelectionProps extends aircraftProps {
 function CargoSelection({ cargoArea, opsConfigIndex, aircraft, setAircraft }: cargoSelectionProps) {
   if (opsConfigIndex < 0) return;
 
-  let cargoAreaIndex = aircraft.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: { id: string, weight: number }) => s.id == cargoArea.id);
+  const cargoAreaIndex = aircraft.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: { id: string, weight: number }) => s.id == cargoArea.id);
   const checked = useRef(cargoAreaIndex >= 0);
 
   function selectCheckbox(): void {
@@ -132,7 +132,7 @@ interface aircraftOperationConfigProps extends aircraftProps {
   setSelectedOpsConfig: (arg0: string) => void
 }
 
-function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSelectedConfig, selectedOpsConfig, setSelectedOpsConfig }: aircraftOperationConfigProps): ReactNode {
+function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSelectedConfig, selectedOpsConfig, setSelectedOpsConfig }: aircraftOperationConfigProps & nameProps): ReactNode {
   const configSelectRef = useRef(null);
   const configIndex: number = aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
   const opsConfigIndex: number = aircraft.operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
@@ -145,7 +145,6 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
       config: selectedConfig,
       seats: [],
       cargoAreas: [],
-      fuelTanks: []
     };
     tmp.operationConfigs.push(newConfig);
     setAircraft(tmp);

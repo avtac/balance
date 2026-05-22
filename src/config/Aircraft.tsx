@@ -1,6 +1,6 @@
 import './Aircraft.css'
 import { useRef, type ReactNode, type RefObject } from "react";
-import type { aircraftPropertiesT, configProps, aircraftT, configT } from "./Types";
+import type { aircraftPropertiesT, configProps, aircraftT, configT, nameProps } from "../Types";
 import { Subregion } from "../Layout";
 
 interface aircraftConfigProps extends configProps {
@@ -79,7 +79,7 @@ function AircraftMerging({ config, setConfig, selectedAircraft }: aircraftMergin
   );
 }
 
-function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircraft }: aircraftConfigProps): ReactNode {
+function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircraft }: aircraftConfigProps & nameProps): ReactNode {
   const aircraftIndex = config.aircraft.findIndex(a => a.id === selectedAircraft);
 
   function setValue<K extends keyof aircraftPropertiesT, V extends aircraftPropertiesT[K]>(key: K, value: V) {

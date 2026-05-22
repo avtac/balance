@@ -1,4 +1,5 @@
 import { Children, isValidElement, useState, type ReactNode } from 'react';
+import { type nameProps } from './Types.ts'
 import './Layout.css'
 
 interface childrenProps {
@@ -19,8 +20,7 @@ interface subregionProps extends childrenProps {
   name?: string,
 }
 
-function Subregion({ children, name }: subregionProps) {
-  name;
+function Subregion({ children }: subregionProps) {
   return (
     <div className='subregion'>
       <div className='internalPadding'>
@@ -78,7 +78,8 @@ function MultiPane({ selected, setSelected, children }: MultiPaneProps) {
     if (!setSelected) return;
     if (!child.props) return;
 
-    let name = child.props.name ?? 'Missing Component Name';
+    const props = child.props as nameProps
+    const name = props.name ?? 'Missing Component Name';
     return <button
       className={'topButton' + (selected === index ? ' selected' : '')}
       onClick={() => setSelected(index)}>

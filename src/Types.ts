@@ -9,6 +9,10 @@ export interface configProps {
   setConfig: (arg0: configT) => void;
 }
 
+export interface nameProps {
+  name: string;
+}
+
 export interface momentObjectT {
   arm: number;
   weight: number;
