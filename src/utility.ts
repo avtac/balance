@@ -150,27 +150,26 @@ export function convertLengthUnit(value: number, oldUnit: lengthUnitsT, newUnit:
   return inInches / lengthUnitsToIn[newUnit];
 }
 
-const volumeUnitsToLiters: { [K in volumeUnitsT]: number } = {
-  "liters": 1,
-  "gal": 3.785411784,
+const volumeUnitsToGallons: { [K in volumeUnitsT]: number } = {
+  "gal": 1,
+  "liters": 0.264172052358,
 }
 
 export function convertVolumeUnits(value: number, oldUnit: volumeUnitsT, newUnit: volumeUnitsT): number {
   if (oldUnit === newUnit) return value;
-  const inLiters = value * volumeUnitsToLiters[oldUnit];
-  return inLiters / volumeUnitsToLiters[newUnit];
+  const inGallons = value * volumeUnitsToGallons[oldUnit];
+  return inGallons / volumeUnitsToGallons[newUnit];
 }
 
 export function convertFuelUnits(value: number, oldUnit: fuelUnitsT, newUnit: fuelUnitsT): number {
+  if (oldUnit === newUnit) return value;
   const select: (HTMLSelectElement | null) = document.getElementById("fuelDensity") as HTMLSelectElement;
   if (!select) return -1;
   let density = Number(select.value)
   if (!density) {
     const input: (HTMLInputElement | null) = document.getElementById("fuelDensityInput") as HTMLInputElement;
-    if (!input) return -1;
     density = Number(input.value)
   }
-  if (oldUnit === newUnit) return value;
   if (volumeUnits.includes(oldUnit as volumeUnitsT) && volumeUnits.includes(newUnit as volumeUnitsT)) {
     return convertVolumeUnits(value, oldUnit as volumeUnitsT, newUnit as volumeUnitsT);
   }

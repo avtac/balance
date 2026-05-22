@@ -115,7 +115,7 @@ export interface aircraftT {
 
 export const weightUnits = ['lbs', 'kg'] as const;
 export const lengthUnits = ["in", "m", "mm"] as const;
-export const volumeUnits = ['liters', 'gal'] as const;
+export const volumeUnits = ['gal', 'liters'] as const;
 export const fuelUnits = [...volumeUnits, ...weightUnits] as const;
 export type weightUnitsT = typeof weightUnits[number];
 export type lengthUnitsT = typeof lengthUnits[number];

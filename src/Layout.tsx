@@ -17,12 +17,10 @@ function Region({ children }: childrenProps) {
 }
 
 interface subregionProps extends childrenProps {
-  name?: string,
   id?: string,
 }
 
-function Subregion({ children, name, id }: subregionProps) {
-  name;
+function Subregion({ children, id }: subregionProps) {
   return (
     <div className='subregion'>
       <div className='internalPadding' id={id}>

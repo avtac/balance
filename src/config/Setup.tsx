@@ -1,7 +1,7 @@
 import './Setup.css'
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Subregion } from "../Layout";
-import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps } from "../Types";
+import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT } from "../Types";
 import { saveStringToFile } from "../utility";
 import { getNewConfig } from "../ConfigBuilder";
 
@@ -17,8 +17,49 @@ const fuelTypes: { name: string, density: number }[] = [
   { name: 'Other', density: 0 },
 ] as const
 
-function Setup({ config, setConfig }: configProps & nameProps) {
-  const [density, setDensity] = useState(0);
+function Units({ config, setConfig }: configProps): ReactNode {
+  const [selectedDensity, setSelectedDensity] = useState(config.setup.fuelDensity ?? fuelTypes[0].density);
+  function setValue<T extends keyof setupT, V extends setupT[T]>(name: T, value: V): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.setup[name] = value;
+    setConfig(tmp);
+  }
+
+  function setSelectedDensitySpecial(selection: number) {
+    setSelectedDensity(selection);
+    setValue('fuelDensity', fuelTypes[selection].density);
+  }
+
+  const fuelTypeElements = fuelTypes.map((t, i) => <option key={t.name} value={i}>{t.name} ({i < fuelTypes.length - 1 ? t.density : config.setup.fuelDensity})</option>)
+  return (
+    <Subregion>
+      <h3>Units</h3>
+      <div id='unitsSelect'>
+        <label>Weight</label>
+        <label>Length</label>
+        <label>Fuel</label>
+        <label>Fuel Density</label>
+        <select value={config.setup.weightUnits} onChange={e => setValue('weightUnits', e.target.value as weightUnitsT)}>
+          {weightUnitsElements}
+        </select>
+        <select value={config.setup.lengthUnits} onChange={e => setValue('lengthUnits', e.target.value as lengthUnitsT)}>
+          {lengthUnitsElements}
+        </select>
+        <select value={config.setup.fuelUnits} onChange={e => setValue('fuelUnits', e.target.value as fuelUnitsT)}>
+          {fuelUnitsElements}
+        </select>
+        <div id='fuelDensityHolder'>
+          <select value={selectedDensity} onChange={(e) => setSelectedDensitySpecial(Number(e.target.value))} id="fuelDensity">
+            {fuelTypeElements}
+          </select>
+          {selectedDensity === fuelTypes.length - 1 && <input id="fuelDensityInput" type="number" value={config.setup.fuelDensity} onChange={(e) => setValue('fuelDensity', Number(e.target.value))} />}
+        </div>
+      </div>
+    </Subregion>
+  )
+}
+
+function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
   const foundConfigs: { id: string, name: string }[] = []
   const [availableConfigList, setAvailableConfigList] = useState(foundConfigs);
 
@@ -128,7 +169,6 @@ function Setup({ config, setConfig }: configProps & nameProps) {
   }
 
   let availableConfigs = availableConfigList.sort((a, b) => a.name.localeCompare(b.name)).map((v) => <option value={v.id} key={v.id}>{v.name}</option>)
-  const fuelTypeElements = fuelTypes.map((t) => <option key={t.name} value={t.density}>{t.name} ({t.density})</option>)
   return (
     <>
       <Subregion id="configSelectRow">
@@ -149,26 +189,7 @@ function Setup({ config, setConfig }: configProps & nameProps) {
         <h3>Name</h3>
         <input value={config.name} onChange={(e) => setName(e.target.value)} />
       </Subregion>
-      <Subregion>
-        <h3>Units</h3>
-        <label>Weight</label>
-        <select>
-          {weightUnitsElements}
-        </select>
-        <label>Length</label>
-        <select>
-          {lengthUnitsElements}
-        </select>
-        <label>Fuel</label>
-        <select>
-          {fuelUnitsElements}
-        </select>
-        <label>Fuel Density</label>
-        <select value={density} onChange={(e) => setDensity(Number(e.target.value))} id="fuelDensity">
-          {fuelTypeElements}
-        </select>
-        {density == 0 && <input id="fuelDensityInput" type="number" defaultValue={density} />}
-      </Subregion>
+      <Units config={config} setConfig={setConfig} />
     </>
   )
 }
