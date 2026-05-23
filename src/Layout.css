@@ -3,7 +3,7 @@
 #leftPanel,
 .subregion,
 .region {
-  background: #1f2134;
+  background: var(--region-bg);
   border-radius: 5px;
   margin: var(--margin-size);
   overflow-x: auto;
@@ -55,7 +55,7 @@
 }
 
 .subregion {
-  background: #2f314f;
+  background: var(--sub-region-bg);
   overflow-y: auto;
 }
 
@@ -89,11 +89,11 @@
     }
 
     .topButton:hover {
-      background: #77777733
+      background: #11111133
     }
 
     .topButton:active {
-      background: #77777722
+      background: #55555533
     }
 
     .selected {
@@ -109,10 +109,11 @@
   th {
     border-bottom: 1px solid black;
     height: 2.4rem;
+    color: var(--text-l)
   }
 
   tr:nth-child(even) {
-    background: #8882;
+    background: var(--table-bg);
   }
 
   th,

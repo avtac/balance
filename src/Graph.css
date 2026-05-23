@@ -9,22 +9,23 @@ svg.graph {
 
   text.title {
     font-size: 5px;
+    fill: var(--text-h);
   }
 
   .background {
-    fill: #FFF;
+    fill: var(--graph-bg);
   }
 
   polyline.gridLines {
-    stroke: #3338;
+    stroke: var(--graph-grid-lines);
   }
 
   text.gridLines {
-    fill: #FFF;
+    fill: var(--graph-grid-lines-text);
   }
 
   text.point {
-    fill: #000;
+    fill: var(--text);
   }
 
   .configArea {

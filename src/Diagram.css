@@ -1,8 +1,32 @@
 #diagram {
-  background: #334;
+  background: var(--diagram-bg);
   border-radius: 6px;
   user-select: none;
   max-height: calc(100% - var(--margin-size) * 2);
   min-height: 50%;
   overflow: visible;
+
+  text {
+    fill: var(--text-d);
+  }
+
+  .aircraft {
+    fill: var(--diagram-aircraft-bg);
+  }
+
+  .seat {
+    fill: var(--diagram-seat-fill);
+  }
+
+  .cargo {
+    fill: transparent;
+  }
+
+  .seat.filled {
+    fill: var(--diagram-ops-fill);
+  }
+
+  .cargoOpsFill {
+    fill: var(--diagram-ops-fill);
+  }
 }

@@ -1,14 +1,40 @@
 :root {
-  --text: #6b6375;
+  /* Text */
+  --text: #111;
   --text-h: #08060d;
-  --bg: #eee;
-  --border: #e5e4e7;
+  --text-l: #222;
+  --text-d: #444;
+
+  /* Borders */
+  --border: #8884;
+
+  /* Backgrounds */
+  --bg: #DEF;
   --code-bg: #f4f3ec;
-  --input-bg: #101230;
-  --accent: #5364c3;
-  --accent-bg: rgba(170, 59, 255, 0.1);
+  --header-bg: #667;
+  --region-bg: #89B;
+  --sub-region-bg: #aab0cc;
+  --diagram-bg: #889;
+  --graph-bg: #FFF;
+  --input-bg: #FFF;
+  --button-bg: #77d;
+
+  /* Accents */
+  --accent: #3333BB;
+  --accent-bg: rgba(70, 50, 230, 0.1);
   --accent-border: rgba(80, 90, 137, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
+  --table-bg: #0002;
+
+
+  /* SVGs */
+  --graph-grid-lines-text: #000;
+  --graph-grid-lines: #1118;
+  --diagram-aircraft-bg: #FFF;
+  --diagram-seat-fill: #EEE;
+  --diagram-ops-fill: #7799CC;
+
+  /* Shadows */
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
@@ -31,14 +57,37 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
+    /* Text */
+    --text: #CCC;
     --text-h: #f3f4f6;
-    --bg: #30323e;
+    --text-l: #AAA;
+    --text-d: #FFF;
+
+    /* Borders */
     --border: #1e202a;
+
+    /* Backgrounds */
+    --bg: #30323e;
     --code-bg: #1f2028;
+    --header-bg: #1c1d24;
+    --region-bg: #1f2134;
+    --sub-region-bg: #2f314f;
+    --diagram-bg: #334;
+    --graph-bg: #444;
     --input-bg: #131639;
     --button-bg: #323a86;
+
+    /* Accents */
     --accent: #3041eb;
+
+    /* SVGs */
+    --graph-grid-lines-text: #EEE;
+    --graph-grid-lines: #fff6;
+    --diagram-aircraft-bg: #444;
+    --diagram-seat-fill: #999;
+    --diagram-ops-fill: #358;
+
+    /* Shadows */
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
@@ -93,6 +142,7 @@ h2 {
 
 p {
   margin: 0;
+  color: var(--text);
 }
 
 code {
@@ -112,6 +162,7 @@ code {
 select,
 input {
   outline: unset;
+  color: var(--text);
   background: var(--input-bg);
   border-style: solid;
   border-color: var(--border);
@@ -122,6 +173,7 @@ input {
 
 button {
   padding: 6px;
+  color: var(--text);
   background-color: var(--button-bg);
   border: 0px;
   border-radius: 5px;

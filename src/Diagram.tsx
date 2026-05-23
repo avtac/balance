@@ -10,20 +10,19 @@ const fontSize = 4;
 
 interface cargoIconProps {
   name: string,
-  color?: string,
   offX: number,
   offY: number,
   width: number
   opsPercent?: number,
 }
 
-function CargoIcon({ name, color = '#CCCCCC', offX = 0, offY = 0, width = cargoSize, opsPercent = 0 }: cargoIconProps): ReactNode {
+function CargoIcon({ name, offX = 0, offY = 0, width = cargoSize, opsPercent = 0 }: cargoIconProps): ReactNode {
   const left = offX - cargoSize / 2;
   const top = -offY - width / 2;
   return (
     <>
       <rect
-        fill={color}
+        className="cargoOpsFill"
         strokeWidth={0}
         width={cargoSize}
         height={width * opsPercent}
@@ -31,7 +30,7 @@ function CargoIcon({ name, color = '#CCCCCC', offX = 0, offY = 0, width = cargoS
         y={top + width * (1 - opsPercent)}
         ry={.4105551} />
       <rect
-        fill={"transparent"}
+        className="cargo"
         stroke={"black"}
         strokeWidth={0.5}
         width={cargoSize}
@@ -45,7 +44,7 @@ function CargoIcon({ name, color = '#CCCCCC', offX = 0, offY = 0, width = cargoS
         transform={`rotate(${90} ${offX} ${-offY})`}
         alignmentBaseline={'middle'}
         textAnchor="middle"
-        fontSize={fontSize} fill={'blue'}>
+        fontSize={fontSize}>
         {name}
       </text>
     </>
@@ -54,7 +53,6 @@ function CargoIcon({ name, color = '#CCCCCC', offX = 0, offY = 0, width = cargoS
 
 interface seatIconProps {
   name: string,
-  color: string,
   offX: number,
   offY: number,
   count: number,
@@ -62,17 +60,17 @@ interface seatIconProps {
 }
 
 // offX, offY are in canvas units
-function SeatIcon({ count, name, color = '#CCCCCC', offX = 0, offY = 0, opsPercent = 0 }: seatIconProps): ReactNode {
+function SeatIcon({ count, name, offX = 0, offY = 0, opsPercent = 0 }: seatIconProps): ReactNode {
   const left = offX - seatSize / 2;
   return (
     <>
       {...Array(count).fill(0).map((_, i: number) => {
         const top = offY - (i - count / 2) * seatSize;
-        const c = opsPercent > ((count - 1 - i) / count) ? color : "white";
+        const filled = opsPercent > ((count - 1 - i) / count);
         return (
           <>
             <rect
-              fill={c}
+              className={"seat" + (filled ? " filled" : "")}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize}
@@ -81,7 +79,7 @@ function SeatIcon({ count, name, color = '#CCCCCC', offX = 0, offY = 0, opsPerce
               y={-top}
               ry={2} />
             <rect
-              fill={c}
+              className={"seat" + (filled ? " filled" : "")}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize / 3}
@@ -91,7 +89,7 @@ function SeatIcon({ count, name, color = '#CCCCCC', offX = 0, offY = 0, opsPerce
               ry={0.29849526}
               transform={"scale(1,-1)"} />
             <rect
-              fill={c}
+              className={"seat" + (filled ? " filled" : "")}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize / 3}
@@ -101,7 +99,7 @@ function SeatIcon({ count, name, color = '#CCCCCC', offX = 0, offY = 0, opsPerce
               ry={0.29849526}
               transform={"scale(1,-1)"} />
             <rect
-              fill={c}
+              className={"seat" + (filled ? " filled" : "")}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize * 3 / 8}
@@ -113,7 +111,14 @@ function SeatIcon({ count, name, color = '#CCCCCC', offX = 0, offY = 0, opsPerce
           </>
         )
       })}
-      <text x={+left + seatSize / 2} y={-offY - (offY >= 0 ? 1 : -1) * (count / 2 + .2) * seatSize} alignmentBaseline={'middle'} textAnchor="middle" fontSize={fontSize} fill={'blue'}>{name}</text>
+      <text
+        x={+left + seatSize / 2}
+        y={-offY - (offY >= 0 ? 1 : -1) * (count / 2 + .2) * seatSize}
+        alignmentBaseline={'middle'}
+        textAnchor="middle"
+        fontSize={fontSize}>
+        {name}
+      </text>
     </>
   );
 }
@@ -193,7 +198,6 @@ function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }:
     return <SeatIcon
       key={seat.id}
       name={seat.name}
-      color={"#7799CC"}
       opsPercent={opsPercentUsed}
       offX={-getPixelFromArm(seat.arm)}
       offY={getPixelFromArm(-seat.lateralDist)}
@@ -211,7 +215,6 @@ function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }:
     return <CargoIcon
       key={cargoArea.id}
       name={cargoArea.name}
-      color="#7799CC"
       opsPercent={opsPercentUsed}
       offX={-getPixelFromArm(cargoArea.arm)}
       offY={-planeTop - planeHeight / 2}
@@ -222,8 +225,8 @@ function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }:
     <svg
       viewBox={`${right} ${top} ${width} ${height}`}
       id="diagram">
-      <path d={`M ${planeLeft} ${planeTop} C ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop}, ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'} />
-      <rect x={planeRight} y={planeTop} width={planeWidth} height={planeHeight} fill={'white'} stroke={'none'} />
+      <path className="aircraft" d={`M ${planeLeft} ${planeTop} C ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop}, ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'} />
+      <rect className="aircraft" x={planeRight} y={planeTop} width={planeWidth} height={planeHeight} fill={'white'} stroke={'none'} />
       {seatItems}
       {cargoItems}
     </svg>
