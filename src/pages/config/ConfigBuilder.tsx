@@ -159,6 +159,11 @@ function ConfigBuilder() {
   function setSelectedAircraftSpecial(aircraftId: string): void {
     if (aircraftId === selectedAircraft) return;
     setSelectedAircraft(aircraftId);
+    const aircraftIndex = config.aircraft.findIndex(a => aircraftId === a.id);
+    if (aircraftIndex >= 0 && config.aircraft[aircraftIndex].operationConfigs.length > 0) {
+      setSelectedOpsConfig(config.aircraft[aircraftIndex].operationConfigs[0].id);
+      setSelectedConfig(config.aircraft[aircraftIndex].operationConfigs[0].config);
+    }
   }
 
   function setConfigSpecial(value: configT): void {

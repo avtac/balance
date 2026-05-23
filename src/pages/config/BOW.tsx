@@ -163,9 +163,9 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
   const units = useContext(UnitContext);
   const configSelectRef = useRef(null);
   const opsConfigIndex: number = aircraft.operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
-  const configIndex: number = aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === aircraft.operationConfigs[opsConfigIndex].config);
+  const configIndex: number = opsConfigIndex < 0 ? -1 : aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === aircraft.operationConfigs[opsConfigIndex].config);
 
-  useEffect(() => setSelectedConfig(aircraft.operationConfigs[opsConfigIndex].config), [])
+  useEffect(() => { if (opsConfigIndex >= 0) setSelectedConfig(aircraft.operationConfigs[opsConfigIndex].config) }, [])
 
   function addOpsConfig(): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
