@@ -1,8 +1,9 @@
 import './Equipment.css'
 import { Subregion, Grouping } from '../Layout'
-import type { cargoAreaT, aircraftT, equipmentT, seatT, nameProps } from '../Types'
-import { getSortedByArm } from '../utility';
-import type { ReactElement } from 'react';
+import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type nameProps, baseLengthUnit, baseWeightUnit } from '../Types'
+import { getSortedByArm, roundNumber } from '../utility';
+import { useContext, type ReactElement } from 'react';
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../UnitsContext';
 
 interface equipmentRowProps {
   setAircraft: (arg0: aircraftT) => void,
@@ -13,6 +14,7 @@ interface equipmentRowProps {
 }
 
 function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipmentRowProps) {
+  const units = useContext(UnitContext);
   const areaIndex = values.findIndex((s) => s.id === equip.area);
 
   function deleteEquipment(): void {
@@ -45,9 +47,9 @@ function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipment
           onChange={(e) => setValue('name', e.target.value)} />
         <input
           type="number"
-          defaultValue={equip.weight}
-          placeholder={"Weight"}
-          onChange={(e) => setValue('weight', Number(e.target.value))}
+          value={equip.weight ? roundNumber(convertWeightUnit(equip.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+          placeholder={units.weightUnits}
+          onChange={(e) => setValue('weight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))}
           min={0} />
         <select
           value={equip.area}
@@ -59,10 +61,10 @@ function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipment
         </select>
         <input
           type="number"
-          value={areaIndex < 0 ? equip.arm : values[areaIndex].arm}
+          value={areaIndex < 0 ? (equip.arm ? roundNumber(convertLengthUnit(equip.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : "") : roundNumber(convertLengthUnit(values[areaIndex].arm, baseLengthUnit, units.lengthUnits), unitPrecision)}
           disabled={areaIndex >= 0}
-          placeholder={"Arm"}
-          onChange={(e) => setValue('arm', Number(e.target.value))} />
+          placeholder={units.lengthUnits}
+          onChange={(e) => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
         <button onClick={deleteEquipment}>X</button>
       </div>
     </Grouping>
@@ -75,6 +77,7 @@ interface equipmentProps {
 }
 
 function Equipment({ aircraft, setAircraft }: equipmentProps & nameProps): ReactElement {
+  const units = useContext(UnitContext);
   // S or C are appended to the start of the area id in the equipment type to denote seat or cargoArea in selection value
   const values = getSortedByArm([...aircraft.seats.map(s => { return { ...s, id: "S" + s.id } }), ...aircraft.cargoAreas.map(c => { return { ...c, id: "C" + c.id } })])
 
@@ -95,9 +98,9 @@ function Equipment({ aircraft, setAircraft }: equipmentProps & nameProps): React
       <button onClick={addEquipment}>Add Equipment</button>
       <div className="title">
         <h3>Name</h3>
-        <h3>Weight</h3>
+        <h3>{`Weight (${units.weightUnits})`}</h3>
         <h3>Cargo Area</h3>
-        <h3>Arm</h3>
+        <h3>{`Arm (${units.lengthUnits})`}</h3>
       </div>
       {[...aircraft.equipment].map((data, i) => {
         return <EquipmentRow

@@ -1,7 +1,8 @@
-import { Fragment, useMemo, useRef, type ReactNode } from 'react';
+import { Fragment, useContext, useMemo, useRef, type ReactNode } from 'react';
 import './Graph.css'
-import type { aircraftLimitsT, cargoAreaT, aircraftT, momentObjectT, regionPointT, regionT, seatT, weightLimitT } from './Types';
-import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMAC, calculateMaxBalanceForConfig } from './utility';
+import { type aircraftLimitsT, type cargoAreaT, type aircraftT, type momentObjectT, type regionPointT, type regionT, type seatT, type weightLimitT, type setupT, baseLengthUnit, baseWeightUnit } from './Types';
+import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMAC, calculateMaxBalanceForConfig, truncateNumber } from './utility';
+import { convertLengthUnit, convertWeightUnit, UnitContext } from './UnitsContext';
 
 let width = 140;
 let height = 80;
@@ -43,7 +44,7 @@ function cleanLimits(limits: weightLimitT[]): weightLimitT[] {
   return ret;
 }
 
-function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig: string): string[] {
+function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig: string, units: setupT): string[] {
   const selectedConfigIndex: number = aircraft.aircraftConfigs.findIndex(v => v.id === selectedConfig);
   if (selectedConfigIndex < 0) return [];
 
@@ -86,13 +87,13 @@ function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig
     positions.push({ weight: totalWeight, arm: totalArm })
   });
 
-  let x = calculatePointX(limits, calculateMAC(configEmptyArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC));
-  let y = calculatePointY(limits, configEmptyWeight);
+  let x = calculatePointX(limits, convertLengthUnit(calculateMAC(configEmptyArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC), baseLengthUnit, units.lengthUnits));
+  let y = calculatePointY(limits, convertWeightUnit(configEmptyWeight, baseWeightUnit, units.weightUnits));
   const points: string[] = [`${x},${y}`];
 
   for (let i = 0; i < positions.length; i++) {
-    x = calculatePointX(limits, calculateMAC(positions[i].arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC));
-    y = calculatePointY(limits, positions[i].weight);
+    x = calculatePointX(limits, convertLengthUnit(calculateMAC(positions[i].arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC), baseLengthUnit, units.lengthUnits));
+    y = calculatePointY(limits, convertWeightUnit(positions[i].weight, baseWeightUnit, units.weightUnits));
     points.push(`${x},${y}`);
   }
 
@@ -110,8 +111,8 @@ function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig
   });
 
   for (let i = positions.length - 1; i >= 0; i--) {
-    x = calculatePointX(limits, calculateMAC(positions[i].arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC));
-    y = calculatePointY(limits, positions[i].weight);
+    x = calculatePointX(limits, convertLengthUnit(calculateMAC(positions[i].arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC), baseLengthUnit, units.lengthUnits));
+    y = calculatePointY(limits, convertWeightUnit(positions[i].weight, baseWeightUnit, units.weightUnits));
     points.push(`${x},${y}`);
   }
 
@@ -234,10 +235,6 @@ function PlotRegions({ aircraft, limits }: plotRegionsProps): ReactNode {
 
 const precision = 10000;
 
-function truncateNumber(n: number): number {
-  return Math.floor(n * precision) / precision;
-}
-
 interface plotGridProps {
   limits: limitsT,
   gridSpacing: number,
@@ -250,13 +247,13 @@ function PlotHorizontalGrid({ limits, gridSpacing, units }: plotGridProps): Reac
   const largestGridValue = Math.floor((limits.maxX + graphInsetPadding / limits.xRatio) / gridSpacing) * gridSpacing;
   const smallestGridPosition = calculatePointX(limits, smallestGridValue);
   const largestGridPosition = calculatePointX(limits, largestGridValue);
-  const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid)) + 1;
+  const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid, precision)) + 1;
   if (!numGrid) return;
-  const startValue = truncateNumber(smallestGridValue);
+  const startValue = truncateNumber(smallestGridValue, precision);
   let positions: { pos: number, value: string }[] = Array(numGrid).fill(0).map((_, index) => {
     return {
       pos: gapBetweenGrid * index + smallestGridPosition,
-      value: startValue + truncateNumber(index * gridSpacing) + units
+      value: truncateNumber(startValue + index * gridSpacing, 1000) + units
     }
   });
   return (
@@ -289,13 +286,13 @@ function PlotVerticalGrid({ limits, gridSpacing, units }: plotGridProps): ReactN
   const largestGridValue = Math.floor((limits.maxY + graphInsetPadding / limits.yRatio) / gridSpacing) * gridSpacing;
   const smallestGridPosition = calculatePointY(limits, largestGridValue);
   const largestGridPosition = calculatePointY(limits, smallestGridValue);
-  const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid)) + 1;
+  const numGrid = Math.ceil(truncateNumber((largestGridPosition - smallestGridPosition) / gapBetweenGrid, precision)) + 1;
   if (!numGrid) return;
-  const startValue = truncateNumber(smallestGridValue);
+  const startValue = truncateNumber(smallestGridValue, precision);
   let positions: { pos: number, value: string }[] = Array(numGrid).fill(0).map((_, index) => {
     return {
       pos: largestGridPosition - gapBetweenGrid * index,
-      value: startValue + truncateNumber(index * gridSpacing) + units
+      value: truncateNumber(startValue + index * gridSpacing, 1000) + units
     }
   });
   return (
@@ -409,13 +406,18 @@ interface lineProps {
 }
 
 function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): ReactNode {
+  const units = useContext(UnitContext);
   if (aircraft === undefined) return;
   let data: aircraftLimitsT = JSON.parse(JSON.stringify(aircraft.limits));
 
   // Ensure that the arm is in MAC or distance units
   data.regions = [...data.regions.map(a => {
-    const newData = a.data.map(d => ({ ...d, arm: calculateMAC(d.arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC) }));
+    const newData = a.data.map(d => ({ ...d, weight: convertWeightUnit(d.weight, baseWeightUnit, units.weightUnits), arm: calculateMAC(convertLengthUnit(d.arm, baseLengthUnit, units.lengthUnits), aircraft.config.mac, aircraft.config.leadingEdgeMAC) }));
     return { ...a, data: newData };
+  })];
+
+  data.limits = [...data.limits.map(a => {
+    return { ...a, weight: convertWeightUnit(a.weight ?? 0, baseWeightUnit, units.weightUnits) }
   })];
   const configAreaPoints = useRef("");
 
@@ -425,8 +427,8 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
   const lines: lineProps[] = []
 
   points.push({
-    weight: aircraft.config.emptyWeight,
-    arm: calculateMAC(aircraft.config.emptyArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC),
+    weight: convertWeightUnit(aircraft.config.emptyWeight, baseWeightUnit, units.weightUnits),
+    arm: calculateMAC(convertLengthUnit(aircraft.config.emptyArm, baseLengthUnit, units.lengthUnits), aircraft.config.mac, aircraft.config.leadingEdgeMAC),
     style: 'square',
     size: 2,
     label: "Empty Aircraft"
@@ -437,16 +439,16 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
     const [weightFull, armFull] = calculateMaxBalanceForConfig(aircraft, selectedConfig);
     if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
       points.push({
-        weight: weight,
-        arm: calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC),
+        weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
+        arm: calculateMAC(convertLengthUnit(arm, baseLengthUnit, units.lengthUnits), aircraft.config.mac, aircraft.config.leadingEdgeMAC),
         style: 'circle',
         size: 1,
         label: "Empty Config"
       });
     if (weightFull != aircraft.config.emptyWeight || armFull != aircraft.config.emptyArm)
       points.push({
-        weight: weightFull,
-        arm: calculateMAC(armFull, aircraft.config.mac, aircraft.config.leadingEdgeMAC),
+        weight: convertWeightUnit(weightFull, baseWeightUnit, units.weightUnits),
+        arm: calculateMAC(convertLengthUnit(armFull, baseLengthUnit, units.lengthUnits), aircraft.config.mac, aircraft.config.leadingEdgeMAC),
         style: 'circle',
         size: 1,
         label: "Max Config"
@@ -458,8 +460,8 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
     const [weight, arm] = calculateBalanceForOperationConfig(aircraft, selectedConfig, selectedOpsConfig);
     if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
       points.push({
-        weight: weight,
-        arm: calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC),
+        weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
+        arm: calculateMAC(convertLengthUnit(arm, baseLengthUnit, units.lengthUnits), aircraft.config.mac, aircraft.config.leadingEdgeMAC),
         style: 'square',
         size: 2,
         label: "Ops Config"
@@ -503,7 +505,7 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
 
   useMemo(() => {
     if (selectedConfig)
-      configAreaPoints.current = generateConfigArea(aircraft, limits, selectedConfig).join(" ");
+      configAreaPoints.current = generateConfigArea(aircraft, limits, selectedConfig, units).join(" ");
   }, [aircraft, selectedConfig]);
 
   // Convert interval to spacing of 1, 2, or 5 * 10^x
@@ -521,7 +523,7 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
   const verSpacing = getCleanInterval(maxY - minY, desiredTicks * height / width);
 
   // Gird base components
-  const title = useRef(<PlotTitle title="Weight vs Arm" />);
+  const title = <PlotTitle title={`Weight (${units.weightUnits}) vs Arm (${units.lengthUnits})`} />;
   const horizontalBars = <PlotHorizontalGrid limits={limits} gridSpacing={horSpacing} units={(!aircraft.config.mac || !aircraft.config.leadingEdgeMAC) ? "" : "%"} />;
   const verticalBars = <PlotVerticalGrid limits={limits} gridSpacing={verSpacing} units='' />;
 
@@ -554,7 +556,7 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
   return (
     <svg className='graph' viewBox={'0 0 ' + width + ' ' + height}>
       <PlotArea width={width} height={height} />
-      {title.current}
+      {title}
       {dataAvailable && horizontalBars}
       {dataAvailable && verticalBars}
       {dataAvailable && selectedConfig && <polyline className="configArea" points={configAreaPoints.current} />}

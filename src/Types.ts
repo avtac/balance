@@ -10,7 +10,7 @@ export interface configProps {
 }
 
 export interface nameProps {
-  name: string;
+  name?: string;
 }
 
 export interface momentObjectT {
@@ -97,8 +97,8 @@ export interface aircraftPropertiesT {
   type: string;
   emptyWeight: number;
   emptyArm: number
-  leadingEdgeMAC?: number;
-  mac?: number;
+  leadingEdgeMAC: number;
+  mac: number;
 }
 
 export interface aircraftT {
@@ -113,14 +113,22 @@ export interface aircraftT {
   operationConfigs: operationConfigT[];
 }
 
-export const weightUnits = ['lbs', 'kg'] as const;
-export const lengthUnits = ["in", "m", "mm"] as const;
-export const volumeUnits = ['gal', 'liters'] as const;
+export const weightUnits = ['lbs', 'kg', 'oz', 'g'] as const;
+export const lengthUnits = ["in", "ft", "m", "cm", "mm"] as const;
+export const volumeUnits = ['gal', 'liters', 'ml'] as const;
 export const fuelUnits = [...volumeUnits, ...weightUnits] as const;
+
 export type weightUnitsT = typeof weightUnits[number];
 export type lengthUnitsT = typeof lengthUnits[number];
 export type volumeUnitsT = typeof volumeUnits[number];
 export type fuelUnitsT = (volumeUnitsT | weightUnitsT);
+
+// These are what determine the units used when saving to the actual config file
+// If these are changed the conversion factors must also be changed
+export const baseWeightUnit: weightUnitsT = "lbs";
+export const baseLengthUnit: lengthUnitsT = "in";
+export const baseVolumeUnit: volumeUnitsT = "gal";
+export const baseFuelUnit: fuelUnitsT = "lbs";
 
 export interface setupT {
   weightUnits: typeof weightUnits[number];

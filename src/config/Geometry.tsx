@@ -1,7 +1,9 @@
-import { useRef, type ReactNode } from "react";
+import { useContext, useRef, type ReactNode } from "react";
 import "./Geometry.css"
 import { Subregion, Grouping } from "../Layout";
-import type { regionT, regionPointT, weightLimitT, aircraftProps, aircraftT, nameProps } from "../Types";
+import { type regionT, type regionPointT, type weightLimitT, type aircraftProps, type aircraftT, type nameProps, baseLengthUnit, baseWeightUnit } from "../Types";
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../UnitsContext";
+import { roundNumber } from "../utility";
 
 const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
 
@@ -10,6 +12,7 @@ interface weightLimitProps extends aircraftProps {
 }
 
 function WeightLimit({ limit, aircraft, setAircraft }: weightLimitProps): ReactNode {
+  const units = useContext(UnitContext);
   const index = aircraft.limits.limits.findIndex((lim: weightLimitT) => lim.id === limit.id);
   const timeRef = useRef(0);
   if (index < 0) return;
@@ -38,7 +41,11 @@ function WeightLimit({ limit, aircraft, setAircraft }: weightLimitProps): ReactN
   return (
     <div className="weightLimit grouping">
       <input placeholder="Limit Name" defaultValue={limit.name} onChange={e => setValue("name", e.target.value)} />
-      <input placeholder="Weight" type="number" defaultValue={limit.weight ?? 0} onChange={e => setValue("weight", Number(e.target.value))} />
+      <input
+        placeholder={units.weightUnits}
+        type="number"
+        value={limit.weight ? roundNumber(convertWeightUnit(limit.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+        onChange={e => setValue("weight", convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
       <input type="color" value={limit.color} onChange={e => setColor(e.target.value)} />
       <select value={limit.lineStyle} onChange={e => setValue('lineStyle', e.target.value)}>
         {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
@@ -55,6 +62,7 @@ interface weightRegionRowProps extends aircraftProps {
 }
 
 function WeightRegionRow({ regionPoint, aircraft, setAircraft, regionIndex, index }: weightRegionRowProps): ReactNode {
+  const units = useContext(UnitContext);
 
   function setValue<K extends keyof regionPointT, V extends regionPointT[K]>(key: K, value: V): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
@@ -78,17 +86,17 @@ function WeightRegionRow({ regionPoint, aircraft, setAircraft, regionIndex, inde
     <>
       <div className="weightRegionRow">
         <input
-          placeholder="Weight"
+          placeholder={units.weightUnits}
           min={0}
           step={10}
           type="number"
-          defaultValue={regionPoint.weight}
-          onChange={e => setValue('weight', Number(e.target.value))} />
+          value={regionPoint.weight ? roundNumber(convertWeightUnit(regionPoint.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+          onChange={e => setValue('weight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
         <input
-          placeholder="Arm"
+          placeholder={units.lengthUnits}
           type="number"
-          defaultValue={regionPoint.arm}
-          onChange={e => setValue('arm', Number(e.target.value))} />
+          value={regionPoint.arm ? roundNumber(convertLengthUnit(regionPoint.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+          onChange={e => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
         {aircraft.limits.regions[regionIndex].data.length > 3 &&
           <button onClick={deletePoint}>X</button>}
         {<button className="addButton" onClick={addPoint}></button>}

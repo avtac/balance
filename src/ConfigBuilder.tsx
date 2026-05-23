@@ -4,7 +4,7 @@ import Geometry from './config/Geometry.tsx'
 import Diagram from './Diagram'
 import Graph from './Graph.tsx'
 import { useMemo, useState } from 'react'
-import type { configT, aircraftT, operationConfigT, nameProps, aircraftProps } from './Types'
+import { type configT, type aircraftT, type operationConfigT, type nameProps, type aircraftProps, baseLengthUnit, baseWeightUnit, baseFuelUnit } from './Types'
 import { SeatConfig } from './config/Seats.tsx'
 import { CargoConfig } from './config/Cargo.tsx'
 import { Equipment } from './config/Equipment.tsx'
@@ -14,15 +14,16 @@ import Header from './Header.tsx'
 import AircraftConfig from './config/Aircraft.tsx'
 import { FuelConfig } from './config/Fuel.tsx'
 import Setup from './config/Setup.tsx'
+import { UnitContext } from './UnitsContext.tsx'
 
 export function getNewConfig(): configT {
   return {
     id: crypto.randomUUID(),
     name: "",
     setup: {
-      weightUnits: 'lbs',
-      lengthUnits: 'in',
-      fuelUnits: 'lbs',
+      weightUnits: baseWeightUnit,
+      lengthUnits: baseLengthUnit,
+      fuelUnits: baseFuelUnit,
       useMAC: false,
       fuelDensity: 6,
     },
@@ -32,7 +33,9 @@ export function getNewConfig(): configT {
         tailNumber: "",
         type: "",
         emptyArm: 35.5,
-        emptyWeight: 1550
+        emptyWeight: 1550,
+        leadingEdgeMAC: 0,
+        mac: 0
       },
       seats: [{
         id: crypto.randomUUID(),
@@ -189,62 +192,64 @@ function ConfigBuilder() {
     <>
       <Header />
       <section id="content">
-        <div id="split">
-          <div id='leftPanel'>
-            <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
-              <Setup
-                name={"Setup"}
-                config={config}
-                setConfig={setConfigSpecial} />
-              <AircraftConfig name={"Aircraft"}
-                config={config}
-                setConfig={setConfigSpecial}
-                selectedAircraft={selectedAircraft}
-                setSelectedAircraft={setSelectedAircraftSpecial} />
-              <Geometry
-                name={"Geometry"}
-                aircraft={config.aircraft[aircraftIndex]}
-                setAircraft={setAircraftSpecial} />
-              <SeatCargoFuelConfig
-                name={"Seat/Cargo/Fuel"}
-                aircraft={config.aircraft[aircraftIndex]}
-                setAircraft={setAircraftSpecial} />
-              <Equipment
-                name={"Equipment"}
-                aircraft={config.aircraft[aircraftIndex]}
-                setAircraft={setAircraftSpecial} />
-              <AircraftConfigs
-                name={"Configs"}
-                aircraft={config.aircraft[aircraftIndex]}
-                setAircraft={setAircraftSpecial}
-                selectedConfig={selectedConfig}
-                setSelectedConfig={setSelectedConfig} />
-              <AircraftOperationConfig
-                name={"Ops Config"}
-                aircraft={config.aircraft[aircraftIndex]}
-                setAircraft={setAircraftSpecial}
-                selectedConfig={selectedConfig}
-                setSelectedConfig={setSelectedConfig}
-                selectedOpsConfig={selectedOpsConfig}
-                setSelectedOpsConfig={setOpsConfig} />
-            </MultiPane>
-          </div>
-          <div id='rightPanel'>
-            <div id='graphHolder'>
-              <Graph
-                aircraft={config.aircraft[aircraftIndex]}
-                selectedConfig={selectedPanel >= 5 ? selectedConfig : ""}
-                selectedOpsConfig={selectedPanel === 6 ? selectedOpsConfig : ""} />
+        <UnitContext value={config.setup}>
+          <div id="split">
+            <div id='leftPanel'>
+              <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
+                <Setup
+                  name={"Setup"}
+                  config={config}
+                  setConfig={setConfigSpecial} />
+                <AircraftConfig name={"Aircraft"}
+                  config={config}
+                  setConfig={setConfigSpecial}
+                  selectedAircraft={selectedAircraft}
+                  setSelectedAircraft={setSelectedAircraftSpecial} />
+                <Geometry
+                  name={"Geometry"}
+                  aircraft={config.aircraft[aircraftIndex]}
+                  setAircraft={setAircraftSpecial} />
+                <SeatCargoFuelConfig
+                  name={"Seat/Cargo/Fuel"}
+                  aircraft={config.aircraft[aircraftIndex]}
+                  setAircraft={setAircraftSpecial} />
+                <Equipment
+                  name={"Equipment"}
+                  aircraft={config.aircraft[aircraftIndex]}
+                  setAircraft={setAircraftSpecial} />
+                <AircraftConfigs
+                  name={"Configs"}
+                  aircraft={config.aircraft[aircraftIndex]}
+                  setAircraft={setAircraftSpecial}
+                  selectedConfig={selectedConfig}
+                  setSelectedConfig={setSelectedConfig} />
+                <AircraftOperationConfig
+                  name={"Ops Config"}
+                  aircraft={config.aircraft[aircraftIndex]}
+                  setAircraft={setAircraftSpecial}
+                  selectedConfig={selectedConfig}
+                  setSelectedConfig={setSelectedConfig}
+                  selectedOpsConfig={selectedOpsConfig}
+                  setSelectedOpsConfig={setOpsConfig} />
+              </MultiPane>
             </div>
-            <div id='diagramHolder'>
-              <Diagram
-                aircraft={config.aircraft[aircraftIndex]}
-                selectedPanel={selectedPanel}
-                selectedConfig={selectedConfig}
-                selectedOpsConfig={selectedOpsConfig} />
+            <div id='rightPanel'>
+              <div id='graphHolder'>
+                <Graph
+                  aircraft={config.aircraft[aircraftIndex]}
+                  selectedConfig={selectedPanel >= 5 ? selectedConfig : ""}
+                  selectedOpsConfig={selectedPanel === 6 ? selectedOpsConfig : ""} />
+              </div>
+              <div id='diagramHolder'>
+                <Diagram
+                  aircraft={config.aircraft[aircraftIndex]}
+                  selectedPanel={selectedPanel}
+                  selectedConfig={selectedConfig}
+                  selectedOpsConfig={selectedOpsConfig} />
+              </div>
             </div>
           </div>
-        </div>
+        </UnitContext>
       </section>
     </>
   )

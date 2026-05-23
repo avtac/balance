@@ -185,7 +185,7 @@ function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }:
       (v: { id: string, weight: number }) => v.id == seat.id
     )
 
-    const isOps = selectedPanel >= 4 && opsIndex >= 0
+    const isOps = selectedPanel >= 6 && opsIndex >= 0
       && selectedOpsConfig != undefined
       && seatIndex >= 0;
 
@@ -204,7 +204,7 @@ function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }:
     const cargoIndex = aircraft.operationConfigs[opsIndex].cargoAreas.findIndex(
       (v: { id: string, weight: number }) => v.id == cargoArea.id
     )
-    const isOps = selectedPanel >= 4 && opsIndex >= 0
+    const isOps = selectedPanel >= 6 && opsIndex >= 0
       && selectedOpsConfig != undefined
       && cargoIndex >= 0;
     const opsPercentUsed = isOps ? aircraft.operationConfigs[opsIndex].cargoAreas[cargoIndex].weight / cargoArea.maxWeight : 0;

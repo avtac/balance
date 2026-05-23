@@ -1,5 +1,8 @@
+import { useContext } from "react";
 import { Grouping, Subregion } from "../Layout";
-import type { aircraftT, seatT, aircraftProps } from "../Types";
+import { type aircraftT, type seatT, type aircraftProps, baseLengthUnit, baseWeightUnit } from "../Types";
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../UnitsContext";
+import { roundNumber } from "../utility";
 
 interface seatInputProps extends aircraftProps {
   seat: seatT,
@@ -7,6 +10,7 @@ interface seatInputProps extends aircraftProps {
 }
 
 function SeatInput({ seat, index, aircraft, setAircraft }: seatInputProps) {
+  const units = useContext(UnitContext);
 
   function setValue<T extends keyof seatT, V extends seatT[T]>(name: T, value: V): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
@@ -30,26 +34,26 @@ function SeatInput({ seat, index, aircraft, setAircraft }: seatInputProps) {
       }
       <input
         name={"arm" + index}
-        placeholder="Arm"
+        placeholder={units.lengthUnits}
         type="number"
-        value={seat.arm ? seat.arm : ""}
-        onChange={e => setValue('arm', Number(e.target.value))} />
+        value={seat.arm ? roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+        onChange={e => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
       <input
         name={"maxWeight" + index}
-        placeholder="Max Weight"
+        placeholder={units.weightUnits}
         min={0}
         type="number"
-        value={seat.maxWeight ? seat.maxWeight : ""}
-        onChange={e => setValue('maxWeight', Number(e.target.value))} />
+        value={seat.maxWeight ? roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+        onChange={e => setValue('maxWeight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
       <input
         name={"lateralDist" + index}
-        placeholder="Lateral Offset"
+        placeholder={units.lengthUnits}
         type="number"
-        value={seat.lateralDist ? seat.lateralDist : ""}
-        onChange={e => setValue('lateralDist', Number(e.target.value))} />
+        value={seat.lateralDist ? roundNumber(convertLengthUnit(seat.lateralDist, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+        onChange={e => setValue('lateralDist', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
       <input
         name={"seatCount" + index}
-        placeholder="Seat Count"
+        placeholder="Count"
         min={1}
         type="number"
         value={seat.seatCount ? seat.seatCount : ""}

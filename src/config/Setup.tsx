@@ -1,9 +1,10 @@
 import './Setup.css'
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Subregion } from "../Layout";
-import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT } from "../Types";
-import { saveStringToFile } from "../utility";
+import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../Types";
+import { roundNumber, saveStringToFile } from "../utility";
 import { getNewConfig } from "../ConfigBuilder";
+import { convertDensityUnits, unitPrecision } from '../UnitsContext';
 
 const weightUnitsElements = weightUnits.map((u) => <option key={u} value={u}>{u}</option>)
 const lengthUnitsElements = lengthUnits.map((u) => <option key={u} value={u}>{u}</option>)
@@ -18,7 +19,9 @@ const fuelTypes: { name: string, density: number }[] = [
 ] as const
 
 function Units({ config, setConfig }: configProps): ReactNode {
-  const [selectedDensity, setSelectedDensity] = useState(config.setup.fuelDensity ?? fuelTypes[0].density);
+  const index = fuelTypes.findIndex(t => t.density === config.setup.fuelDensity);
+  const [selectedDensity, setSelectedDensity] = useState(index >= 0 ? index : fuelTypes.length - 1);
+  const oldDensity = useRef(config.setup.fuelDensity);
   function setValue<T extends keyof setupT, V extends setupT[T]>(name: T, value: V): void {
     const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.setup[name] = value;
@@ -27,33 +30,87 @@ function Units({ config, setConfig }: configProps): ReactNode {
 
   function setSelectedDensitySpecial(selection: number) {
     setSelectedDensity(selection);
-    setValue('fuelDensity', fuelTypes[selection].density);
+    if (selection === fuelTypes.length - 1) {
+      return;
+    }
+    const newDensity = fuelTypes[selection].density; // lbs/gal
+    // Loop through every tank and convert weights
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.setup.fuelDensity = newDensity;
+    for (let i = 0; i < config.aircraft.length; i++) {
+      for (let j = 0; j < config.aircraft[i].fuelTanks.length; j++) {
+        tmp.aircraft[i].fuelTanks[j].maxWeight = tmp.aircraft[i].fuelTanks[j].maxWeight / oldDensity.current * newDensity;
+        tmp.aircraft[i].fuelTanks[j].unusable = tmp.aircraft[i].fuelTanks[j].unusable / oldDensity.current * newDensity;
+      }
+    }
+    setConfig(tmp);
+    oldDensity.current = newDensity;
   }
 
-  const fuelTypeElements = fuelTypes.map((t, i) => <option key={t.name} value={i}>{t.name} ({i < fuelTypes.length - 1 ? t.density : config.setup.fuelDensity})</option>)
+  function setManualDensity(density: number) {
+    const newDensity = density; //lbs/gal
+    if (newDensity === 0) {
+      setValue('fuelDensity', newDensity);
+      return;
+    }
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.setup.fuelDensity = density;
+    for (let i = 0; i < config.aircraft.length; i++) {
+      for (let j = 0; j < config.aircraft[i].fuelTanks.length; j++) {
+        tmp.aircraft[i].fuelTanks[j].maxWeight = tmp.aircraft[i].fuelTanks[j].maxWeight / oldDensity.current * newDensity;
+        tmp.aircraft[i].fuelTanks[j].unusable = tmp.aircraft[i].fuelTanks[j].unusable / oldDensity.current * newDensity;
+      }
+    }
+    setConfig(tmp);
+    oldDensity.current = newDensity;
+  }
+
+  let fuelTypeElements: ReactNode = []
+  if (volumeUnits.includes(config.setup.fuelUnits as volumeUnitsT)) {
+    fuelTypeElements = fuelTypes.map((t, i) => {
+      return (<option
+        key={t.name}
+        value={i}>
+        {t.name} ({i < fuelTypes.length - 1 ? roundNumber(convertDensityUnits(t.density, baseVolumeUnit, baseWeightUnit, config.setup.fuelUnits as volumeUnitsT, config.setup.weightUnits), unitPrecision) : roundNumber(convertDensityUnits(config.setup.fuelDensity, baseVolumeUnit, baseWeightUnit, config.setup.fuelUnits as volumeUnitsT, config.setup.weightUnits), unitPrecision)})
+      </option>)
+    });
+  }
   return (
     <Subregion>
       <h3>Units</h3>
       <div id='unitsSelect'>
         <label>Weight</label>
-        <label>Length</label>
-        <label>Fuel</label>
-        <label>Fuel Density</label>
         <select value={config.setup.weightUnits} onChange={e => setValue('weightUnits', e.target.value as weightUnitsT)}>
           {weightUnitsElements}
         </select>
+        <label>Length</label>
         <select value={config.setup.lengthUnits} onChange={e => setValue('lengthUnits', e.target.value as lengthUnitsT)}>
           {lengthUnitsElements}
         </select>
+        <label>Fuel</label>
         <select value={config.setup.fuelUnits} onChange={e => setValue('fuelUnits', e.target.value as fuelUnitsT)}>
           {fuelUnitsElements}
         </select>
-        <div id='fuelDensityHolder'>
-          <select value={selectedDensity} onChange={(e) => setSelectedDensitySpecial(Number(e.target.value))} id="fuelDensity">
-            {fuelTypeElements}
-          </select>
-          {selectedDensity === fuelTypes.length - 1 && <input id="fuelDensityInput" type="number" value={config.setup.fuelDensity} onChange={(e) => setValue('fuelDensity', Number(e.target.value))} />}
-        </div>
+        {volumeUnits.includes(config.setup.fuelUnits as volumeUnitsT) &&
+          <>
+            <label>Fuel Density ({config.setup.weightUnits}/{config.setup.fuelUnits})</label>
+            <div id='fuelDensityHolder'>
+              <select
+                value={selectedDensity}
+                onChange={(e) => setSelectedDensitySpecial(Number(e.target.value))} id="fuelDensity">
+                {fuelTypeElements}
+              </select>
+              {selectedDensity === fuelTypes.length - 1 &&
+                <input
+                  id="fuelDensityInput"
+                  type="number"
+                  placeholder={`${config.setup.weightUnits}/${config.setup.fuelUnits}`}
+                  value={config.setup.fuelDensity ? roundNumber(config.setup.fuelDensity, unitPrecision) : ""}
+                  onChange={(e) => setManualDensity(Number(e.target.value))} />
+              }
+            </div>
+          </>
+        }
       </div>
     </Subregion>
   )

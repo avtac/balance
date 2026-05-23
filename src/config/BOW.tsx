@@ -1,8 +1,9 @@
 import './BOW.css'
-import { useEffect, useRef, type ReactNode } from "react";
+import { useContext, useEffect, useRef, type ReactNode } from "react";
 import { Subregion, MultiPane } from "../Layout";
-import type { aircraftConfigT, cargoAreaT, aircraftProps, aircraftT, operationConfigT, seatT, nameProps } from "../Types";
-import { getSortedByArm } from '../utility';
+import { type aircraftConfigT, type cargoAreaT, type aircraftProps, type aircraftT, type operationConfigT, type seatT, type nameProps, baseWeightUnit } from "../Types";
+import { getSortedByArm, roundNumber } from '../utility';
+import { convertWeightUnit, UnitContext, unitPrecision } from '../UnitsContext';
 
 interface seatSelectionProps extends aircraftProps {
   seat: seatT,
@@ -10,6 +11,9 @@ interface seatSelectionProps extends aircraftProps {
 }
 
 function SeatSelection({ seat, opsConfigIndex, aircraft, setAircraft }: seatSelectionProps) {
+  const units = useContext(UnitContext);
+  const oldWeight = useRef(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits));
+
   if (opsConfigIndex < 0) return;
 
   const seatIndex = aircraft.operationConfigs[opsConfigIndex].seats.findIndex((s: { id: string, weight: number }) => s.id == seat.id);
@@ -31,16 +35,16 @@ function SeatSelection({ seat, opsConfigIndex, aircraft, setAircraft }: seatSele
 
   function setWeight(weight: number): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    tmp.operationConfigs[opsConfigIndex].seats[seatIndex].weight = Math.min(seat.maxWeight * seat.seatCount, weight);
-    oldWeight.current = Math.min(seat.maxWeight * seat.seatCount, weight);
+    const newWeight = Math.min(seat.maxWeight * seat.seatCount, convertWeightUnit(weight, units.weightUnits, baseWeightUnit));
+    tmp.operationConfigs[opsConfigIndex].seats[seatIndex].weight = newWeight;
+    oldWeight.current = newWeight;
     setAircraft(tmp);
   }
 
   let weight = 0;
-  const oldWeight = useRef(seat.maxWeight);
   if (seatIndex >= 0) {
-    weight = aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
-    oldWeight.current = weight;
+    weight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
+    oldWeight.current = aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
   }
   checked.current = seatIndex >= 0;
 
@@ -59,7 +63,14 @@ function SeatSelection({ seat, opsConfigIndex, aircraft, setAircraft }: seatSele
       </td>
       <td onClick={selectCheckbox}>{seat.name}</td>
       <td>
-        <input disabled={!checked.current} value={weight} min={0} max={seat.maxWeight * seat.seatCount} type="number" onChange={e => setWeight(Number(e.target.value))} />
+        <input
+          disabled={!checked.current}
+          value={weight ? weight : ""}
+          placeholder={units.weightUnits}
+          min={0}
+          max={roundNumber(convertWeightUnit(seat.maxWeight * seat.seatCount, baseWeightUnit, units.weightUnits), unitPrecision) + 1}
+          type="number"
+          onChange={e => setWeight(Number(e.target.value))} />
       </td>
     </tr>
   );
@@ -71,6 +82,9 @@ interface cargoSelectionProps extends aircraftProps {
 }
 
 function CargoSelection({ cargoArea, opsConfigIndex, aircraft, setAircraft }: cargoSelectionProps) {
+  const units = useContext(UnitContext);
+  const oldWeight = useRef(cargoArea.maxWeight);
+
   if (opsConfigIndex < 0) return;
 
   const cargoAreaIndex = aircraft.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: { id: string, weight: number }) => s.id == cargoArea.id);
@@ -92,15 +106,15 @@ function CargoSelection({ cargoArea, opsConfigIndex, aircraft, setAircraft }: ca
 
   function setWeight(weight: number): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    tmp.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight = Math.min(cargoArea.maxWeight, weight);
-    oldWeight.current = Math.min(cargoArea.maxWeight, weight);
+    const newWeight = Math.min(cargoArea.maxWeight, convertWeightUnit(weight, units.weightUnits, baseWeightUnit));
+    tmp.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight = newWeight;
+    oldWeight.current = newWeight;
     setAircraft(tmp);
   }
 
   let weight = 0;
-  const oldWeight = useRef(cargoArea.maxWeight);
   if (cargoAreaIndex >= 0) {
-    weight = aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
+    weight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
     oldWeight.current = aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
   }
 
@@ -119,7 +133,14 @@ function CargoSelection({ cargoArea, opsConfigIndex, aircraft, setAircraft }: ca
       </td>
       <td onClick={selectCheckbox}>{cargoArea.name}</td>
       <td>
-        <input disabled={!checked.current} value={weight} min={0} max={cargoArea.maxWeight} type="number" onChange={e => setWeight(Number(e.target.value))} />
+        <input
+          disabled={!checked.current}
+          value={weight ? weight : ""}
+          placeholder={units.weightUnits}
+          min={0}
+          max={roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision) + 1}
+          type="number"
+          onChange={e => setWeight(Number(e.target.value))} />
       </td>
     </tr>
   );
@@ -133,6 +154,7 @@ interface aircraftOperationConfigProps extends aircraftProps {
 }
 
 function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSelectedConfig, selectedOpsConfig, setSelectedOpsConfig }: aircraftOperationConfigProps & nameProps): ReactNode {
+  const units = useContext(UnitContext);
   const configSelectRef = useRef(null);
   const configIndex: number = aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
   const opsConfigIndex: number = aircraft.operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
@@ -246,7 +268,7 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
               <tr>
                 <th>✔</th>
                 <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>Weight</th>
+                <th style={{ width: "3rem" }}>Weight ({units.weightUnits})</th>
               </tr>
               {getSortedByArm(seats).map((seat: seatT) => {
                 return <SeatSelection
@@ -265,7 +287,7 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
               <tr>
                 <th>✔</th>
                 <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>Weight</th>
+                <th style={{ width: "3rem" }}>Weight ({units.weightUnits})</th>
               </tr>
               {getSortedByArm(cargoAreas).map((cargoArea: cargoAreaT) => {
                 return <CargoSelection

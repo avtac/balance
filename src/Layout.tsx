@@ -16,7 +16,7 @@ function Region({ children }: childrenProps) {
   );
 }
 
-interface subregionProps extends childrenProps {
+interface subregionProps extends childrenProps, nameProps {
   id?: string,
 }
 

@@ -15,7 +15,9 @@
 
 #unitsSelect {
   display: grid;
+  grid-auto-flow: column;
   grid-template-columns: 8rem 8rem 8rem 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 6px;
   justify-content: start;
 

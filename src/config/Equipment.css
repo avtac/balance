@@ -1,7 +1,7 @@
 .equipmentRow,
 .title {
   display: grid;
-  grid-template-columns: 1fr 5rem 8rem 4rem 2rem;
+  grid-template-columns: 1fr 5rem 8rem 6rem 2rem;
   gap: 5px;
   padding: 3px;
 }

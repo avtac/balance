@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
 import './Config.css'
 import { MultiPane, Subregion } from "../Layout";
-import type { aircraftConfigT, cargoAreaT, aircraftT, equipmentT, seatT, aircraftProps, fuelTankT, nameProps } from "../Types";
-import { getSortedByArm } from '../utility';
+import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type aircraftProps, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit } from "../Types";
+import { getSortedByArm, roundNumber } from '../utility';
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../UnitsContext';
 
 interface seatSelectionProps extends aircraftProps {
   seat: seatT,
@@ -10,6 +11,7 @@ interface seatSelectionProps extends aircraftProps {
 }
 
 function SeatSelection({ seat, configIndex, aircraft, setAircraft }: seatSelectionProps): ReactElement {
+  const units = useContext(UnitContext);
   let seatIndex: number = -1;
   if (configIndex >= 0) seatIndex = aircraft.aircraftConfigs[configIndex].seats.findIndex((s: string) => s == seat.id);
   const checked = useRef(seatIndex >= 0);
@@ -43,8 +45,8 @@ function SeatSelection({ seat, configIndex, aircraft, setAircraft }: seatSelecti
         <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td>{seat.name}</td>
-      <td>{seat.arm}</td>
-      <td>{seat.maxWeight}</td>
+      <td>{roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
       <td>{seat.seatCount}</td>
     </tr>
   );
@@ -56,6 +58,7 @@ interface cargoSelectionProps extends aircraftProps {
 }
 
 function CargoSelection({ cargoArea, configIndex, aircraft, setAircraft }: cargoSelectionProps): ReactElement {
+  const units = useContext(UnitContext);
   let cargoAreaIndex = -1;
   if (configIndex >= 0) cargoAreaIndex = aircraft.aircraftConfigs[configIndex].cargoAreas.findIndex((s: string) => s == cargoArea.id);
   const checked = useRef(cargoAreaIndex >= 0);
@@ -89,8 +92,8 @@ function CargoSelection({ cargoArea, configIndex, aircraft, setAircraft }: cargo
         <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td>{cargoArea.name}</td>
-      <td>{cargoArea.arm}</td>
-      <td>{cargoArea.maxWeight}</td>
+      <td>{roundNumber(convertLengthUnit(cargoArea.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
     </tr>
   );
 }
@@ -101,6 +104,7 @@ interface fuelSelectionProps extends aircraftProps {
 }
 
 function FuelSelection({ fuelTank, configIndex, aircraft, setAircraft }: fuelSelectionProps): ReactElement {
+  const units = useContext(UnitContext);
   let fuelTankIndex = -1;
   if (configIndex >= 0) fuelTankIndex = aircraft.aircraftConfigs[configIndex].fuelTanks.findIndex((s: string) => s == fuelTank.id);
   const checked = useRef(fuelTankIndex >= 0 || !fuelTank.removable);
@@ -130,9 +134,9 @@ function FuelSelection({ fuelTank, configIndex, aircraft, setAircraft }: fuelSel
           type={"checkbox"} />
       </td>
       <td>{fuelTank.name}</td>
-      <td>{fuelTank.arm}</td>
-      <td>{fuelTank.maxWeight}</td>
-      <td>{fuelTank.unusable}</td>
+      <td>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertWeightUnit(fuelTank.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertWeightUnit(fuelTank.unusable, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
     </tr>
   );
 }
@@ -145,6 +149,7 @@ interface EquipmentSelectionProps {
 }
 
 function EquipmentSelection({ equipment, configIndex, aircraft, setAircraft }: EquipmentSelectionProps): ReactElement {
+  const units = useContext(UnitContext);
   const oldCount = useRef(1);
   const [count, setCount] = useState(1);
   let equipmentIndex = -1;
@@ -191,8 +196,8 @@ function EquipmentSelection({ equipment, configIndex, aircraft, setAircraft }: E
         <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{equipment.name}</td>
-      <td onClick={selectCheckbox}>{equipment.arm}</td>
-      <td onClick={selectCheckbox}>{equipment.weight}</td>
+      <td onClick={selectCheckbox}>{roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
+      <td onClick={selectCheckbox}>{roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
       <td>
         <input disabled={!checked.current} min={0} value={count} type={"number"} onChange={(e) => setAircraftCount(Number(e.target.value))} />
       </td>
@@ -208,6 +213,7 @@ interface AircraftConfigsProps {
 }
 
 function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedConfig }: AircraftConfigsProps & nameProps): ReactElement {
+  const units = useContext(UnitContext);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === selectedConfig);
 
   function addConfig(): void {
@@ -283,8 +289,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
               <tr>
                 <th>✔</th>
                 <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>Arm</th>
-                <th style={{ width: "3rem" }}>Max Weight</th>
+                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
+                <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
                 <th style={{ width: "3rem" }}># of Seats</th>
               </tr>
               {getSortedByArm(aircraft.seats).map((seat: seatT) => {
@@ -299,8 +305,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
               <tr>
                 <th>✔</th>
                 <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>Arm</th>
-                <th style={{ width: "3rem" }}>Max Weight</th>
+                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
+                <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
               </tr>
               {getSortedByArm(aircraft.cargoAreas).map((cargo: cargoAreaT) => {
                 return <CargoSelection key={cargo.id + " cargoSelect"} configIndex={configIndex} cargoArea={cargo} aircraft={aircraft} setAircraft={setAircraft} />
@@ -314,7 +320,7 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
               <tr>
                 <th>✔</th>
                 <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>Arm</th>
+                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
                 <th style={{ width: "3rem" }}>Max Weight</th>
                 <th style={{ width: "3rem" }}>Unusable Weight</th>
               </tr>
@@ -330,8 +336,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
               <tr>
                 <th>✔</th>
                 <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>Arm</th>
-                <th style={{ width: "3rem" }}>Weight</th>
+                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
+                <th style={{ width: "3rem" }}>{`Weight (${units.weightUnits})`}</th>
                 <th style={{ width: "3rem" }}>Count</th>
               </tr>
               {getSortedByArm(aircraft.equipment).map((equipment: equipmentT) => {

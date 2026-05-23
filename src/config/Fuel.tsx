@@ -1,5 +1,8 @@
+import { useContext } from "react";
 import { Grouping, Subregion } from "../Layout";
-import type { fuelTankT, aircraftProps, aircraftT } from "../Types";
+import { type fuelTankT, type aircraftProps, type aircraftT, baseLengthUnit, baseFuelUnit } from "../Types";
+import { convertFuelUnits, convertLengthUnit, UnitContext, unitPrecision } from "../UnitsContext";
+import { roundNumber } from "../utility";
 
 interface fuelInputProps extends aircraftProps {
   tank: fuelTankT,
@@ -7,6 +10,7 @@ interface fuelInputProps extends aircraftProps {
 }
 
 function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
+  const units = useContext(UnitContext);
 
   function setValue<T extends keyof fuelTankT, V extends fuelTankT[T]>(name: T, value: V): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
@@ -30,22 +34,22 @@ function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
         onChange={e => setValue('name', e.target.value)} />
       <input
         name={"arm" + index}
-        placeholder="Arm"
+        placeholder={units.lengthUnits}
         type="number"
-        value={tank.arm ? tank.arm : ""}
-        onChange={e => setValue('arm', Number(e.target.value))} />
+        value={tank.arm ? roundNumber(convertLengthUnit(tank.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+        onChange={e => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
       <input
-        name={"maxWeight" + index}
-        placeholder="Max Weight"
+        name={"maxCapacity" + index}
+        placeholder={units.fuelUnits}
         type="number"
-        value={tank.maxWeight ? tank.maxWeight : ""}
-        onChange={e => setValue('maxWeight', Number(e.target.value))} />
+        value={tank.maxWeight ? roundNumber(convertFuelUnits(tank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) : ""}
+        onChange={e => setValue('maxWeight', convertFuelUnits(Number(e.target.value), units.fuelUnits, baseFuelUnit, units.fuelDensity))} />
       <input
         name={"unusable" + index}
-        placeholder="Unusable"
+        placeholder={units.fuelUnits}
         type="number"
-        value={tank.unusable ? tank.unusable : ""}
-        onChange={e => setValue('unusable', Number(e.target.value))} />
+        value={tank.unusable ? roundNumber(convertFuelUnits(tank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) : ""}
+        onChange={e => setValue('unusable', convertFuelUnits(Number(e.target.value), units.fuelUnits, baseFuelUnit, units.fuelDensity))} />
       <input
         type="checkbox"
         checked={aircraft.fuelTanks[index].removable}
@@ -56,6 +60,7 @@ function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
 }
 
 function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
+  const units = useContext(UnitContext);
 
   function addFuel(): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
@@ -77,9 +82,9 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
         <button onClick={addFuel}>Add Fuel Tank</button>
         <div className="fuelInput">
           <p>Name</p>
-          <p>Arm</p>
-          <p>Max Weight</p>
-          <p>Unusable Weight</p>
+          <p>Arm ({units.lengthUnits})</p>
+          <p>Max Fuel ({units.fuelUnits})</p>
+          <p>Unusable Fuel ({units.fuelUnits})</p>
           <p>Removable?</p>
         </div>
         <form id="fuelForm">

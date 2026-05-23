@@ -1,7 +1,9 @@
 import './Aircraft.css'
 import { useRef, type ReactNode, type RefObject } from "react";
-import type { aircraftPropertiesT, configProps, aircraftT, configT, nameProps } from "../Types";
+import { type aircraftPropertiesT, type configProps, type aircraftT, type configT, type nameProps, baseLengthUnit, baseWeightUnit } from "../Types";
 import { Subregion } from "../Layout";
+import { roundNumber } from '../utility';
+import { convertLengthUnit, convertWeightUnit, unitPrecision } from '../UnitsContext';
 
 interface aircraftConfigProps extends configProps {
   selectedAircraft: string,
@@ -15,7 +17,9 @@ function getNewAircraft(): aircraftT {
       tailNumber: "",
       type: "",
       emptyArm: 0,
-      emptyWeight: 0
+      emptyWeight: 0,
+      leadingEdgeMAC: 0,
+      mac: 0,
     },
     seats: [{
       id: crypto.randomUUID(),
@@ -140,29 +144,51 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
         <div className="rows">
           <div>
             <h3>Tail Number *</h3>
-            <input value={config.aircraft[aircraftIndex].config.tailNumber} placeholder="Tail Number" onChange={(e) => setValue('tailNumber', e.target.value)} />
+            <input
+              value={config.aircraft[aircraftIndex].config.tailNumber}
+              placeholder="Tail Number"
+              onChange={(e) => setValue('tailNumber', e.target.value)} />
           </div>
           <div>
             <h3>Aircraft Type *</h3>
-            <input value={config.aircraft[aircraftIndex].config.type} placeholder="Type" onChange={(e) => setValue('type', e.target.value)} />
+            <input
+              value={config.aircraft[aircraftIndex].config.type}
+              placeholder="Type"
+              onChange={(e) => setValue('type', e.target.value)} />
           </div>
           <div>
-            <h3>Empty Weight *</h3>
-            <input value={config.aircraft[aircraftIndex].config.emptyWeight} type="number" placeholder="Empty Weight" onChange={(e) => setValue('emptyWeight', Number(e.target.value))} />
+            <h3>Empty Weight ({config.setup.weightUnits}) *</h3>
+            <input
+              value={config.aircraft[aircraftIndex].config.emptyWeight ? roundNumber(convertWeightUnit(config.aircraft[aircraftIndex].config.emptyWeight, baseWeightUnit, config.setup.weightUnits), unitPrecision) : ""}
+              type="number"
+              placeholder={config.setup.weightUnits}
+              onChange={(e) => setValue('emptyWeight', convertWeightUnit(Number(e.target.value), config.setup.weightUnits, baseWeightUnit))} />
           </div>
           <div>
-            <h3>Empty Arm *</h3>
-            <input value={config.aircraft[aircraftIndex].config.emptyArm} type="number" placeholder="Empty Arm" onChange={(e) => setValue('emptyArm', Number(e.target.value))} />
+            <h3>Empty Arm ({config.setup.lengthUnits}) *</h3>
+            <input
+              value={config.aircraft[aircraftIndex].config.emptyArm ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].config.emptyArm, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
+              type="number"
+              placeholder={config.setup.lengthUnits}
+              onChange={(e) => setValue('emptyArm', convertLengthUnit(Number(e.target.value), config.setup.lengthUnits, baseLengthUnit))} />
           </div>
         </div>
         <div className='rows'>
           <div>
-            <h3>Leading MAC</h3>
-            <input value={config.aircraft[aircraftIndex].config.leadingEdgeMAC ?? 0} type="number" placeholder="Leading Edge MAC" onChange={(e) => setValue('leadingEdgeMAC', Number(e.target.value))} />
+            <h3>Leading MAC ({config.setup.lengthUnits})</h3>
+            <input
+              value={config.aircraft[aircraftIndex].config.leadingEdgeMAC ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].config.leadingEdgeMAC, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
+              type="number"
+              placeholder={config.setup.lengthUnits}
+              onChange={(e) => setValue('leadingEdgeMAC', convertLengthUnit(Number(e.target.value), config.setup.lengthUnits, baseLengthUnit))} />
           </div>
           <div>
-            <h3>MAC</h3>
-            <input value={config.aircraft[aircraftIndex].config.mac ?? 0} type="number" placeholder="Mean Aerodynamic Chord" onChange={(e) => setValue('mac', Number(e.target.value))} />
+            <h3>MAC ({config.setup.lengthUnits})</h3>
+            <input
+              value={config.aircraft[aircraftIndex].config.mac ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].config.mac, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
+              type="number"
+              placeholder={config.setup.lengthUnits}
+              onChange={(e) => setValue('mac', convertLengthUnit(Number(e.target.value), config.setup.lengthUnits, baseLengthUnit))} />
           </div>
         </div>
       </Subregion>

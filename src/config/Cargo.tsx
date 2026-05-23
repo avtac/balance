@@ -1,5 +1,8 @@
+import { useContext } from "react";
 import { Grouping, Subregion } from "../Layout";
-import type { cargoAreaT, aircraftProps, aircraftT } from "../Types";
+import { type cargoAreaT, type aircraftProps, type aircraftT, baseLengthUnit, baseWeightUnit } from "../Types";
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../UnitsContext";
+import { roundNumber } from "../utility";
 
 interface cargoInputProps extends aircraftProps {
   area: cargoAreaT,
@@ -7,6 +10,7 @@ interface cargoInputProps extends aircraftProps {
 }
 
 function CargoInput({ area, index, aircraft, setAircraft }: cargoInputProps) {
+  const units = useContext(UnitContext);
 
   function setValue<T extends keyof cargoAreaT, V extends cargoAreaT[T]>(name: T, value: V): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
@@ -30,16 +34,17 @@ function CargoInput({ area, index, aircraft, setAircraft }: cargoInputProps) {
         onChange={e => setValue('name', e.target.value)} />
       <input
         name={"arm" + index}
-        placeholder="Arm"
+        placeholder={units.lengthUnits}
         type="number"
-        value={area.arm ? area.arm : ""}
-        onChange={e => setValue('arm', Number(e.target.value))} />
+        value={area.arm ? roundNumber(convertLengthUnit(area.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+        onChange={e => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
       <input
         name={"maxWeight" + index}
-        placeholder="Max Weight"
+        placeholder={units.weightUnits}
         type="number"
-        value={area.maxWeight ? area.maxWeight : ""}
-        onChange={e => setValue('maxWeight', Number(e.target.value))} />
+        min={0}
+        value={area.maxWeight ? roundNumber(convertWeightUnit(area.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+        onChange={e => setValue('maxWeight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
       <button onClick={() => removeCargo()}>X</button>
     </div>
   );
