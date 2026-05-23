@@ -42,16 +42,19 @@ function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipment
     <Grouping>
       <div className={"equipmentRow"}>
         <input
+          id={`equipmentName-${equip.id}`}
           defaultValue={equip.name}
           placeholder={"Name"}
           onChange={(e) => setValue('name', e.target.value)} />
         <input
+          id={`equipmentWeight-${equip.id}`}
           type="number"
           value={equip.weight ? roundNumber(convertWeightUnit(equip.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
           placeholder={units.weightUnits}
           onChange={(e) => setValue('weight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))}
           min={0} />
         <select
+          id={`equipmentArea-${equip.id}`}
           value={equip.area}
           onChange={(e) => setCargoArea(e.target.value)}>
           <option value={""}>Manual</option>
@@ -60,6 +63,7 @@ function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipment
           })}
         </select>
         <input
+          id={`equipmentArm-${equip.id}`}
           type="number"
           value={areaIndex < 0 ? (equip.arm ? roundNumber(convertLengthUnit(equip.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : "") : roundNumber(convertLengthUnit(values[areaIndex].arm, baseLengthUnit, units.lengthUnits), unitPrecision)}
           disabled={areaIndex >= 0}

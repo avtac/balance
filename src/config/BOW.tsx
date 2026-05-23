@@ -59,11 +59,15 @@ function SeatSelection({ seat, opsConfigIndex, aircraft, setAircraft }: seatSele
   return (
     <tr className="seatSelect">
       <td onClick={selectCheckbox}>
-        <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
+        <input
+          onChange={() => { }}
+          checked={checked.current}
+          type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{seat.name}</td>
       <td>
         <input
+          id={`configSeatWeight-${seat.id}`}
           disabled={!checked.current}
           value={weight ? weight : ""}
           placeholder={units.weightUnits}
@@ -134,6 +138,7 @@ function CargoSelection({ cargoArea, opsConfigIndex, aircraft, setAircraft }: ca
       <td onClick={selectCheckbox}>{cargoArea.name}</td>
       <td>
         <input
+          id={`configCargoWeight-${cargoArea.id}`}
           disabled={!checked.current}
           value={weight ? weight : ""}
           placeholder={units.weightUnits}
@@ -229,6 +234,7 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
       <Subregion>
         <div id="opsConfigTitle">
           <select
+            id='opsConfigSelect'
             onChange={(e) => setSelectedOpsConfig(e.target.value)}
             value={selectedOpsConfig}
           >
@@ -237,9 +243,11 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
             })}
           </select>
           <input
+            id='opsConfigName'
             value={opsConfigIndex >= 0 ? aircraft.operationConfigs[opsConfigIndex].name : ""}
             onChange={(e) => setName(e.target.value)} />
           <select
+            id='opsConfigConfigSelect'
             ref={configSelectRef}
             disabled={aircraft.aircraftConfigs.length == 0}
             onChange={(e) => setAircraftConfig(e.target.value)}

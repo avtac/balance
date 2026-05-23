@@ -199,7 +199,13 @@ function EquipmentSelection({ equipment, configIndex, aircraft, setAircraft }: E
       <td onClick={selectCheckbox}>{roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
       <td onClick={selectCheckbox}>{roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
       <td>
-        <input disabled={!checked.current} min={0} value={count} type={"number"} onChange={(e) => setAircraftCount(Number(e.target.value))} />
+        <input
+          id={`equipmentCount-${equipment.id}`}
+          disabled={!checked.current}
+          min={0}
+          value={count}
+          type={"number"}
+          onChange={(e) => setAircraftCount(Number(e.target.value))} />
       </td>
     </tr>
   );
@@ -271,12 +277,18 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
     <>
       <Subregion>
         <div id="aircraftTitle">
-          <select onChange={(e) => setSelectedConfig(e.target.value)} value={selectedConfig}>
+          <select
+            id='configSelect'
+            onChange={(e) => setSelectedConfig(e.target.value)}
+            value={selectedConfig}>
             {aircraft.aircraftConfigs.map((conf) => {
               return <option key={conf.id + "selectOption"} value={conf.id}>{conf.name}</option>
             })}
           </select>
-          <input value={configIndex >= 0 ? aircraft.aircraftConfigs[configIndex].name : ""} onChange={(e) => setName(e.target.value)} />
+          <input
+            id='configName'
+            value={configIndex >= 0 ? aircraft.aircraftConfigs[configIndex].name : ""}
+            onChange={(e) => setName(e.target.value)} />
           <button onClick={addConfig}>Add</button>
           <button onClick={duplicateConfig}>Duplicate</button>
           <button onClick={deleteConfig}>Delete</button>

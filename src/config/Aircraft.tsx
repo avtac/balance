@@ -127,8 +127,8 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
       <Subregion>
         <div id='aircraftSelectRow'>
           <div id='selector'>
-            <label>Aircraft</label>
-            <select value={selectedAircraft} onChange={e => setSelectedAircraft(e.target.value)}>
+            <label htmlFor='aircraftSelect'>Aircraft</label>
+            <select id="aircraftSelect" value={selectedAircraft} onChange={e => setSelectedAircraft(e.target.value)}>
               {options}
             </select>
           </div>
@@ -145,6 +145,7 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
           <div>
             <h3>Tail Number *</h3>
             <input
+              id='aircraftTailNumber'
               value={config.aircraft[aircraftIndex].config.tailNumber}
               placeholder="Tail Number"
               onChange={(e) => setValue('tailNumber', e.target.value)} />
@@ -152,6 +153,7 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
           <div>
             <h3>Aircraft Type *</h3>
             <input
+              id='aircraftType'
               value={config.aircraft[aircraftIndex].config.type}
               placeholder="Type"
               onChange={(e) => setValue('type', e.target.value)} />
@@ -159,6 +161,7 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
           <div>
             <h3>Empty Weight ({config.setup.weightUnits}) *</h3>
             <input
+              id='aircraftEmptyWeight'
               value={config.aircraft[aircraftIndex].config.emptyWeight ? roundNumber(convertWeightUnit(config.aircraft[aircraftIndex].config.emptyWeight, baseWeightUnit, config.setup.weightUnits), unitPrecision) : ""}
               type="number"
               placeholder={config.setup.weightUnits}
@@ -167,6 +170,7 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
           <div>
             <h3>Empty Arm ({config.setup.lengthUnits}) *</h3>
             <input
+              id='aircraftEmptyArm'
               value={config.aircraft[aircraftIndex].config.emptyArm ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].config.emptyArm, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
               type="number"
               placeholder={config.setup.lengthUnits}
@@ -177,6 +181,7 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
           <div>
             <h3>Leading MAC ({config.setup.lengthUnits})</h3>
             <input
+              id='aircraftLeadingMAC'
               value={config.aircraft[aircraftIndex].config.leadingEdgeMAC ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].config.leadingEdgeMAC, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
               type="number"
               placeholder={config.setup.lengthUnits}
@@ -185,6 +190,7 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
           <div>
             <h3>MAC ({config.setup.lengthUnits})</h3>
             <input
+              id='aircraftMAC'
               value={config.aircraft[aircraftIndex].config.mac ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].config.mac, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
               type="number"
               placeholder={config.setup.lengthUnits}

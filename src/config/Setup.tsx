@@ -79,25 +79,26 @@ function Units({ config, setConfig }: configProps): ReactNode {
     <Subregion>
       <h3>Units</h3>
       <div id='unitsSelect'>
-        <label>Weight</label>
-        <select value={config.setup.weightUnits} onChange={e => setValue('weightUnits', e.target.value as weightUnitsT)}>
+        <label htmlFor="weightUnitSelect">Weight</label>
+        <select id="weightUnitSelect" value={config.setup.weightUnits} onChange={e => setValue('weightUnits', e.target.value as weightUnitsT)}>
           {weightUnitsElements}
         </select>
-        <label>Length</label>
-        <select value={config.setup.lengthUnits} onChange={e => setValue('lengthUnits', e.target.value as lengthUnitsT)}>
+        <label htmlFor="lengthUnitSelect">Length</label>
+        <select id="lengthUnitSelect" value={config.setup.lengthUnits} onChange={e => setValue('lengthUnits', e.target.value as lengthUnitsT)}>
           {lengthUnitsElements}
         </select>
-        <label>Fuel</label>
-        <select value={config.setup.fuelUnits} onChange={e => setValue('fuelUnits', e.target.value as fuelUnitsT)}>
+        <label htmlFor="fuelUnitSelect">Fuel</label>
+        <select id="fuelUnitSelect" value={config.setup.fuelUnits} onChange={e => setValue('fuelUnits', e.target.value as fuelUnitsT)}>
           {fuelUnitsElements}
         </select>
         {volumeUnits.includes(config.setup.fuelUnits as volumeUnitsT) &&
           <>
-            <label>Fuel Density ({config.setup.weightUnits}/{config.setup.fuelUnits})</label>
+            <label htmlFor='fuelDensity'>Fuel Density ({config.setup.weightUnits}/{config.setup.fuelUnits})</label>
             <div id='fuelDensityHolder'>
               <select
+                id="fuelDensity"
                 value={selectedDensity}
-                onChange={(e) => setSelectedDensitySpecial(Number(e.target.value))} id="fuelDensity">
+                onChange={(e) => setSelectedDensitySpecial(Number(e.target.value))}>
                 {fuelTypeElements}
               </select>
               {selectedDensity === fuelTypes.length - 1 &&
@@ -230,7 +231,7 @@ function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
     <>
       <Subregion id="configSelectRow">
         <div>
-          <label>Active Config File</label>
+          <label htmlFor='configFileSelect'>Active Config File</label>
           <select id="configFileSelect" value={config.id} onChange={e => selectConfig(e.target.value)}>
             {availableConfigs}
           </select>
@@ -244,7 +245,7 @@ function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
       </Subregion>
       <Subregion>
         <h3>Name</h3>
-        <input value={config.name} onChange={(e) => setName(e.target.value)} />
+        <input id="configName" value={config.name} onChange={(e) => setName(e.target.value)} />
       </Subregion>
       <Units config={config} setConfig={setConfig} />
     </>
