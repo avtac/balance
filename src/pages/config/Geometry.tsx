@@ -129,7 +129,9 @@ function WeightRegionRow({ regionPoint, aircraft, setAircraft, regionIndex, inde
         {aircraft.limits.regions[regionIndex].data.length > 3 &&
           <button onClick={deletePoint}>X</button>}
       </td>
-      {<button className="addButton" onClick={addPoint}></button>}
+      <td>
+        {<button className="addButton" onClick={addPoint}></button>}
+      </td>
     </tr>
   );
 }
@@ -194,20 +196,22 @@ function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): Rea
         <button onClick={removeRegion}>X</button>
       </div>
       <table className="regionTable">
-        <tr>
-          <th>Weight ({units.weightUnits})</th>
-          <th>Arm ({units.lengthUnits})</th>
-          <th></th>
-        </tr>
-        {region.data.map((regionPoint: regionPointT, index: number) => {
-          return <WeightRegionRow
-            key={regionPoint.id}
-            aircraft={aircraft}
-            regionIndex={regionIndex}
-            setAircraft={setAircraft}
-            index={index}
-            regionPoint={regionPoint} />
-        })}
+        <tbody>
+          <tr>
+            <th>Weight ({units.weightUnits})</th>
+            <th>Arm ({units.lengthUnits})</th>
+            <th></th>
+          </tr>
+          {region.data.map((regionPoint: regionPointT, index: number) => {
+            return <WeightRegionRow
+              key={regionPoint.id}
+              aircraft={aircraft}
+              regionIndex={regionIndex}
+              setAircraft={setAircraft}
+              index={index}
+              regionPoint={regionPoint} />
+          })}
+        </tbody>
       </table>
     </div>
   );
@@ -247,22 +251,24 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
   return (
     <div>
       <table className="tableData">
-        <tr>
-          <th>Name</th>
-          <th>Weight Limit ({units.weightUnits})</th>
-          <th>Color</th>
-          <th>Style</th>
-          <th></th>
-        </tr>
-        {aircraft.limits.limits.map((limit: weightLimitT) => {
-          return <WeightLimit
-            key={limit.id}
-            limit={limit}
-            aircraft={aircraft}
-            setAircraft={setAircraft} />
-        })}
-        <button onClick={() => addLimit()}>Add Limit</button>
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <th>Weight Limit ({units.weightUnits})</th>
+            <th>Color</th>
+            <th>Style</th>
+            <th></th>
+          </tr>
+          {aircraft.limits.limits.map((limit: weightLimitT) => {
+            return <WeightLimit
+              key={limit.id}
+              limit={limit}
+              aircraft={aircraft}
+              setAircraft={setAircraft} />
+          })}
+        </tbody>
       </table>
+      <button onClick={() => addLimit()}>Add Limit</button>
       <section id="regions">
         {aircraft.limits.regions.map((region: regionT) => (
           <WeightRegion key={region.id} region={region} aircraft={aircraft} setAircraft={setAircraft} />

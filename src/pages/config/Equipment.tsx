@@ -109,22 +109,24 @@ function Equipment({ aircraft, setAircraft }: equipmentProps & nameProps): React
     <Subregion>
       <button onClick={addEquipment}>Add Equipment</button>
       <table className='tableData'>
-        <tr>
-          <th>Name</th>
-          <th>{`Weight (${units.weightUnits})`}</th>
-          <th>Cargo Area</th>
-          <th>{`Arm (${units.lengthUnits})`}</th>
-          <th></th>
-        </tr>
-        {[...aircraft.equipment].map((data, i) => {
-          return <EquipmentRow
-            key={data.id}
-            equip={data}
-            values={values}
-            index={i}
-            aircraft={aircraft}
-            setAircraft={setAircraft} />
-        })}
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <th>{`Weight (${units.weightUnits})`}</th>
+            <th>Cargo Area</th>
+            <th>{`Arm (${units.lengthUnits})`}</th>
+            <th></th>
+          </tr>
+          {[...aircraft.equipment].map((data, i) => {
+            return <EquipmentRow
+              key={data.id}
+              equip={data}
+              values={values}
+              index={i}
+              aircraft={aircraft}
+              setAircraft={setAircraft} />
+          })}
+        </tbody>
       </table>
     </Subregion>
   );
