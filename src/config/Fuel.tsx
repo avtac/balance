@@ -1,5 +1,6 @@
+import './Geometry.css'
 import { useContext } from "react";
-import { Grouping, Subregion } from "../Layout";
+import { Subregion } from "../Layout";
 import { type fuelTankT, type aircraftProps, type aircraftT, baseLengthUnit, baseFuelUnit } from "../Types";
 import { convertFuelUnits, convertLengthUnit, UnitContext, unitPrecision } from "../UnitsContext";
 import { roundNumber } from "../utility";
@@ -26,36 +27,48 @@ function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
   }
 
   return (
-    <div className="fuelInput">
-      <input
-        name={"name" + index}
-        placeholder="Name"
-        value={tank.name ? tank.name : ""}
-        onChange={e => setValue('name', e.target.value)} />
-      <input
-        name={"arm" + index}
-        placeholder={units.lengthUnits}
-        type="number"
-        value={tank.arm ? roundNumber(convertLengthUnit(tank.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
-        onChange={e => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
-      <input
-        name={"maxCapacity" + index}
-        placeholder={units.fuelUnits}
-        type="number"
-        value={tank.maxWeight ? roundNumber(convertFuelUnits(tank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) : ""}
-        onChange={e => setValue('maxWeight', convertFuelUnits(Number(e.target.value), units.fuelUnits, baseFuelUnit, units.fuelDensity))} />
-      <input
-        name={"unusable" + index}
-        placeholder={units.fuelUnits}
-        type="number"
-        value={tank.unusable ? roundNumber(convertFuelUnits(tank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) : ""}
-        onChange={e => setValue('unusable', convertFuelUnits(Number(e.target.value), units.fuelUnits, baseFuelUnit, units.fuelDensity))} />
-      <input
-        type="checkbox"
-        checked={aircraft.fuelTanks[index].removable}
-        onChange={e => setValue('removable', e.target.checked)} />
-      <button onClick={() => removeFuel()}>X</button>
-    </div>
+    <tr>
+      <td>
+        <input
+          name={"name" + index}
+          placeholder="Name"
+          value={tank.name ? tank.name : ""}
+          onChange={e => setValue('name', e.target.value)} />
+      </td>
+      <td>
+        <input
+          name={"arm" + index}
+          placeholder={units.lengthUnits}
+          type="number"
+          value={tank.arm ? roundNumber(convertLengthUnit(tank.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+          onChange={e => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
+      </td>
+      <td>
+        <input
+          name={"maxCapacity" + index}
+          placeholder={units.fuelUnits}
+          type="number"
+          value={tank.maxWeight ? roundNumber(convertFuelUnits(tank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) : ""}
+          onChange={e => setValue('maxWeight', convertFuelUnits(Number(e.target.value), units.fuelUnits, baseFuelUnit, units.fuelDensity))} />
+      </td>
+      <td>
+        <input
+          name={"unusable" + index}
+          placeholder={units.fuelUnits}
+          type="number"
+          value={tank.unusable ? roundNumber(convertFuelUnits(tank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) : ""}
+          onChange={e => setValue('unusable', convertFuelUnits(Number(e.target.value), units.fuelUnits, baseFuelUnit, units.fuelDensity))} />
+      </td>
+      <td>
+        <input
+          type="checkbox"
+          checked={aircraft.fuelTanks[index].removable}
+          onChange={e => setValue('removable', e.target.checked)} />
+      </td>
+      <td>
+        <button onClick={() => removeFuel()}>X</button>
+      </td>
+    </tr>
   );
 }
 
@@ -80,24 +93,26 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
       <div id="fuelConfig">
         <h3>Fuel Config</h3>
         <button onClick={addFuel}>Add Fuel Tank</button>
-        <div className="fuelInput">
-          <p>Name</p>
-          <p>Arm ({units.lengthUnits})</p>
-          <p>Max Fuel ({units.fuelUnits})</p>
-          <p>Unusable Fuel ({units.fuelUnits})</p>
-          <p>Removable?</p>
-        </div>
-        <form id="fuelForm">
-          {aircraft.fuelTanks.map((tank: fuelTankT, index: number) => (
-            <Grouping key={tank.id}>
+        <table id="fuelInput">
+          <tbody>
+            <tr>
+              <th style={{ width: "10rem" }}>Name</th>
+              <th style={{ width: "5rem" }}>{`Arm (${units.lengthUnits})`}</th>
+              <th style={{ width: "5rem" }}>{`Max Fuel (${units.fuelUnits})`}</th>
+              <th style={{ width: "5rem" }}>{`Unusable Fuel (${units.fuelUnits})`}</th>
+              <th style={{ width: "3rem" }}>Removable</th>
+              <th style={{ width: "2rem" }}></th>
+            </tr>
+            {aircraft.fuelTanks.map((tank: fuelTankT, index: number) => (
               <FuelInput
+                key={tank.id}
                 tank={tank}
                 index={index}
                 aircraft={aircraft}
                 setAircraft={setAircraft} />
-            </Grouping>
-          ))}
-        </form>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Subregion>
   );

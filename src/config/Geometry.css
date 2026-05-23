@@ -15,33 +15,42 @@
   margin: 3px;
 }
 
-.seatInput {
-  display: grid;
-  grid-template-columns: 8.5rem 5rem 5rem 5rem 3rem 2rem;
-  gap: 6px;
-  margin: 3px;
-  align-items: center;
+#fuelInput,
+#cargoInput,
+#seatsInput {
+  border-collapse: collapse;
+  user-select: none;
+
+  th {
+    border-bottom: 1px solid black;
+    height: 2.4rem;
+  }
+
+  tr:nth-child(even) {
+    background: #8882;
+  }
+
+  th,
+  td {
+    padding: 6px;
+    text-align: center;
+    max-width: 6rem;
+
+    input {
+      max-width: 90%;
+    }
+
+    button {
+      width: 2rem;
+    }
+  }
 }
 
-.weightLimit,
-.cargoInput {
+.weightLimit {
   display: grid;
   grid-template-columns: 11rem 5rem 5rem 2rem;
   gap: 6px;
   padding: 3px;
-}
-
-.fuelInput {
-  display: grid;
-  grid-template-columns: 11rem 5rem 5rem 5.2rem 5rem 2rem;
-  gap: 6px;
-  padding: 3px;
-  align-items: center;
-  text-align: center;
-
-  .removeButton {
-    display: grid;
-  }
 }
 
 .weightLimit {

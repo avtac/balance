@@ -1,5 +1,6 @@
+import './Geometry.css'
 import { useContext } from "react";
-import { Grouping, Subregion } from "../Layout";
+import { Subregion } from "../Layout";
 import { type aircraftT, type seatT, type aircraftProps, baseLengthUnit, baseWeightUnit } from "../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../UnitsContext";
 import { roundNumber } from "../utility";
@@ -26,44 +27,57 @@ function SeatInput({ seat, index, aircraft, setAircraft }: seatInputProps) {
   }
 
   return (
-    <div className="seatInput">
-      {index === 0 ? <p>{seat.name}</p> : <input name={"name" + index}
-        placeholder="Name"
-        value={seat.name ? seat.name : ""}
-        onChange={e => setValue('name', e.target.value)} />
-      }
-      <input
-        name={"arm" + index}
-        placeholder={units.lengthUnits}
-        type="number"
-        value={seat.arm ? roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
-        onChange={e => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
-      <input
-        name={"maxWeight" + index}
-        placeholder={units.weightUnits}
-        min={0}
-        type="number"
-        value={seat.maxWeight ? roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
-        onChange={e => setValue('maxWeight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
-      <input
-        name={"lateralDist" + index}
-        placeholder={units.lengthUnits}
-        type="number"
-        value={seat.lateralDist ? roundNumber(convertLengthUnit(seat.lateralDist, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
-        onChange={e => setValue('lateralDist', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
-      <input
-        name={"seatCount" + index}
-        placeholder="Count"
-        min={1}
-        type="number"
-        value={seat.seatCount ? seat.seatCount : ""}
-        onChange={e => setValue('seatCount', Number(e.target.value))} />
-      {index !== 0 && <button onClick={() => removeSeat()}>X</button>}
-    </div>
+    <tr>
+      <td>
+        {index === 0 ? <p>{seat.name}</p> : <input name={"name" + index}
+          placeholder="Name"
+          value={seat.name ? seat.name : ""}
+          onChange={e => setValue('name', e.target.value)} />
+        }
+      </td>
+      <td>
+        <input
+          name={"arm" + index}
+          placeholder={units.lengthUnits}
+          type="number"
+          value={seat.arm ? roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+          onChange={e => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
+      </td>
+      <td>
+        <input
+          name={"maxWeight" + index}
+          placeholder={units.weightUnits}
+          min={0}
+          type="number"
+          value={seat.maxWeight ? roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+          onChange={e => setValue('maxWeight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
+      </td>
+      <td>
+        <input
+          name={"lateralDist" + index}
+          placeholder={units.lengthUnits}
+          type="number"
+          value={seat.lateralDist ? roundNumber(convertLengthUnit(seat.lateralDist, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+          onChange={e => setValue('lateralDist', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
+      </td>
+      <td>
+        <input
+          name={"seatCount" + index}
+          placeholder="Count"
+          min={1}
+          type="number"
+          value={seat.seatCount ? seat.seatCount : ""}
+          onChange={e => setValue('seatCount', Number(e.target.value))} />
+      </td>
+      <td>
+        {index !== 0 && <button onClick={() => removeSeat()}>X</button>}
+      </td>
+    </tr >
   );
 }
 
 function SeatConfig({ aircraft, setAircraft }: aircraftProps) {
+  const units = useContext(UnitContext);
   function addSeat(): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.seats.push({
@@ -82,17 +96,26 @@ function SeatConfig({ aircraft, setAircraft }: aircraftProps) {
       <div id="seatConfig">
         <h3>Seat Config</h3>
         <button onClick={addSeat}>Add Seat</button>
-        <form id="seatsForm">
-          {aircraft.seats.map((seat: seatT, index: number) => (
-            <Grouping key={seat.id}>
+        <table id="seatsInput">
+          <tbody>
+            <tr>
+              <th style={{ width: "10rem" }}>Name</th>
+              <th style={{ width: "5rem" }}>{`Arm (${units.lengthUnits})`}</th>
+              <th style={{ width: "5rem" }}>{`Max Weight (${units.weightUnits})`}</th>
+              <th style={{ width: "5rem" }}>{`Lateral Offset (${units.lengthUnits})`}</th>
+              <th style={{ width: "5rem" }}># of Seats</th>
+              <th style={{ width: "2rem" }}></th>
+            </tr>
+            {aircraft.seats.map((seat: seatT, index: number) => (
               <SeatInput
+                key={seat.id}
                 seat={seat}
                 index={index}
                 aircraft={aircraft}
                 setAircraft={setAircraft} />
-            </Grouping>
-          ))}
-        </form>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Subregion>
   );
