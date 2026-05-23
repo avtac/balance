@@ -1,4 +1,4 @@
-import './Geometry.css'
+import '../Layout.css'
 import { useContext } from "react";
 import { Subregion } from "../Layout";
 import { type fuelTankT, type aircraftProps, type aircraftT, baseLengthUnit, baseFuelUnit } from "../Types";
@@ -93,7 +93,7 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
       <div id="fuelConfig">
         <h3>Fuel Config</h3>
         <button onClick={addFuel}>Add Fuel Tank</button>
-        <table id="fuelInput">
+        <table className="tableData">
           <tbody>
             <tr>
               <th style={{ width: "10rem" }}>Name</th>
@@ -103,18 +103,20 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
               <th style={{ width: "3rem" }}>Removable</th>
               <th style={{ width: "2rem" }}></th>
             </tr>
-            {aircraft.fuelTanks.map((tank: fuelTankT, index: number) => (
-              <FuelInput
-                key={tank.id}
-                tank={tank}
-                index={index}
-                aircraft={aircraft}
-                setAircraft={setAircraft} />
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Subregion>
+            {
+              aircraft.fuelTanks.map((tank: fuelTankT, index: number) => (
+                <FuelInput
+                  key={tank.id}
+                  tank={tank}
+                  index={index}
+                  aircraft={aircraft}
+                  setAircraft={setAircraft} />
+              ))
+            }
+          </tbody >
+        </table >
+      </div >
+    </Subregion >
   );
 }
 

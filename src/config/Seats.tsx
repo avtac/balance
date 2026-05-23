@@ -1,4 +1,4 @@
-import './Geometry.css'
+import '../Layout.css'
 import { useContext } from "react";
 import { Subregion } from "../Layout";
 import { type aircraftT, type seatT, type aircraftProps, baseLengthUnit, baseWeightUnit } from "../Types";
@@ -96,7 +96,7 @@ function SeatConfig({ aircraft, setAircraft }: aircraftProps) {
       <div id="seatConfig">
         <h3>Seat Config</h3>
         <button onClick={addSeat}>Add Seat</button>
-        <table id="seatsInput">
+        <table className="tableData">
           <tbody>
             <tr>
               <th style={{ width: "10rem" }}>Name</th>

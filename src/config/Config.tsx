@@ -1,5 +1,6 @@
-import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
 import './Config.css'
+import '../Layout.css'
+import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
 import { MultiPane, Subregion } from "../Layout";
 import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type aircraftProps, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit } from "../Types";
 import { getSortedByArm, roundNumber } from '../utility';
@@ -296,23 +297,22 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
       </Subregion>
       <MultiPane>
         <Subregion name={"Seats"}>
-          <table id="configSeats">
-            <tbody>
-              <tr>
-                <th>✔</th>
-                <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
-                <th style={{ width: "3rem" }}># of Seats</th>
-              </tr>
-              {getSortedByArm(aircraft.seats).map((seat: seatT) => {
-                return <SeatSelection key={seat.id + " seatSelect"} configIndex={configIndex} seat={seat} aircraft={aircraft} setAircraft={setAircraft} />
-              })}
-            </tbody>
+          <table className="tableData">            <tbody>
+            <tr>
+              <th>✔</th>
+              <th style={{ width: "10rem" }}>Name</th>
+              <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
+              <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
+              <th style={{ width: "3rem" }}># of Seats</th>
+            </tr>
+            {getSortedByArm(aircraft.seats).map((seat: seatT) => {
+              return <SeatSelection key={seat.id + " seatSelect"} configIndex={configIndex} seat={seat} aircraft={aircraft} setAircraft={setAircraft} />
+            })}
+          </tbody>
           </table>
         </Subregion>
         <Subregion name={"Cargo Areas"}>
-          <table id="configCargo">
+          <table className="tableData">
             <tbody>
               <tr>
                 <th>✔</th>
@@ -327,7 +327,7 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
           </table>
         </Subregion>
         <Subregion name={"Fuel Tanks"}>
-          <table id="configFuel">
+          <table className="tableData">
             <tbody>
               <tr>
                 <th>✔</th>
@@ -343,7 +343,7 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
           </table>
         </Subregion>
         <Subregion name={"Equipment"}>
-          <table id="configEquipment">
+          <table className="tableData">
             <tbody>
               <tr>
                 <th>✔</th>
@@ -357,8 +357,6 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
               })}
             </tbody>
           </table>
-          <div id="configEquipment">
-          </div>
         </Subregion>
       </MultiPane>
     </>

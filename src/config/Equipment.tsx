@@ -1,5 +1,5 @@
-import './Equipment.css'
-import { Subregion, Grouping } from '../Layout'
+import '../Layout.css'
+import { Subregion } from '../Layout'
 import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type nameProps, baseLengthUnit, baseWeightUnit } from '../Types'
 import { getSortedByArm, roundNumber } from '../utility';
 import { useContext, type ReactElement } from 'react';
@@ -39,13 +39,15 @@ function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipment
   }
 
   return (
-    <Grouping>
-      <div className={"equipmentRow"}>
+    <tr>
+      <td>
         <input
           id={`equipmentName-${equip.id}`}
           defaultValue={equip.name}
           placeholder={"Name"}
           onChange={(e) => setValue('name', e.target.value)} />
+      </td>
+      <td>
         <input
           id={`equipmentWeight-${equip.id}`}
           type="number"
@@ -53,6 +55,8 @@ function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipment
           placeholder={units.weightUnits}
           onChange={(e) => setValue('weight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))}
           min={0} />
+      </td>
+      <td>
         <select
           id={`equipmentArea-${equip.id}`}
           value={equip.area}
@@ -62,6 +66,8 @@ function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipment
             return <option key={area.id} value={area.id}>{area.name}</option>
           })}
         </select>
+      </td>
+      <td>
         <input
           id={`equipmentArm-${equip.id}`}
           type="number"
@@ -69,9 +75,11 @@ function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipment
           disabled={areaIndex >= 0}
           placeholder={units.lengthUnits}
           onChange={(e) => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
+      </td>
+      <td>
         <button onClick={deleteEquipment}>X</button>
-      </div>
-    </Grouping>
+      </td>
+    </tr>
   );
 }
 
@@ -100,21 +108,24 @@ function Equipment({ aircraft, setAircraft }: equipmentProps & nameProps): React
   return (
     <Subregion>
       <button onClick={addEquipment}>Add Equipment</button>
-      <div className="title">
-        <h3>Name</h3>
-        <h3>{`Weight (${units.weightUnits})`}</h3>
-        <h3>Cargo Area</h3>
-        <h3>{`Arm (${units.lengthUnits})`}</h3>
-      </div>
-      {[...aircraft.equipment].map((data, i) => {
-        return <EquipmentRow
-          key={data.id}
-          equip={data}
-          values={values}
-          index={i}
-          aircraft={aircraft}
-          setAircraft={setAircraft} />
-      })}
+      <table className='tableData'>
+        <tr>
+          <th>Name</th>
+          <th>{`Weight (${units.weightUnits})`}</th>
+          <th>Cargo Area</th>
+          <th>{`Arm (${units.lengthUnits})`}</th>
+          <th></th>
+        </tr>
+        {[...aircraft.equipment].map((data, i) => {
+          return <EquipmentRow
+            key={data.id}
+            equip={data}
+            values={values}
+            index={i}
+            aircraft={aircraft}
+            setAircraft={setAircraft} />
+        })}
+      </table>
     </Subregion>
   );
 }

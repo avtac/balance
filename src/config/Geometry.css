@@ -1,103 +1,69 @@
-#geometry {
+.weightLimit {
+  td {
+    padding: 3px;
+  }
+}
+
+.weightRegion {
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: start;
+  padding: 4px;
+  border-bottom: 1px solid white;
 
-  div {
-    margin: 3px;
-  }
-
-  input {
-    width: 80%;
+  .title {
+    display: grid;
+    grid-template-columns: 8rem 3rem 5rem 2rem;
+    gap: 5px;
+    padding: 3px 0px;
   }
 }
 
-#limits,
-#regions {
-  margin: 3px;
-}
-
-#fuelInput,
-#cargoInput,
-#seatsInput {
+.regionTable {
   border-collapse: collapse;
-  user-select: none;
 
-  th {
-    border-bottom: 1px solid black;
-    height: 2.4rem;
+  td {
+    margin: 3px 2px;
   }
 
   tr:nth-child(even) {
     background: #8882;
   }
 
-  th,
-  td {
-    padding: 6px;
-    text-align: center;
-    max-width: 6rem;
+  tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2.6rem;
+    position: relative;
 
     input {
-      max-width: 90%;
+      max-width: 5rem;
     }
 
     button {
       width: 2rem;
     }
-  }
-}
 
-.weightLimit {
-  display: grid;
-  grid-template-columns: 11rem 5rem 5rem 2rem;
-  gap: 6px;
-  padding: 3px;
-}
-
-.weightLimit {
-  grid-template-columns: 8rem 4rem 3rem 4rem 2rem;
-}
-
-.weightRegion {
-  display: flex;
-  flex-direction: column;
-  padding: 4px;
-
-  h4 {
-    margin: 8px 0px;
-  }
-
-  .title {
-    display: grid;
-    grid-template-columns: 10rem 3rem 5rem 3rem;
-    gap: 5px;
-    padding: 3px 0px;
-  }
-}
-
-.weightRegionRow {
-  display: grid;
-  grid-template-columns: 5rem 5rem 3rem;
-  gap: 4px 2px;
-
-  .addButton {
-    opacity: 0;
-    position: relative;
-    bottom: 3px;
-    left: 0px;
-    right: 0px;
-    padding: 0px;
-    height: 4px;
-    border-radius: 2px;
-    grid-column: span 3;
+    .addButton {
+      opacity: 0;
+      z-index: 1;
+      width: unset;
+      margin: unset;
+      position: absolute;
+      top: calc(100% - 2px);
+      left: 0px;
+      right: 0px;
+      padding: 0px;
+      height: 4px;
+      border-radius: 2px;
+      grid-column: span 3;
+      background-color: var(--accent);
+    }
   }
 }
 
 .weightRegionRow:has(input:focus) .addButton,
-.addButton:hover {
+.weightRegionRow:hover .addButton,
+.weightRegionRow .addButton:hover {
   opacity: 1;
 }
-
-
-/* .weightRegionRow:last-child:hover { */
-/*   border-bottom: 3px solid Red; */
-/* } */

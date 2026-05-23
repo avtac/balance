@@ -1,3 +1,4 @@
+import '../Layout.css'
 import './BOW.css'
 import { useContext, useEffect, useRef, type ReactNode } from "react";
 import { Subregion, MultiPane } from "../Layout";
@@ -273,7 +274,7 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
       </Subregion>
       <MultiPane>
         <Subregion name={"Seats"}>
-          <table id="configSeats">
+          <table className="tableData">
             <tbody>
               <tr>
                 <th>✔</th>
@@ -292,7 +293,7 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
           </table>
         </Subregion>
         <Subregion name={"Cargo Areas"}>
-          <table id="configCargo">
+          <table className="tableData">
             <tbody>
               <tr>
                 <th>✔</th>

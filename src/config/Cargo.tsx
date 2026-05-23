@@ -1,4 +1,4 @@
-import './Geometry.css'
+import '../Layout.css'
 import { useContext } from "react";
 import { Subregion } from "../Layout";
 import { type cargoAreaT, type aircraftProps, type aircraftT, baseLengthUnit, baseWeightUnit } from "../Types";
@@ -78,7 +78,7 @@ function CargoConfig({ aircraft, setAircraft }: aircraftProps) {
       <div id="cargoConfig">
         <h3>Cargo Config</h3>
         <button onClick={addCargo}>Add Cargo Area</button>
-        <table id="cargoInput">
+        <table className="tableData">
           <tbody>
             <tr>
               <th style={{ width: "10rem" }}>Name</th>

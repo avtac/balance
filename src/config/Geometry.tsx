@@ -1,6 +1,7 @@
-import { useContext, useRef, type ReactNode } from "react";
 import "./Geometry.css"
-import { Subregion, Grouping } from "../Layout";
+import "../Layout.css"
+import { useContext, useRef, type ReactNode } from "react";
+import { Subregion } from "../Layout";
 import { type regionT, type regionPointT, type weightLimitT, type aircraftProps, type aircraftT, type nameProps, baseLengthUnit, baseWeightUnit } from "../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../UnitsContext";
 import { roundNumber } from "../utility";
@@ -39,31 +40,41 @@ function WeightLimit({ limit, aircraft, setAircraft }: weightLimitProps): ReactN
   }
 
   return (
-    <div className="weightLimit grouping">
-      <input
-        id={`geometryLimitName-${limit.id}`}
-        placeholder="Limit Name"
-        defaultValue={limit.name}
-        onChange={e => setValue("name", e.target.value)} />
-      <input
-        id={`geometryLimitWeight-${limit.id}`}
-        placeholder={units.weightUnits}
-        type="number"
-        value={limit.weight ? roundNumber(convertWeightUnit(limit.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
-        onChange={e => setValue("weight", convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
-      <input
-        id={`geometryLimitColor-${limit.id}`}
-        type="color"
-        value={limit.color}
-        onChange={e => setColor(e.target.value)} />
-      <select
-        id={`geometryLimitStyle-${limit.id}`}
-        value={limit.lineStyle}
-        onChange={e => setValue('lineStyle', e.target.value)}>
-        {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
-      </select>
-      <button onClick={removeLimit}>X</button>
-    </div>
+    <tr className="weightLimit">
+      <td>
+        <input
+          id={`geometryLimitName-${limit.id}`}
+          placeholder="Limit Name"
+          defaultValue={limit.name}
+          onChange={e => setValue("name", e.target.value)} />
+      </td>
+      <td>
+        <input
+          id={`geometryLimitWeight-${limit.id}`}
+          placeholder={units.weightUnits}
+          type="number"
+          value={limit.weight ? roundNumber(convertWeightUnit(limit.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+          onChange={e => setValue("weight", convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
+      </td>
+      <td>
+        <input
+          id={`geometryLimitColor-${limit.id}`}
+          type="color"
+          value={limit.color}
+          onChange={e => setColor(e.target.value)} />
+      </td>
+      <td>
+        <select
+          id={`geometryLimitStyle-${limit.id}`}
+          value={limit.lineStyle}
+          onChange={e => setValue('lineStyle', e.target.value)}>
+          {availableStyles.map((style: string[]) => <option key={style[0]} value={style[1]}>{style[0]}</option>)}
+        </select>
+      </td>
+      <td>
+        <button onClick={removeLimit}>X</button>
+      </td>
+    </tr>
   );
 }
 
@@ -95,8 +106,8 @@ function WeightRegionRow({ regionPoint, aircraft, setAircraft, regionIndex, inde
   }
 
   return (
-    <>
-      <div className="weightRegionRow">
+    <tr className="weightRegionRow">
+      <td>
         <input
           id={`geometryRegionPointWeight-${regionPoint.id}`}
           placeholder={units.weightUnits}
@@ -105,17 +116,21 @@ function WeightRegionRow({ regionPoint, aircraft, setAircraft, regionIndex, inde
           type="number"
           value={regionPoint.weight ? roundNumber(convertWeightUnit(regionPoint.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
           onChange={e => setValue('weight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
+      </td>
+      <td>
         <input
           id={`geometryRegionPointArm-${regionPoint.id}`}
           placeholder={units.lengthUnits}
           type="number"
           value={regionPoint.arm ? roundNumber(convertLengthUnit(regionPoint.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
           onChange={e => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
+      </td>
+      <td>
         {aircraft.limits.regions[regionIndex].data.length > 3 &&
           <button onClick={deletePoint}>X</button>}
-        {<button className="addButton" onClick={addPoint}></button>}
-      </div>
-    </>
+      </td>
+      {<button className="addButton" onClick={addPoint}></button>}
+    </tr>
   );
 }
 
@@ -124,6 +139,7 @@ interface weightRegionProps extends aircraftProps {
 }
 
 function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): ReactNode {
+  const units = useContext(UnitContext);
   const regionIndex = aircraft.limits.regions.findIndex((reg: regionT) => reg.id === region.id);
   const timeRef = useRef(0);
 
@@ -155,30 +171,34 @@ function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): Rea
 
   const name = region.name;
   return (
-    <Grouping>
-      <div className="weightRegion">
-        <h4>{name != "" ? name : "Weight Region"}</h4>
-        <div className="title">
-          <input
-            id={`geometryRegionName-${region.id}`}
-            placeholder="Name"
-            defaultValue={name}
-            onChange={e => setValue('name', e.target.value)} />
-          <input
-            id={`geometryRegionColor-${region.id}`}
-            type="color"
-            value={region.color}
-            onChange={e => setColor(e.target.value)} />
-          <select
-            id={`geometryRegionStyle-${region.id}`}
-            value={region.lineStyle}
-            onChange={e => setValue('lineStyle', e.target.value)}>
-            {availableStyles.map((style: string[]) =>
-              <option key={style[0]} value={style[1]}>{style[0]}</option>
-            )}
-          </select>
-          <button onClick={removeRegion}>X</button>
-        </div>
+    <div className="weightRegion">
+      <div className="title">
+        <input
+          id={`geometryRegionName-${region.id}`}
+          placeholder="Name"
+          defaultValue={name}
+          onChange={e => setValue('name', e.target.value)} />
+        <input
+          id={`geometryRegionColor-${region.id}`}
+          type="color"
+          value={region.color}
+          onChange={e => setColor(e.target.value)} />
+        <select
+          id={`geometryRegionStyle-${region.id}`}
+          value={region.lineStyle}
+          onChange={e => setValue('lineStyle', e.target.value)}>
+          {availableStyles.map((style: string[]) =>
+            <option key={style[0]} value={style[1]}>{style[0]}</option>
+          )}
+        </select>
+        <button onClick={removeRegion}>X</button>
+      </div>
+      <table className="regionTable">
+        <tr>
+          <th>Weight ({units.weightUnits})</th>
+          <th>Arm ({units.lengthUnits})</th>
+          <th></th>
+        </tr>
         {region.data.map((regionPoint: regionPointT, index: number) => {
           return <WeightRegionRow
             key={regionPoint.id}
@@ -188,12 +208,13 @@ function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): Rea
             index={index}
             regionPoint={regionPoint} />
         })}
-      </div>
-    </Grouping>
+      </table>
+    </div>
   );
 }
 
 function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
+  const units = useContext(UnitContext);
   function addLimit(): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     const newLimit: weightLimitT = {
@@ -225,12 +246,23 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
 
   return (
     <div>
-      <section id="limits">
+      <table className="tableData">
+        <tr>
+          <th>Name</th>
+          <th>Weight Limit ({units.weightUnits})</th>
+          <th>Color</th>
+          <th>Style</th>
+          <th></th>
+        </tr>
         {aircraft.limits.limits.map((limit: weightLimitT) => {
-          return <WeightLimit key={limit.id} limit={limit} aircraft={aircraft} setAircraft={setAircraft} />
+          return <WeightLimit
+            key={limit.id}
+            limit={limit}
+            aircraft={aircraft}
+            setAircraft={setAircraft} />
         })}
         <button onClick={() => addLimit()}>Add Limit</button>
-      </section>
+      </table>
       <section id="regions">
         {aircraft.limits.regions.map((region: regionT) => (
           <WeightRegion key={region.id} region={region} aircraft={aircraft} setAircraft={setAircraft} />
