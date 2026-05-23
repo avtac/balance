@@ -1,0 +1,251 @@
+import './Setup.css'
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Subregion } from "../../Layout";
+import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
+import { roundNumber } from "../../utility";
+import { convertDensityUnits, unitPrecision } from '../../UnitsContext';
+
+const weightUnitsElements = weightUnits.map((u) => <option key={u} value={u}>{u}</option>)
+const lengthUnitsElements = lengthUnits.map((u) => <option key={u} value={u}>{u}</option>)
+const fuelUnitsElements = fuelUnits.map((u) => <option key={u} value={u}>{u}</option>)
+
+// These are saved in the lbs/gal and then converted to appropriate units
+const fuelTypes: { name: string, density: number }[] = [
+  { name: '100LL', density: 6 },
+  { name: 'Jet A', density: 6.6 },
+  { name: 'JP-8', density: 6.5 },
+  { name: 'Other', density: 0 },
+] as const
+
+function Units({ config, setConfig }: configProps): ReactNode {
+  const index = fuelTypes.findIndex(t => t.density === config.setup.fuelDensity);
+  const [selectedDensity, setSelectedDensity] = useState(index >= 0 ? index : fuelTypes.length - 1);
+  const oldDensity = useRef(config.setup.fuelDensity);
+  function setValue<T extends keyof setupT, V extends setupT[T]>(name: T, value: V): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.setup[name] = value;
+    setConfig(tmp);
+  }
+
+  function setSelectedDensitySpecial(selection: number) {
+    setSelectedDensity(selection);
+    if (selection === fuelTypes.length - 1) {
+      return;
+    }
+    const newDensity = fuelTypes[selection].density; // lbs/gal
+    // Loop through every tank and convert weights
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.setup.fuelDensity = newDensity;
+    for (let i = 0; i < config.aircraft.length; i++) {
+      for (let j = 0; j < config.aircraft[i].fuelTanks.length; j++) {
+        tmp.aircraft[i].fuelTanks[j].maxWeight = tmp.aircraft[i].fuelTanks[j].maxWeight / oldDensity.current * newDensity;
+        tmp.aircraft[i].fuelTanks[j].unusable = tmp.aircraft[i].fuelTanks[j].unusable / oldDensity.current * newDensity;
+      }
+    }
+    setConfig(tmp);
+    oldDensity.current = newDensity;
+  }
+
+  function setManualDensity(density: number) {
+    const newDensity = density; //lbs/gal
+    if (newDensity === 0) {
+      setValue('fuelDensity', newDensity);
+      return;
+    }
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.setup.fuelDensity = density;
+    for (let i = 0; i < config.aircraft.length; i++) {
+      for (let j = 0; j < config.aircraft[i].fuelTanks.length; j++) {
+        tmp.aircraft[i].fuelTanks[j].maxWeight = tmp.aircraft[i].fuelTanks[j].maxWeight / oldDensity.current * newDensity;
+        tmp.aircraft[i].fuelTanks[j].unusable = tmp.aircraft[i].fuelTanks[j].unusable / oldDensity.current * newDensity;
+      }
+    }
+    setConfig(tmp);
+    oldDensity.current = newDensity;
+  }
+
+  let fuelTypeElements: ReactNode = []
+  if (volumeUnits.includes(config.setup.fuelUnits as volumeUnitsT)) {
+    fuelTypeElements = fuelTypes.map((t, i) => {
+      return (<option
+        key={t.name}
+        value={i}>
+        {t.name} ({i < fuelTypes.length - 1 ? roundNumber(convertDensityUnits(t.density, baseVolumeUnit, baseWeightUnit, config.setup.fuelUnits as volumeUnitsT, config.setup.weightUnits), unitPrecision) : roundNumber(convertDensityUnits(config.setup.fuelDensity, baseVolumeUnit, baseWeightUnit, config.setup.fuelUnits as volumeUnitsT, config.setup.weightUnits), unitPrecision)})
+      </option>)
+    });
+  }
+  return (
+    <Subregion>
+      <h3>Units</h3>
+      <label>Use MAC</label>
+      <input type='checkbox' checked={config.setup.useMAC} onChange={(e) => setValue('useMAC', e.target.checked)} />
+      <div id='unitsSelect'>
+        <label htmlFor="weightUnitSelect">Weight</label>
+        <select id="weightUnitSelect" value={config.setup.weightUnits} onChange={e => setValue('weightUnits', e.target.value as weightUnitsT)}>
+          {weightUnitsElements}
+        </select>
+        <label htmlFor="lengthUnitSelect">Length</label>
+        <select id="lengthUnitSelect" value={config.setup.lengthUnits} onChange={e => setValue('lengthUnits', e.target.value as lengthUnitsT)}>
+          {lengthUnitsElements}
+        </select>
+        <label htmlFor="fuelUnitSelect">Fuel</label>
+        <select id="fuelUnitSelect" value={config.setup.fuelUnits} onChange={e => setValue('fuelUnits', e.target.value as fuelUnitsT)}>
+          {fuelUnitsElements}
+        </select>
+        {volumeUnits.includes(config.setup.fuelUnits as volumeUnitsT) &&
+          <>
+            <label htmlFor='fuelDensity'>Fuel Density ({config.setup.weightUnits}/{config.setup.fuelUnits})</label>
+            <div id='fuelDensityHolder'>
+              <select
+                id="fuelDensity"
+                value={selectedDensity}
+                onChange={(e) => setSelectedDensitySpecial(Number(e.target.value))}>
+                {fuelTypeElements}
+              </select>
+              {selectedDensity === fuelTypes.length - 1 &&
+                <input
+                  id="fuelDensityInput"
+                  type="number"
+                  placeholder={`${config.setup.weightUnits}/${config.setup.fuelUnits}`}
+                  value={config.setup.fuelDensity ? roundNumber(config.setup.fuelDensity, unitPrecision) : ""}
+                  onChange={(e) => setManualDensity(Number(e.target.value))} />
+              }
+            </div>
+          </>
+        }
+      </div>
+    </Subregion>
+  )
+}
+
+function appendConfigToSavedConfigs(config: configT): void {
+  const savedConfigsString = localStorage.getItem('savedConfigs');
+  if (savedConfigsString === null) {
+    localStorage.setItem('savedConfigs',
+      JSON.stringify({ [config.id]: config })
+    );
+    return;
+  }
+  // TODO: Check if the config already exists and ask if overwrite is OK
+  const savedConfigs = JSON.parse(savedConfigsString);
+  savedConfigs[config.id] = config;
+  localStorage.setItem('savedConfigs', JSON.stringify(savedConfigs));
+}
+
+
+
+interface SetupProps extends configProps, nameProps {
+  selectedAircraft: string,
+  setSelectedAircraft: (arg0: string) => void
+  selectedOpsConfig: string,
+  setSelectedOpsConfig: (arg0: string) => void
+}
+
+function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selectedOpsConfig, setSelectedOpsConfig }: SetupProps): ReactNode {
+  const foundConfigs: { id: string, name: string }[] = []
+  const [availableConfigList, setAvailableConfigList] = useState(foundConfigs);
+
+  useEffect(() => {
+    const savedConfigsString = localStorage.getItem("savedConfigs");
+    if (savedConfigsString) {
+      const savedConfigs: { [key: string]: configT } = JSON.parse(savedConfigsString)
+      const foundConfigs: { id: string, name: string }[] = Object.entries(savedConfigs).map(([id, config]) => ({ id: id, name: config.name }));
+      setAvailableConfigList(foundConfigs);
+    }
+  }, [])
+
+  function openFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = ".json";
+    input.onchange = function(event) {
+      const target = event.target as HTMLInputElement;
+      if (!target) return;
+      const files = target.files;
+      if (!files) return;
+      if (files.length > 1) return;
+      const fileReader = new FileReader();
+      fileReader.readAsText(files[0]);
+      fileReader.onload = () => {
+        const data: string = fileReader.result as string;
+        if (!data) return;
+        setConfig(JSON.parse(data));
+        localStorage.setItem('config', data)
+        appendConfigToSavedConfigs(JSON.parse(data));
+      };
+    };
+    input.click();
+  }
+
+  function selectConfig(configId: string): void {
+    const savedConfigsString = localStorage.getItem("savedConfigs");
+    if (!savedConfigsString) return;
+    const savedConfigs = JSON.parse(savedConfigsString)
+
+    const selectedConfig: (configT | undefined) = savedConfigs[configId];
+    if (!selectedConfig) return;
+    localStorage.setItem("config", JSON.stringify(selectedConfig));
+    setConfig(selectedConfig)
+  }
+
+
+  const availableConfigs = availableConfigList.sort((a, b) => a.name.localeCompare(b.name)).map((v) => <option value={v.id} key={v.id}>{v.name}</option>)
+  const aircraftOptions = config.aircraft
+    .sort((a, b) =>
+      a.config.tailNumber.localeCompare(b.config.tailNumber)
+    )
+    .map((a) =>
+      <option
+        key={a.id}
+        value={a.id}>
+        {(a.config.type != "" ? a.config.type + ": " : "") + a.config.tailNumber}
+      </option>
+    )
+
+  const selectedAircraftIndex = config.aircraft.findIndex(a => a.id === selectedAircraft);
+  const opsConfigOptions = selectedAircraftIndex < 0 ? [] : config.aircraft[selectedAircraftIndex].operationConfigs
+    .sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+    .map((a) =>
+      <option
+        key={a.id}
+        value={a.id}>
+        {a.name}
+      </option>
+    )
+
+  return (
+    <>
+      <Subregion id="configSelectRow">
+        <div>
+          <label htmlFor='configFileSelect'>Active Config File</label>
+          <select id="configFileSelect" value={config.id} onChange={e => selectConfig(e.target.value)}>
+            {availableConfigs}
+          </select>
+        </div>
+        <div id="buttons">
+          <button onClick={openFile}>Upload Config</button>
+        </div>
+      </Subregion>
+      <Subregion>
+        <h3>{config.name}</h3>
+        <select
+          id='setAircraft'
+          value={selectedAircraft}
+          onChange={(e) => setSelectedAircraft(e.target.value)}>
+          {aircraftOptions}
+        </select>
+        <select
+          id='setOpsConfig'
+          value={selectedOpsConfig}
+          onChange={(e) => setSelectedOpsConfig(e.target.value)}>
+          {opsConfigOptions}
+        </select>
+      </Subregion>
+      <Units config={config} setConfig={setConfig} />
+    </>
+  )
+}
+
+export default Setup;
