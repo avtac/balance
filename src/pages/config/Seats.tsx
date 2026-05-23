@@ -1,9 +1,9 @@
-import '../Layout.css'
+import '../../Layout.css'
 import { useContext } from "react";
-import { Subregion } from "../Layout";
-import { type aircraftT, type seatT, type aircraftProps, baseLengthUnit, baseWeightUnit } from "../Types";
-import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../UnitsContext";
-import { roundNumber } from "../utility";
+import { Subregion } from "../../Layout";
+import { type aircraftT, type seatT, type aircraftProps, baseLengthUnit, baseWeightUnit } from "../../Types";
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
+import { roundNumber } from "../../utility";
 
 interface seatInputProps extends aircraftProps {
   seat: seatT,

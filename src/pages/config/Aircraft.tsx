@@ -1,9 +1,9 @@
 import './Aircraft.css'
 import { useRef, type ReactNode, type RefObject } from "react";
-import { type aircraftPropertiesT, type configProps, type aircraftT, type configT, type nameProps, baseLengthUnit, baseWeightUnit } from "../Types";
-import { Subregion } from "../Layout";
-import { roundNumber } from '../utility';
-import { convertLengthUnit, convertWeightUnit, unitPrecision } from '../UnitsContext';
+import { type aircraftPropertiesT, type configProps, type aircraftT, type configT, type nameProps, baseLengthUnit, baseWeightUnit } from "../../Types";
+import { Subregion } from "../../Layout";
+import { roundNumber } from '../../utility';
+import { convertLengthUnit, convertWeightUnit, unitPrecision } from '../../UnitsContext';
 
 interface aircraftConfigProps extends configProps {
   selectedAircraft: string,

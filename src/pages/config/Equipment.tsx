@@ -1,9 +1,9 @@
-import '../Layout.css'
-import { Subregion } from '../Layout'
-import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type nameProps, baseLengthUnit, baseWeightUnit } from '../Types'
-import { getSortedByArm, roundNumber } from '../utility';
+import '../../Layout.css'
+import { Subregion } from '../../Layout'
+import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type nameProps, baseLengthUnit, baseWeightUnit } from '../../Types'
+import { getSortedByArm, roundNumber } from '../../utility';
 import { useContext, type ReactElement } from 'react';
-import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../UnitsContext';
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 
 interface equipmentRowProps {
   setAircraft: (arg0: aircraftT) => void,

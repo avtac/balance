@@ -1,10 +1,10 @@
 import './Config.css'
-import '../Layout.css'
+import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
-import { MultiPane, Subregion } from "../Layout";
-import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type aircraftProps, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit } from "../Types";
-import { getSortedByArm, roundNumber } from '../utility';
-import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../UnitsContext';
+import { MultiPane, Subregion } from "../../Layout";
+import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type aircraftProps, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit } from "../../Types";
+import { getSortedByArm, roundNumber } from '../../utility';
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 
 interface seatSelectionProps extends aircraftProps {
   seat: seatT,

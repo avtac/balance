@@ -1,9 +1,9 @@
-import '../Layout.css'
+import '../../Layout.css'
 import { useContext } from "react";
-import { Subregion } from "../Layout";
-import { type cargoAreaT, type aircraftProps, type aircraftT, baseLengthUnit, baseWeightUnit } from "../Types";
-import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../UnitsContext";
-import { roundNumber } from "../utility";
+import { Subregion } from "../../Layout";
+import { type cargoAreaT, type aircraftProps, type aircraftT, baseLengthUnit, baseWeightUnit } from "../../Types";
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
+import { roundNumber } from "../../utility";
 
 interface cargoInputProps extends aircraftProps {
   area: cargoAreaT,

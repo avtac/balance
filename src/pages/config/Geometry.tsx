@@ -1,10 +1,10 @@
 import "./Geometry.css"
-import "../Layout.css"
+import "../../Layout.css"
 import { useContext, useRef, type ReactNode } from "react";
-import { Subregion } from "../Layout";
-import { type regionT, type regionPointT, type weightLimitT, type aircraftProps, type aircraftT, type nameProps, baseLengthUnit, baseWeightUnit } from "../Types";
-import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../UnitsContext";
-import { roundNumber } from "../utility";
+import { Subregion } from "../../Layout";
+import { type regionT, type regionPointT, type weightLimitT, type aircraftProps, type aircraftT, type nameProps, baseLengthUnit, baseWeightUnit } from "../../Types";
+import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
+import { roundNumber } from "../../utility";
 
 const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
 

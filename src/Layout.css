@@ -13,47 +13,6 @@
   margin: var(--margin-size);
 }
 
-#content {
-  flex: 1;
-  height: 100%;
-  display: flex;
-  max-height: calc(100vh - 75px);
-}
-
-#split {
-  flex: 1;
-  display: flex;
-}
-
-#leftPanel {
-  flex: 1.1;
-  display: flex;
-  flex-direction: column;
-  min-width: 40rem;
-}
-
-#rightPanel {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: 40vw;
-
-  svg {
-    margin: var(--margin-size);
-  }
-}
-
-#diagramHolder,
-#graphHolder {
-  display: flex;
-  align-items: center;
-  flex: 1.3;
-}
-
-#diagramHolder {
-  flex: 1;
-}
-
 .subregion {
   background: var(--sub-region-bg);
   overflow-y: auto;

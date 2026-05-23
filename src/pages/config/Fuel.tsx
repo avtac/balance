@@ -1,9 +1,9 @@
-import '../Layout.css'
+import '../../Layout.css'
 import { useContext } from "react";
-import { Subregion } from "../Layout";
-import { type fuelTankT, type aircraftProps, type aircraftT, baseLengthUnit, baseFuelUnit } from "../Types";
-import { convertFuelUnits, convertLengthUnit, UnitContext, unitPrecision } from "../UnitsContext";
-import { roundNumber } from "../utility";
+import { Subregion } from "../../Layout";
+import { type fuelTankT, type aircraftProps, type aircraftT, baseLengthUnit, baseFuelUnit } from "../../Types";
+import { convertFuelUnits, convertLengthUnit, UnitContext, unitPrecision } from "../../UnitsContext";
+import { roundNumber } from "../../utility";
 
 interface fuelInputProps extends aircraftProps {
   tank: fuelTankT,

@@ -1,10 +1,10 @@
 import './Setup.css'
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Subregion } from "../Layout";
-import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../Types";
-import { roundNumber, saveStringToFile } from "../utility";
-import { getNewConfig } from "../ConfigBuilder";
-import { convertDensityUnits, unitPrecision } from '../UnitsContext';
+import { Subregion } from "../../Layout";
+import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
+import { roundNumber, saveStringToFile } from "../../utility";
+import { getNewConfig } from "./ConfigBuilder";
+import { convertDensityUnits, unitPrecision } from '../../UnitsContext';
 
 const weightUnitsElements = weightUnits.map((u) => <option key={u} value={u}>{u}</option>)
 const lengthUnitsElements = lengthUnits.map((u) => <option key={u} value={u}>{u}</option>)
