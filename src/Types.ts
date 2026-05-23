@@ -18,6 +18,16 @@ export interface momentObjectT {
   weight: number;
 }
 
+const DiagramModes = {
+  All: 0, // Show all seat/cargo positions
+  Config: 1, // Show seat/cargo positions in config
+  Ops: 2, // Show seat/cargo and ops loading in config
+  Loading: 3, // Show seat/cargo, ops, loading
+} as const;
+
+type DiagramModes = (typeof DiagramModes)[keyof typeof DiagramModes]
+export { DiagramModes }
+
 // Data structure interfaces
 
 export interface maxMomentObjectT {

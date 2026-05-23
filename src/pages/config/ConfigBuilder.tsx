@@ -4,7 +4,7 @@ import Geometry from './Geometry.tsx'
 import Diagram from '../../Diagram'
 import Graph from '../../Graph.tsx'
 import { useMemo, useState } from 'react'
-import { type configT, type aircraftT, type operationConfigT, type nameProps, type aircraftProps, baseLengthUnit, baseWeightUnit, baseFuelUnit } from '../../Types'
+import { type configT, type aircraftT, type operationConfigT, type nameProps, type aircraftProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, DiagramModes } from '../../Types'
 import { SeatConfig } from './Seats.tsx'
 import { CargoConfig } from './Cargo.tsx'
 import { Equipment } from './Equipment.tsx'
@@ -244,7 +244,7 @@ function ConfigBuilder() {
               <div id='diagramHolder'>
                 <Diagram
                   aircraft={config.aircraft[aircraftIndex]}
-                  selectedPanel={selectedPanel}
+                  diagramMode={selectedPanel === 6 ? DiagramModes.Ops : selectedPanel === 5 ? DiagramModes.Config : DiagramModes.All}
                   selectedConfig={selectedConfig}
                   selectedOpsConfig={selectedOpsConfig} />
               </div>

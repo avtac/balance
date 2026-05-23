@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import "./Diagram.css"
-import type { seatT, cargoAreaT, aircraftConfigT, operationConfigT, aircraftT } from "./Types";
+import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftT } from "./Types";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
@@ -130,16 +130,16 @@ function getPixelFromArm(arm: number): number {
 
 interface diagramProps {
   aircraft: aircraftT,
-  selectedPanel: number,
+  diagramMode: DiagramModes,
   selectedConfig: string,
   selectedOpsConfig: string,
 }
 
-function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
+function Diagram({ aircraft, diagramMode, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
   let seats = [...aircraft.seats]
   let cargoAreas = [...aircraft.cargoAreas]
 
-  if (selectedPanel >= 5) {
+  if (diagramMode === DiagramModes.Config || diagramMode === DiagramModes.Ops) {
     const configIndex: number = aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
     if (configIndex < 0) return;
 
@@ -186,11 +186,11 @@ function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }:
 
   const opsIndex: number = aircraft.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig == o.id);
   const seatItems = seats.map((seat: seatT): ReactNode => {
-    const seatIndex = aircraft.operationConfigs[opsIndex].seats.findIndex(
+    const seatIndex = opsIndex < 0 ? -1 : aircraft.operationConfigs[opsIndex].seats.findIndex(
       (v: { id: string, weight: number }) => v.id == seat.id
     )
 
-    const isOps = selectedPanel >= 6 && opsIndex >= 0
+    const isOps = diagramMode === DiagramModes.Ops && opsIndex >= 0
       && selectedOpsConfig != undefined
       && seatIndex >= 0;
 
@@ -205,10 +205,10 @@ function Diagram({ aircraft, selectedPanel, selectedConfig, selectedOpsConfig }:
   });
 
   const cargoItems = cargoAreas.map((cargoArea: cargoAreaT): ReactNode => {
-    const cargoIndex = aircraft.operationConfigs[opsIndex].cargoAreas.findIndex(
+    const cargoIndex = opsIndex < 0 ? -1 : aircraft.operationConfigs[opsIndex].cargoAreas.findIndex(
       (v: { id: string, weight: number }) => v.id == cargoArea.id
     )
-    const isOps = selectedPanel >= 6 && opsIndex >= 0
+    const isOps = diagramMode === DiagramModes.Ops && opsIndex >= 0
       && selectedOpsConfig != undefined
       && cargoIndex >= 0;
     const opsPercentUsed = isOps ? aircraft.operationConfigs[opsIndex].cargoAreas[cargoIndex].weight / cargoArea.maxWeight : 0;
