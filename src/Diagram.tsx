@@ -4,8 +4,8 @@ import type { seatT, cargoAreaT, aircraftConfigT, operationConfigT, aircraftT } 
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
-const seatSize = 14;
-const cargoSize = 14;
+const seatSize = 21;
+const cargoSize = seatSize;
 const fontSize = 4;
 
 interface cargoIconProps {
