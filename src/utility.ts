@@ -7,8 +7,8 @@ export function getSortedByArm<T extends (maxMomentObjectT | momentObjectT)>(dat
   }).filter((s: T) => s != undefined);
 }
 
-export function calculateMAC(arm: number, mac: (number | undefined), leadingMac: (number | undefined)): number {
-  if (!leadingMac || !mac) return arm;
+export function calculateMAC(arm: number, mac: (number | undefined), leadingMac: (number | undefined), useMAC: boolean = false): number {
+  if (!useMAC || !leadingMac || !mac) return arm;
   return (arm - leadingMac) / mac * 100;
 }
 
