@@ -17,7 +17,7 @@ import Setup from './config/Setup.tsx'
 import { UnitContext } from './UnitsContext.tsx'
 
 export function getNewConfig(): configT {
-  return {
+  const config: configT = {
     id: crypto.randomUUID(),
     name: "",
     setup: {
@@ -116,6 +116,8 @@ export function getNewConfig(): configT {
       }]
     }]
   };
+  config.aircraft[0].operationConfigs[0].config = config.aircraft[0].aircraftConfigs[0].id;
+  return config;
 }
 
 function SeatCargoFuelConfig({ aircraft, setAircraft }: aircraftProps & nameProps) {
@@ -130,7 +132,6 @@ function SeatCargoFuelConfig({ aircraft, setAircraft }: aircraftProps & nameProp
 
 function ConfigBuilder() {
   const defaultValue = getNewConfig();
-  defaultValue.aircraft[0].operationConfigs[0].config = defaultValue.aircraft[0].aircraftConfigs[0].id;
 
   let storageConfig: configT = defaultValue;
   const local = localStorage.getItem("config");
