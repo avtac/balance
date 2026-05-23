@@ -156,8 +156,10 @@ interface aircraftOperationConfigProps extends aircraftProps {
 function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSelectedConfig, selectedOpsConfig, setSelectedOpsConfig }: aircraftOperationConfigProps & nameProps): ReactNode {
   const units = useContext(UnitContext);
   const configSelectRef = useRef(null);
-  const configIndex: number = aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === selectedConfig);
   const opsConfigIndex: number = aircraft.operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
+  const configIndex: number = aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === aircraft.operationConfigs[opsConfigIndex].config);
+
+  useEffect(() => setSelectedConfig(aircraft.operationConfigs[opsConfigIndex].config), [])
 
   function addOpsConfig(): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
