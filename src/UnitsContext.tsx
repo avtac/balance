@@ -20,8 +20,8 @@ const lengthUnitsFromIn: { [K in lengthUnitsT]: number } = {
   "in": 1,
   "ft": 1 / 12,
   "m": 0.0254,
-  "cm": 0.254,
-  "mm": 2.54,
+  "cm": 2.54,
+  "mm": 25.4,
 }
 
 export function convertLengthUnit(value: number, oldUnit: lengthUnitsT, newUnit: lengthUnitsT): number {
