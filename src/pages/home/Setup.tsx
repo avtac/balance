@@ -1,8 +1,8 @@
 import './Setup.css'
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Subregion } from "../../Layout";
 import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
-import { roundNumber } from "../../utility";
+import { activeConfigData, roundNumber, uploadedConfigs } from "../../utility";
 import { convertDensityUnits, unitPrecision } from '../../UnitsContext';
 
 const weightUnitsElements = weightUnits.map((u) => <option key={u} value={u}>{u}</option>)
@@ -17,7 +17,12 @@ const fuelTypes: { name: string, density: number }[] = [
   { name: 'Other', density: 0 },
 ] as const
 
-function Units({ config, setConfig }: configProps): ReactNode {
+interface unitsProps extends configProps {
+  macAvailable: boolean;
+}
+
+function Units({ config, setConfig, macAvailable }: unitsProps): ReactNode {
+  if (!config.id) return (<></>);
   const index = fuelTypes.findIndex(t => t.density === config.setup.fuelDensity);
   const [selectedDensity, setSelectedDensity] = useState(index >= 0 ? index : fuelTypes.length - 1);
   const oldDensity = useRef(config.setup.fuelDensity);
@@ -77,8 +82,10 @@ function Units({ config, setConfig }: configProps): ReactNode {
   return (
     <Subregion>
       <h3>Units</h3>
-      <label>Use MAC</label>
-      <input type='checkbox' checked={config.setup.useMAC} onChange={(e) => setValue('useMAC', e.target.checked)} />
+      {macAvailable && (<>
+        <label>Use MAC</label>
+        <input type='checkbox' checked={config.setup.useMAC} onChange={(e) => setValue('useMAC', e.target.checked)} />
+      </>)}
       <div id='unitsSelect'>
         <label htmlFor="weightUnitSelect">Weight</label>
         <select id="weightUnitSelect" value={config.setup.weightUnits} onChange={e => setValue('weightUnits', e.target.value as weightUnitsT)}>
@@ -119,9 +126,9 @@ function Units({ config, setConfig }: configProps): ReactNode {
 }
 
 function appendConfigToSavedConfigs(config: configT): void {
-  const savedConfigsString = localStorage.getItem('savedConfigs');
+  const savedConfigsString = localStorage.getItem(uploadedConfigs);
   if (savedConfigsString === null) {
-    localStorage.setItem('savedConfigs',
+    localStorage.setItem(uploadedConfigs,
       JSON.stringify({ [config.id]: config })
     );
     return;
@@ -129,7 +136,7 @@ function appendConfigToSavedConfigs(config: configT): void {
   // TODO: Check if the config already exists and ask if overwrite is OK
   const savedConfigs = JSON.parse(savedConfigsString);
   savedConfigs[config.id] = config;
-  localStorage.setItem('savedConfigs', JSON.stringify(savedConfigs));
+  localStorage.setItem(uploadedConfigs, JSON.stringify(savedConfigs));
 }
 
 
@@ -145,14 +152,14 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
   const foundConfigs: { id: string, name: string }[] = []
   const [availableConfigList, setAvailableConfigList] = useState(foundConfigs);
 
-  useEffect(() => {
-    const savedConfigsString = localStorage.getItem("savedConfigs");
+  useMemo(() => {
+    const savedConfigsString = localStorage.getItem(uploadedConfigs);
     if (savedConfigsString) {
       const savedConfigs: { [key: string]: configT } = JSON.parse(savedConfigsString)
       const foundConfigs: { id: string, name: string }[] = Object.entries(savedConfigs).map(([id, config]) => ({ id: id, name: config.name }));
       setAvailableConfigList(foundConfigs);
     }
-  }, [])
+  }, [config])
 
   function openFile() {
     const input = document.createElement('input');
@@ -170,7 +177,7 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
         const data: string = fileReader.result as string;
         if (!data) return;
         setConfig(JSON.parse(data));
-        localStorage.setItem('config', data)
+        localStorage.setItem(activeConfigData, data)
         appendConfigToSavedConfigs(JSON.parse(data));
       };
     };
@@ -178,19 +185,19 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
   }
 
   function selectConfig(configId: string): void {
-    const savedConfigsString = localStorage.getItem("savedConfigs");
+    const savedConfigsString = localStorage.getItem(uploadedConfigs);
     if (!savedConfigsString) return;
     const savedConfigs = JSON.parse(savedConfigsString)
 
     const selectedConfig: (configT | undefined) = savedConfigs[configId];
     if (!selectedConfig) return;
-    localStorage.setItem("config", JSON.stringify(selectedConfig));
+    localStorage.setItem(activeConfigData, JSON.stringify(selectedConfig));
     setConfig(selectedConfig)
   }
 
 
   const availableConfigs = availableConfigList.sort((a, b) => a.name.localeCompare(b.name)).map((v) => <option value={v.id} key={v.id}>{v.name}</option>)
-  const aircraftOptions = config.aircraft
+  const aircraftOptions = !config.aircraft ? [] : config.aircraft
     .sort((a, b) =>
       a.config.tailNumber.localeCompare(b.config.tailNumber)
     )
@@ -202,7 +209,7 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
       </option>
     )
 
-  const selectedAircraftIndex = config.aircraft.findIndex(a => a.id === selectedAircraft);
+  const selectedAircraftIndex = config.aircraft ? config.aircraft.findIndex(a => a.id === selectedAircraft) : -1;
   const opsConfigOptions = selectedAircraftIndex < 0 ? [] : config.aircraft[selectedAircraftIndex].operationConfigs
     .sort((a, b) =>
       a.name.localeCompare(b.name)
@@ -247,7 +254,10 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
           </select>
         </div>
       </Subregion>
-      <Units config={config} setConfig={setConfig} />
+      <Units
+        macAvailable={config.aircraft[selectedAircraftIndex].config.mac != 0 && config.aircraft[selectedAircraftIndex].config.leadingEdgeMAC != 0}
+        config={config}
+        setConfig={setConfig} />
     </>
   )
 }

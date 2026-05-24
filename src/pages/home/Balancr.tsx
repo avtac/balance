@@ -3,30 +3,33 @@ import { MultiPane } from '../../Layout'
 import Diagram from '../../Diagram'
 import Graph from '../../Graph.tsx'
 import { useMemo, useState } from 'react'
-import { type configT, type operationConfigT, DiagramModes } from '../../Types'
+import { type configT, type operationConfigT, DiagramModes, type aircraftT } from '../../Types'
 import Header from '../../Header.tsx'
 import Setup from './Setup.tsx'
 import { UnitContext } from '../../UnitsContext.tsx'
 import Config from './Config.tsx'
+import { activeConfigData } from '../../utility.ts'
 
 function Balancr() {
   const defaultValue = {} as configT;
 
   let storageConfig: configT = defaultValue;
-  const local = localStorage.getItem("config");
+  const local = localStorage.getItem(activeConfigData);
   if (local != null)
     storageConfig = JSON.parse(local);
 
   const [config, setConfig] = useState(storageConfig);
-  const [selectedAircraft, setSelectedAircraft] = useState(config.aircraft.length > 0 ? config.aircraft[0].id : "")
-  const aircraftIndex = config.aircraft.findIndex(a => a.id === selectedAircraft);
+  const [selectedAircraft, setSelectedAircraft] = useState(config.aircraft && config.aircraft.length > 0 ? config.aircraft[0].id : "")
+  const aircraftIndex = config.aircraft && config.aircraft.findIndex(a => a.id === selectedAircraft);
 
+  // TODO: Save changes or changed data somewhere else for recall of config data
+  // but flag that there have been changes made
   const [selectedConfig, setSelectedConfig] = useState(aircraftIndex >= 0 && config.aircraft[aircraftIndex].aircraftConfigs.length > 0 ? config.aircraft[aircraftIndex].aircraftConfigs[0].id : "");
   const [selectedOpsConfig, setSelectedOpsConfig] = useState(aircraftIndex >= 0 && config.aircraft[aircraftIndex].operationConfigs.length > 0 ? config.aircraft[aircraftIndex].operationConfigs[0].id : "")
   const [selectedPanel, setSelectedPanel] = useState(0);
 
   useMemo(() => {
-    if (config.aircraft.findIndex(a => a.id === selectedAircraft) < 0)
+    if (config.aircraft && config.aircraft.findIndex(a => a.id === selectedAircraft) < 0)
       setSelectedAircraftSpecial(config.aircraft[0].id);
     else return;
   }, [config])
@@ -57,8 +60,15 @@ function Balancr() {
   }
 
   function setConfigSpecial(value: configT): void {
-    localStorage.setItem("config", JSON.stringify(value));
+    localStorage.setItem(activeConfigData, JSON.stringify(value));
     setConfig(value);
+  }
+
+  function setAircraftSpecial(value: aircraftT): void {
+    const tmp: configT = JSON.parse(JSON.stringify(config));
+    tmp.aircraft[aircraftIndex] = value;
+    localStorage.setItem(activeConfigData, JSON.stringify(tmp));
+    setConfig(tmp);
   }
 
   useMemo(() => {
@@ -88,20 +98,22 @@ function Balancr() {
                   setSelectedOpsConfig={setSelectedOpsConfigSpecial} />
                 <Config
                   name={"Config"}
-                  aircraft={config.aircraft[aircraftIndex]}
+                  aircraft={config.aircraft && config.aircraft[aircraftIndex]}
+                  setAircraft={setAircraftSpecial}
                   selectedOpsConfig={selectedOpsConfig} />
               </MultiPane>
             </div>
             <div id='rightPanel'>
               <div id='graphHolder'>
                 <Graph
-                  aircraft={config.aircraft[aircraftIndex]}
+                  aircraft={config.aircraft && config.aircraft[aircraftIndex]}
                   selectedConfig={selectedConfig}
                   selectedOpsConfig={selectedOpsConfig} />
               </div>
               <div id='diagramHolder'>
                 <Diagram
-                  aircraft={config.aircraft[aircraftIndex]}
+                  aircraft={config.aircraft && config.aircraft[aircraftIndex]}
+                  setAircraft={setAircraftSpecial}
                   diagramMode={selectedPanel >= 0 ? DiagramModes.Ops : DiagramModes.All}
                   selectedConfig={selectedConfig}
                   selectedOpsConfig={selectedOpsConfig} />

@@ -1,51 +1,3 @@
-#configTitle {
-  display: grid;
-  grid-template-columns: 1fr 1fr 9rem 9rem 9rem;
-  gap: 8px;
-
-  input {
-    min-width: 5rem;
-  }
-}
-
-#aircraftTitle {
-  display: grid;
-  grid-template-columns: 1fr 1fr 5rem 5rem 5rem;
-  gap: 8px;
-
-  input {
-    min-width: 5rem;
-  }
-}
-
-#configEquipment,
-#configCargo,
-#configFuel,
-#configSeats {
-  border-collapse: collapse;
-  user-select: none;
-
-  th {
-    border-bottom: 1px solid black;
-    height: 2.4rem;
-  }
-
-  tr:nth-child(even) {
-    background: #8882;
-  }
-
-  tr:hover td {
-    background: #fff2;
-    cursor: pointer;
-  }
-
-  th,
-  td {
-    padding: 6px;
-    text-align: center;
-  }
-}
-
 .equipmentSelect {
   input[type=number] {
     width: 3rem;
@@ -55,4 +7,13 @@
 .unused td {
   color: #555;
   background: #3002;
+}
+
+button {
+  cursor: pointer !important;
+  width: 100% !important;
+}
+
+.unused * {
+  cursor: not-allowed !important;
 }
