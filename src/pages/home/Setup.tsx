@@ -238,14 +238,14 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
       <Subregion id='aircraftSelect'>
         <h3>{config.name}</h3>
         <div>
-          <label>Aircraft</label>
+          <label htmlFor='setAircraft'>Aircraft</label>
           <select
             id='setAircraft'
             value={selectedAircraft}
             onChange={(e) => setSelectedAircraft(e.target.value)}>
             {aircraftOptions}
           </select>
-          <label>Configuration</label>
+          <label htmlFor='setOpsConfig'>Configuration</label>
           <select
             id='setOpsConfig'
             value={selectedOpsConfig}
