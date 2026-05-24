@@ -234,10 +234,12 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
   const units = useContext(UnitContext);
   const oldCount = useRef(1);
   const [count, setCount] = useState(1);
-  let equipmentIndex: number = -1;
-  equipmentIndex = aircraft.equipment.findIndex((s) => s.id === equipment.id);
+  const equipmentIndex = aircraft.equipment.findIndex((e) => e.id === equipment.id);
 
   const inConfig = aircraft.aircraftConfigs[airConfigIndex].equipment.findIndex((s) => s.id === equipment.id) >= 0;
+
+  const locationValues = getSortedByArm([...aircraft.seats.map(s => { return { ...s, id: "S" + s.id } }), ...aircraft.cargoAreas.map(c => { return { ...c, id: "C" + c.id } })])
+  const locationValueIndex = locationValues.findIndex((s) => s.id === equipment.area);
 
   function addToConfig() {
     if (airConfigIndex < 0) return;
@@ -263,6 +265,21 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
     setAircraft(tmp);
   }
 
+  function setArm(arm: number): void {
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    tmp.equipment[equipmentIndex].arm = arm;
+    setAircraft(tmp);
+  }
+
+  function setArea(value: string): void {
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    tmp.equipment[equipmentIndex].area = value;
+    const valueIndex = locationValues.findIndex(e => e.id === value);
+    if (valueIndex >= 0)
+      tmp.equipment[equipmentIndex].arm = locationValues[valueIndex].arm;
+    setAircraft(tmp);
+  }
+
   useEffect(() => {
     const index = aircraft.aircraftConfigs[airConfigIndex].equipment.findIndex((s) => s.id === equipment.id);
     setCount(inConfig ? aircraft.aircraftConfigs[airConfigIndex].equipment[index].count : 0);
@@ -271,7 +288,31 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
   return (
     <tr className={"equipmentSelect" + (!inConfig ? " unused" : "")}>
       <td>{equipment.name}</td>
-      <td>{roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
+      <td onClick={() => setVisible(inConfig && true)}>
+        {roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}
+        <dialog open={visible} onClose={() => setVisible(false)} closedby='any'>
+          <div className='equipmentEdit'>
+            <label htmlFor={"equipSelectArmLoc-" + equipment.id}>Arm</label>
+            <select
+              id={"equipSelectArmLoc-" + equipment.id}
+              value={equipment.area}
+              onChange={e => setArea(e.target.value)}>
+              <option value={""}>Manual</option>
+              {locationValues.map((area) => {
+                return <option key={area.id} value={area.id}>{area.name}</option>
+              })}
+            </select>
+            {locationValueIndex < 0 &&
+              <input
+                id={'customEquipmentArm' + equipment.id}
+                disabled={!(locationValueIndex < 0)}
+                type='number'
+                onChange={e => setArm(Number(e.target.value))}
+                value={locationValueIndex < 0 ? (equipment.arm ? roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : "") : roundNumber(convertLengthUnit(locationValues[locationValueIndex].arm, baseLengthUnit, units.lengthUnits), unitPrecision)} />
+            }
+          </div>
+        </dialog>
+      </td>
       <td>{roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
       <td>
         <input

@@ -18,6 +18,7 @@
   --graph-bg: #FFF;
   --input-bg: #FFF;
   --button-bg: #77d;
+  --dialog-bg: #777;
 
   /* Accents */
   --accent: #3333BB;
@@ -76,6 +77,7 @@
     --graph-bg: #444;
     --input-bg: #131639;
     --button-bg: #323a86;
+    --dialog-bg: #555;
 
     /* Accents */
     --accent: #3041eb;

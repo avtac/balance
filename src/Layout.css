@@ -11,11 +11,11 @@
 
 .internalPadding {
   margin: var(--margin-size);
+  overflow-y: auto;
 }
 
 .subregion {
   background: var(--sub-region-bg);
-  overflow-y: auto;
 }
 
 .verticalRegion {
