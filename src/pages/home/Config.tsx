@@ -3,7 +3,7 @@ import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
 import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps } from "../../Types";
-import { getSortedByArm, roundNumber } from '../../utility';
+import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 
 interface seatSelectionProps extends aircraftProps {
@@ -191,9 +191,6 @@ interface fuelSelectionProps extends aircraftProps {
 
 function FuelSelection({ aircraft, setAircraft, fuelTank, airConfigIndex }: fuelSelectionProps): ReactElement {
   const units = useContext(UnitContext);
-  let fuelTankIndex: number = -1;
-  fuelTankIndex = aircraft.fuelTanks.findIndex((s) => s.id === fuelTank.id);
-
   const inConfig = aircraft.aircraftConfigs[airConfigIndex].fuelTanks.findIndex((s) => s === fuelTank.id) >= 0;
 
   function addToConfig() {
@@ -233,6 +230,7 @@ interface EquipmentSelectionProps extends aircraftProps {
 function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }: EquipmentSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   const oldCount = useRef(1);
+  const [visible, setVisible] = useState(false);
   const [count, setCount] = useState(1);
   const equipmentIndex = aircraft.equipment.findIndex((e) => e.id === equipment.id);
 
@@ -331,21 +329,34 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
   );
 }
 
-interface AircraftConfigsProps extends aircraftProps {
+interface ConfigProps extends aircraftProps {
   selectedOpsConfig: string,
 }
 
-function Config({ aircraft, setAircraft, selectedOpsConfig }: AircraftConfigsProps & nameProps): ReactElement {
+function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & nameProps): ReactElement {
   if (!aircraft) return (<></>);
   const units = useContext(UnitContext);
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
 
+  const [emptyWeight, emptyArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config);
+  const [opsWeight, opsArm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
+
   return (
     <>
-      <Subregion id="aircraftTitle">
-        <h3>{aircraft.operationConfigs[opsConfigIndex].name}</h3>
+      <Subregion id='balancr-configTitle'>
+        <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
+        <div id='configTitleData'>
+          <h4>Empty Weight</h4>
+          <h4>Empty Arm</h4>
+          <h4>Ops Weight</h4>
+          <h4>Ops Arm</h4>
+          <p>{roundNumber(convertWeightUnit(emptyWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+          <p>{roundNumber(convertLengthUnit(emptyArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+          <p>{roundNumber(convertWeightUnit(opsWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+          <p>{roundNumber(convertLengthUnit(opsArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+        </div>
       </Subregion>
       <MultiPane>
         <Subregion name={"Seats"}>

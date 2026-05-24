@@ -1,3 +1,20 @@
+#balancr-configTitle {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#configTitleData {
+  display: grid;
+  grid-template-columns: repeat(4, 8rem);
+  justify-content: start;
+
+  h4 {
+    margin: 4px 0px;
+  }
+}
+
 .unused td {
   color: #555;
   background: #3002;
