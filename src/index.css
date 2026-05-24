@@ -4,6 +4,7 @@
   --text-h: #08060d;
   --text-l: #222;
   --text-d: #444;
+  --text-w: #944;
 
   /* Borders */
   --border: #8884;
@@ -19,6 +20,7 @@
   --input-bg: #FFF;
   --button-bg: #77d;
   --dialog-bg: #777;
+  --warn-bg: #3114;
 
   /* Accents */
   --accent: #3333BB;
@@ -63,6 +65,7 @@
     --text-h: #f3f4f6;
     --text-l: #AAA;
     --text-d: #FFF;
+    --text-w: #F22;
 
     /* Borders */
     --border: #1e202a;
@@ -78,6 +81,7 @@
     --input-bg: #131639;
     --button-bg: #323a86;
     --dialog-bg: #555;
+    --warn-bg: #4225;
 
     /* Accents */
     --accent: #3041eb;

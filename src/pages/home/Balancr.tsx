@@ -3,12 +3,38 @@ import { MultiPane } from '../../Layout'
 import Diagram from '../../Diagram'
 import Graph from '../../Graph.tsx'
 import { useMemo, useState } from 'react'
-import { type configT, type operationConfigT, DiagramModes, type aircraftT } from '../../Types'
+import { type configT, type operationConfigT, DiagramModes, type aircraftT, type aircraftConfigT } from '../../Types'
 import Header from '../../Header.tsx'
 import Setup from './Setup.tsx'
 import { UnitContext } from '../../UnitsContext.tsx'
 import Config from './Config.tsx'
-import { activeConfigData } from '../../utility.ts'
+import { activeConfigData, uploadedConfigs } from '../../utility.ts'
+
+function checkConfigChanged(activeConfig: configT) {
+  const configsStrings = localStorage.getItem(uploadedConfigs);
+  if (!configsStrings) return false;
+  const configs: { [key: string]: configT } = JSON.parse(configsStrings);
+  if (!Object.keys(configs).includes(activeConfig.id)) return false
+  const baseConfig = configs[activeConfig.id]
+
+  // Equipment is not checked
+  type searchSubset = keyof Pick<aircraftConfigT, "seats" | "cargoAreas" | "fuelTanks">
+  const searchItems: searchSubset[] = ['seats', 'cargoAreas', 'fuelTanks'];
+  for (let i = 0; i < baseConfig.aircraft.length; i++) {
+    for (let j = 0; j < baseConfig.aircraft[i].aircraftConfigs.length; j++) {
+      for (const item of searchItems) {
+        const base = baseConfig.aircraft[i].aircraftConfigs[j][item];
+        const active = activeConfig.aircraft[i].aircraftConfigs[j][item];
+        if (base.length !== active.length) return true;
+        for (let k = 0; k < base.length; k++) {
+          if (!active.includes(base[k])) return true;
+          if (!base.includes(active[k])) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
 
 function Balancr() {
   const defaultValue = {} as configT;
@@ -80,10 +106,16 @@ function Balancr() {
     }
   }, [selectedPanel]);
 
+  const changed = checkConfigChanged(config)
   return (
     <>
       <Header />
       <section id="content">
+        {changed &&
+          <div id="changeWarning">
+            <p>Config has changed and does not match original</p>
+          </div>
+        }
         <UnitContext value={config.setup}>
           <div id="split">
             <div id='leftPanel'>

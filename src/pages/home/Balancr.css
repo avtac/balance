@@ -10,6 +10,25 @@
   display: flex;
 }
 
+#changeWarning {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--warn-bg);
+  z-index: 5;
+  padding: 10px;
+  border: 1px solid white;
+  border-radius: 4px;
+
+  p {
+    color: var(--text-w);
+  }
+
+  ::before {
+    content: "WARINING: "
+  }
+}
+
 #leftPanel {
   flex: 1.1;
   display: flex;
