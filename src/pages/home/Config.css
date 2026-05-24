@@ -1,19 +1,16 @@
-.equipmentSelect {
-  input[type=number] {
-    width: 3rem;
-  }
-}
-
 .unused td {
   color: #555;
   background: #3002;
+
+  button {
+    cursor: pointer !important;
+  }
 }
 
 button {
-  cursor: pointer !important;
   width: 100% !important;
 }
 
-.unused * {
+.unused.clickable * {
   cursor: not-allowed !important;
 }

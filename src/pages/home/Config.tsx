@@ -2,7 +2,7 @@ import './Config.css'
 import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
-import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, type operationConfigT, baseFuelUnit, type aircraftProps } from "../../Types";
+import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps } from "../../Types";
 import { getSortedByArm, roundNumber } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 
@@ -64,14 +64,14 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
     setAircraft(tmp);
   }
 
-  let loadedWeight = 0;
+  let loadedWeight = undefined;
   if (seatIndex >= 0) {
     loadedWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
     oldWeight.current = aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
   }
   checked.current = seatIndex >= 0;
   return (
-    <tr className={"seatSelect" + (!inConfig ? " unused" : "")}>
+    <tr className={"clickable seatSelect" + (!inConfig ? " unused" : "")}>
       <td onClick={selectCheckbox}>
         <input disabled={!inConfig} onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
@@ -81,13 +81,15 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
       <td onClick={selectCheckbox}>{seat.seatCount}</td>
       <td>
         <input
+          id={"seatWeightInput" + seat.id}
           disabled={!inConfig || seatIndex < 0}
           type='number'
-          value={roundNumber(convertWeightUnit(loadedWeight, baseWeightUnit, units.weightUnits), unitPrecision)}
+          placeholder={units.weightUnits}
+          value={loadedWeight ? roundNumber(convertWeightUnit(loadedWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
           onChange={(e) => { setWeight(Number(e.target.value)) }} />
       </td>
       <td>
-        {inConfig ? <button onClick={removeFromConfig} >Remove From Config</button> : <button onClick={addToConfig} >Add To Config</button>}
+        {inConfig ? <button onClick={removeFromConfig} >Remove From Aircraft</button> : <button onClick={addToConfig} >Add To Aircraft</button>}
       </td>
     </tr >
   );
@@ -143,14 +145,14 @@ function CargoSelection({ aircraft, setAircraft, cargoArea, opsConfigIndex, airC
     setAircraft(tmp);
   }
 
-  let loadedWeight = 0;
+  let loadedWeight = undefined;
   if (cargoAreaIndex >= 0) {
     loadedWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
     oldWeight.current = aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
   }
   checked.current = cargoAreaIndex >= 0;
   return (
-    <tr className={"cargoAreaSelect" + (!inConfig ? " unused" : "")}>
+    <tr className={"clickable cargoAreaSelect" + (!inConfig ? " unused" : "")}>
       <td onClick={selectCheckbox}>
         <input disabled={!inConfig} onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
@@ -158,124 +160,132 @@ function CargoSelection({ aircraft, setAircraft, cargoArea, opsConfigIndex, airC
       <td onClick={selectCheckbox}>{roundNumber(convertLengthUnit(cargoArea.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
       <td onClick={selectCheckbox}>{roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
       <td>
-        <input disabled={!inConfig} onChange={() => { }} value={roundNumber(convertWeightUnit(loadedWeight, baseWeightUnit, units.weightUnits), unitPrecision)} />
+        <input
+          id={"cargoWeightInput" + cargoArea.id}
+          disabled={!inConfig}
+          onChange={() => { }}
+          placeholder={units.weightUnits}
+          value={loadedWeight ? roundNumber(convertWeightUnit(loadedWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""} />
       </td>
       <td>
-        {inConfig ? <button onClick={removeFromConfig} >Remove From Config</button> : <button onClick={addToConfig} >Add To Config</button>}
+        {inConfig
+          ?
+          <button
+            onClick={removeFromConfig} >
+            Remove From Aircraft
+          </button>
+          :
+          <button
+            onClick={addToConfig} >
+            Add To Aircraft
+          </button>}
       </td>
     </tr>
   );
 }
 
-interface fuelSelectionProps {
+interface fuelSelectionProps extends aircraftProps {
   fuelTank: fuelTankT,
-  airConfig: aircraftConfigT,
-  opsConfig: operationConfigT,
+  airConfigIndex: number
 }
 
-function FuelSelection({ fuelTank, airConfig, opsConfig }: fuelSelectionProps): ReactElement {
+function FuelSelection({ aircraft, setAircraft, fuelTank, airConfigIndex }: fuelSelectionProps): ReactElement {
   const units = useContext(UnitContext);
-  let fuelTankIndex = -1;
-  if (opsConfig) fuelTankIndex = airConfig.fuelTanks.findIndex((s: string) => s == fuelTank.id);
-  const checked = useRef(fuelTankIndex >= 0 || !fuelTank.removable);
+  let fuelTankIndex: number = -1;
+  fuelTankIndex = aircraft.fuelTanks.findIndex((s) => s.id === fuelTank.id);
 
-  function selectCheckbox(): void {
-    if (!fuelTank.removable) return;
-    checked.current = !checked.current;
-    // const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    if (checked.current) {
-      if (airConfig.fuelTanks.findIndex((s: string) => s === fuelTank.id) < 0)
-        airConfig.fuelTanks.push(fuelTank.id);
-    } else {
-      airConfig.fuelTanks.splice(fuelTankIndex, 1);
-    }
-    checked.current = !checked.current;
+  const inConfig = aircraft.aircraftConfigs[airConfigIndex].fuelTanks.findIndex((s) => s === fuelTank.id) >= 0;
+
+  function addToConfig() {
+    if (airConfigIndex < 0) return;
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    tmp.aircraftConfigs[airConfigIndex].fuelTanks.push(fuelTank.id);
+    setAircraft(tmp);
   }
 
-  checked.current = fuelTankIndex >= 0;
+  function removeFromConfig() {
+    if (airConfigIndex < 0) return;
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    const index = tmp.aircraftConfigs[airConfigIndex].fuelTanks.findIndex(a => a === fuelTank.id);
+    if (index < 0) return;
+    tmp.aircraftConfigs[airConfigIndex].fuelTanks.splice(index, 1);
+    setAircraft(tmp);
+  }
+
   return (
-    <tr className="fuelTankSelect" onClick={selectCheckbox}>
-      <td>
-        <input
-          disabled={!fuelTank.removable}
-          onChange={() => { }}
-          checked={!fuelTank.removable || checked.current}
-          type={"checkbox"} />
-      </td>
+    <tr className={"fuelTankSelect" + (fuelTank.removable && !inConfig ? " unused" : "")}>
       <td>{fuelTank.name}</td>
       <td>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
       <td>{roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
       <td>{roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
+      <td>
+        {fuelTank.removable && (inConfig ? <button onClick={removeFromConfig} >Remove From Aircraft</button> : <button onClick={addToConfig} >Add To Aircraft</button>)}
+      </td>
     </tr>
   );
 }
 
-interface EquipmentSelectionProps {
+interface EquipmentSelectionProps extends aircraftProps {
   equipment: equipmentT,
-  airConfig: aircraftConfigT,
-  opsConfig: operationConfigT,
+  airConfigIndex: number
 }
 
-function EquipmentSelection({ equipment, airConfig, opsConfig }: EquipmentSelectionProps): ReactElement {
+function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }: EquipmentSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   const oldCount = useRef(1);
   const [count, setCount] = useState(1);
-  let equipmentIndex = -1;
-  if (airConfig) equipmentIndex = airConfig.equipment.findIndex((s: { id: string, count: number }) => s.id == equipment.id);
-  const checked = useRef(equipmentIndex >= 0);
+  let equipmentIndex: number = -1;
+  equipmentIndex = aircraft.equipment.findIndex((s) => s.id === equipment.id);
 
-  function selectCheckbox(): void {
-    if (airConfig) return;
-    checked.current = !checked.current;
-    // const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    // if (checked.current) {
-    //   if (tmp.aircraftConfigs[configIndex].equipment.findIndex((s: { id: string, count: number }) => s.id === equipment.id) < 0) {
-    //     tmp.aircraftConfigs[configIndex].equipment.push({ id: equipment.id, count: Math.max(count, oldCount.current) });
-    //     setCount(Math.max(count, oldCount.current));
-    //   }
-    // } else {
-    //   tmp.aircraftConfigs[configIndex].equipment.splice(equipmentIndex, 1);
-    //   oldCount.current = count;
-    //   setCount(0);
-    // }
-    // setAircraft(tmp);
+  const inConfig = aircraft.aircraftConfigs[airConfigIndex].equipment.findIndex((s) => s.id === equipment.id) >= 0;
+
+  function addToConfig() {
+    if (airConfigIndex < 0) return;
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    tmp.aircraftConfigs[airConfigIndex].equipment.push({ id: equipment.id, count: 1 });
+    setAircraft(tmp);
+  }
+
+  function removeFromConfig() {
+    if (airConfigIndex < 0) return;
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    const index = tmp.aircraftConfigs[airConfigIndex].equipment.findIndex(a => a.id === equipment.id);
+    if (index < 0) return;
+    tmp.aircraftConfigs[airConfigIndex].equipment.splice(index, 1);
+    setAircraft(tmp);
   }
 
   function setAircraftCount(value: number): void {
-    if (!checked.current) return;
-    // const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    airConfig.equipment[equipmentIndex].count = value;
-    if (value === 0) {
-      selectCheckbox();
-      return;
-    }
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    const index = aircraft.aircraftConfigs[airConfigIndex].equipment.findIndex((s) => s.id === equipment.id);
+    tmp.aircraftConfigs[airConfigIndex].equipment[index].count = value;
     setCount(value);
-    // setAircraft(tmp);
+    setAircraft(tmp);
   }
 
-  checked.current = equipmentIndex >= 0;
   useEffect(() => {
-    setCount(equipmentIndex >= 0 ? airConfig.equipment[equipmentIndex].count : 0);
+    const index = aircraft.aircraftConfigs[airConfigIndex].equipment.findIndex((s) => s.id === equipment.id);
+    setCount(inConfig ? aircraft.aircraftConfigs[airConfigIndex].equipment[index].count : 0);
     oldCount.current = 1;
-  }, [airConfig])
+  }, [aircraft])
   return (
-    <tr className={"equipmentSelect"}>
-      <td onClick={selectCheckbox}>
-        <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
-      </td>
-      <td onClick={selectCheckbox}>{equipment.name}</td>
-      <td onClick={selectCheckbox}>{roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td onClick={selectCheckbox}>{roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+    <tr className={"equipmentSelect" + (!inConfig ? " unused" : "")}>
+      <td>{equipment.name}</td>
+      <td>{roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
       <td>
         <input
           id={`equipmentCount-${equipment.id}`}
-          disabled={!checked.current}
+          disabled={!inConfig}
           min={0}
           value={count}
           type={"number"}
           onChange={(e) => setAircraftCount(Number(e.target.value))} />
       </td>
-      <td onClick={selectCheckbox}>{roundNumber(convertWeightUnit(equipment.weight * count, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertWeightUnit(equipment.weight * count, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td>
+        {inConfig ? <button onClick={removeFromConfig} >Remove From Aircraft</button> : <button onClick={addToConfig} >Add To Aircraft</button>}
+      </td>
     </tr>
   );
 }
@@ -299,14 +309,24 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: AircraftConfigsPro
       <MultiPane>
         <Subregion name={"Seats"}>
           <table className="tableData">
+            <colgroup>
+              <col />
+              <col style={{ width: "9rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "10rem" }} />
+            </colgroup>
             <tbody>
               <tr>
                 <th>✔</th>
-                <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
-                <th style={{ width: "3rem" }}># of Seats</th>
-                <th style={{ width: "3rem" }}>Ops Load</th>
+                <th>Name</th>
+                <th >{`Arm (${units.lengthUnits})`}</th>
+                <th >{`Max Weight (${units.weightUnits})`}</th>
+                <th ># of Seats</th>
+                <th >Ops Load</th>
+                <th></th>
               </tr>
               {getSortedByArm(aircraft.seats).map((seat: seatT) => {
                 return <SeatSelection
@@ -322,13 +342,22 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: AircraftConfigsPro
         </Subregion>
         <Subregion name={"Cargo Areas"}>
           <table className="tableData">
+            <colgroup>
+              <col />
+              <col style={{ width: "9rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "10rem" }} />
+            </colgroup>
             <tbody>
               <tr>
                 <th>✔</th>
-                <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
-                <th style={{ width: "3rem" }}>Ops Load</th>
+                <th>Name</th>
+                <th>{`Arm (${units.lengthUnits})`}</th>
+                <th>{`Max Weight (${units.weightUnits})`}</th>
+                <th>Ops Load</th>
+                <th></th>
               </tr>
               {getSortedByArm(aircraft.cargoAreas).map((cargo: cargoAreaT) => {
                 return <CargoSelection
@@ -344,46 +373,63 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: AircraftConfigsPro
         </Subregion>
         <Subregion name={"Fuel Tanks"}>
           <table className="tableData">
+            <colgroup>
+              <col style={{ width: "9rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "10rem" }} />
+            </colgroup>
             <tbody>
               <tr>
-                <th>✔</th>
-                <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Max Fuel (${units.fuelUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Unusable Fuel (${units.fuelUnits})`}</th>
+                <th>Name</th>
+                <th>{`Arm (${units.lengthUnits})`}</th>
+                <th>{`Max Fuel (${units.fuelUnits})`}</th>
+                <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
+                <th></th>
               </tr>
               {getSortedByArm(aircraft.fuelTanks).map((fuel: fuelTankT) => {
                 return <FuelSelection
                   key={fuel.id + " fuelSelect"}
                   fuelTank={fuel}
-                  opsConfig={aircraft.operationConfigs[opsConfigIndex]}
-                  airConfig={aircraft.aircraftConfigs[configIndex]} />
+                  aircraft={aircraft}
+                  setAircraft={setAircraft}
+                  airConfigIndex={configIndex} />
               })}
             </tbody>
           </table>
         </Subregion>
         <Subregion name={"Equipment"}>
           <table className="tableData">
+            <colgroup>
+              <col style={{ width: "9rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "3rem" }} />
+              <col style={{ width: "10rem" }} />
+            </colgroup>
             <tbody>
               <tr>
-                <th>✔</th>
-                <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Weight (${units.weightUnits})`}</th>
-                <th style={{ width: "3rem" }}>Count</th>
-                <th style={{ width: "3rem" }}>{`Total Weight (${units.weightUnits})`}</th>
+                <th>Name</th>
+                <th>{`Arm (${units.lengthUnits})`}</th>
+                <th>{`Weight (${units.weightUnits})`}</th>
+                <th>Count</th>
+                <th>{`Total Weight (${units.weightUnits})`}</th>
+                <th></th>
               </tr>
               {getSortedByArm(aircraft.equipment).map((equipment: equipmentT) => {
                 return <EquipmentSelection
                   key={equipment.id + " equipSelect"}
                   equipment={equipment}
-                  opsConfig={aircraft.operationConfigs[opsConfigIndex]}
-                  airConfig={aircraft.aircraftConfigs[configIndex]} />
+                  aircraft={aircraft}
+                  setAircraft={setAircraft}
+                  airConfigIndex={configIndex} />
               })}
             </tbody>
           </table>
         </Subregion>
-      </MultiPane>
+      </MultiPane >
     </>
   );
 }
