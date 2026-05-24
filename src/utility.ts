@@ -92,12 +92,12 @@ export function calculateMaxBalanceForConfig(config: aircraftT, selectedConfig: 
   return [weight, moment / weight]
 }
 
-export function calculateBalanceForOperationConfig(config: aircraftT, selectedConfig: string, selectedOpsConfig: string): [number, number] {
-  let [weight, arm] = calculateEmptyBalanceForConfig(config, selectedConfig);
-  let moment = weight * arm;
-
+export function calculateBalanceForOperationConfig(config: aircraftT, selectedOpsConfig: string): [number, number] {
   const selectedOpsConfigIndex = config.operationConfigs.findIndex(v => v.id === selectedOpsConfig);
   if (selectedOpsConfigIndex < 0) return [0, 0];
+
+  let [weight, arm] = calculateEmptyBalanceForConfig(config, config.operationConfigs[selectedOpsConfigIndex].config);
+  let moment = weight * arm;
 
   // Seats
   config.operationConfigs[selectedOpsConfigIndex].seats.map(

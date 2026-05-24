@@ -1,7 +1,19 @@
 import { createContext, type Context } from 'react'
-import { volumeUnits, weightUnits, type fuelUnitsT, type lengthUnitsT, type setupT, type volumeUnitsT, type weightUnitsT } from './Types';
+import { fuelUnits, lengthUnits, volumeUnits, weightUnits, type fuelUnitsT, type lengthUnitsT, type setupT, type volumeUnitsT, type weightUnitsT } from './Types';
 
 export const unitPrecision = 10000 as const;
+
+export const weightUnitsElements = weightUnits.map((u) => <option key={u} value={u}>{u}</option>)
+export const lengthUnitsElements = lengthUnits.map((u) => <option key={u} value={u}>{u}</option>)
+export const fuelUnitsElements = fuelUnits.map((u) => <option key={u} value={u}>{u}</option>)
+
+// These are saved in the lbs/gal and then converted to appropriate units
+export const fuelTypes: { name: string, density: number }[] = [
+  { name: '100LL', density: 6 },
+  { name: 'Jet A', density: 6.6 },
+  { name: 'JP-8', density: 6.5 },
+  { name: 'Other', density: 0 },
+] as const
 
 const weightUnitsToPounds: { [K in weightUnitsT]: number } = {
   "kg": 2.2046226218,

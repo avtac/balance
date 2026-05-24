@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import "./Diagram.css"
 import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftProps } from "./Types";
-import { Subregion } from "./Layout";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat

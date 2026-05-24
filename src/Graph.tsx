@@ -460,7 +460,7 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
   }
 
   if (selectedOpsConfig) {
-    const [weight, arm] = calculateBalanceForOperationConfig(aircraft, selectedConfig, selectedOpsConfig);
+    const [weight, arm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
     if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
       points.push({
         weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),

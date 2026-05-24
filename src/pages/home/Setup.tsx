@@ -1,21 +1,9 @@
 import './Setup.css'
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Subregion } from "../../Layout";
-import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
+import { type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
 import { activeConfigData, roundNumber, uploadedConfigs } from "../../utility";
-import { convertDensityUnits, unitPrecision } from '../../UnitsContext';
-
-const weightUnitsElements = weightUnits.map((u) => <option key={u} value={u}>{u}</option>)
-const lengthUnitsElements = lengthUnits.map((u) => <option key={u} value={u}>{u}</option>)
-const fuelUnitsElements = fuelUnits.map((u) => <option key={u} value={u}>{u}</option>)
-
-// These are saved in the lbs/gal and then converted to appropriate units
-const fuelTypes: { name: string, density: number }[] = [
-  { name: '100LL', density: 6 },
-  { name: 'Jet A', density: 6.6 },
-  { name: 'JP-8', density: 6.5 },
-  { name: 'Other', density: 0 },
-] as const
+import { convertDensityUnits, fuelTypes, fuelUnitsElements, lengthUnitsElements, unitPrecision, weightUnitsElements } from '../../UnitsContext';
 
 interface unitsProps extends configProps {
   macAvailable: boolean;
@@ -255,7 +243,7 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
         </div>
       </Subregion>
       <Units
-        macAvailable={config.aircraft[selectedAircraftIndex].config.mac != 0 && config.aircraft[selectedAircraftIndex].config.leadingEdgeMAC != 0}
+        macAvailable={selectedAircraftIndex >= 0 ? (config.aircraft[selectedAircraftIndex].config.mac != 0 && config.aircraft[selectedAircraftIndex].config.leadingEdgeMAC != 0) : false}
         config={config}
         setConfig={setConfig} />
     </>

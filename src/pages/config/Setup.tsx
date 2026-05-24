@@ -1,22 +1,10 @@
 import './Setup.css'
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Subregion } from "../../Layout";
-import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
+import { type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
 import { activeConfigBuilder, roundNumber, savedBuilderConfigs, saveStringToFile } from "../../utility";
 import { getNewConfig } from "./ConfigBuilder";
-import { convertDensityUnits, unitPrecision } from '../../UnitsContext';
-
-const weightUnitsElements = weightUnits.map((u) => <option key={u} value={u}>{u}</option>)
-const lengthUnitsElements = lengthUnits.map((u) => <option key={u} value={u}>{u}</option>)
-const fuelUnitsElements = fuelUnits.map((u) => <option key={u} value={u}>{u}</option>)
-
-// These are saved in the lbs/gal and then converted to appropriate units
-const fuelTypes: { name: string, density: number }[] = [
-  { name: '100LL', density: 6 },
-  { name: 'Jet A', density: 6.6 },
-  { name: 'JP-8', density: 6.5 },
-  { name: 'Other', density: 0 },
-] as const
+import { convertDensityUnits, fuelTypes, fuelUnitsElements, lengthUnitsElements, unitPrecision, weightUnitsElements } from '../../UnitsContext';
 
 function Units({ config, setConfig }: configProps): ReactNode {
   const index = fuelTypes.findIndex(t => t.density === config.setup.fuelDensity);
@@ -211,7 +199,7 @@ function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
         const data: string = fileReader.result as string;
         if (!data) return;
         setConfig(JSON.parse(data));
-        localStorage.setItem('config', data)
+        localStorage.setItem(activeConfigBuilder, data)
       };
     };
     input.click();
