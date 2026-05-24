@@ -7,6 +7,7 @@ import { type configT, type operationConfigT, DiagramModes } from '../../Types'
 import Header from '../../Header.tsx'
 import Setup from './Setup.tsx'
 import { UnitContext } from '../../UnitsContext.tsx'
+import Config from './Config.tsx'
 
 function Balancr() {
   const defaultValue = {} as configT;
@@ -85,6 +86,10 @@ function Balancr() {
                   setSelectedAircraft={setSelectedAircraftSpecial}
                   selectedOpsConfig={selectedOpsConfig}
                   setSelectedOpsConfig={setSelectedOpsConfigSpecial} />
+                <Config
+                  name={"Config"}
+                  aircraft={config.aircraft[aircraftIndex]}
+                  selectedOpsConfig={selectedOpsConfig} />
               </MultiPane>
             </div>
             <div id='rightPanel'>
