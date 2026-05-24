@@ -2,9 +2,9 @@ import './Config.css'
 import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
-import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type aircraftProps, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit } from "../../Types";
+import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type aircraftProps, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit } from "../../Types";
 import { getSortedByArm, roundNumber } from '../../utility';
-import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
+import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 
 interface seatSelectionProps extends aircraftProps {
   seat: seatT,
@@ -136,8 +136,8 @@ function FuelSelection({ fuelTank, configIndex, aircraft, setAircraft }: fuelSel
       </td>
       <td>{fuelTank.name}</td>
       <td>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td>{roundNumber(convertWeightUnit(fuelTank.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
-      <td>{roundNumber(convertWeightUnit(fuelTank.unusable, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
+      <td>{roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
     </tr>
   );
 }
@@ -334,8 +334,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
                 <th>✔</th>
                 <th style={{ width: "10rem" }}>Name</th>
                 <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>Max Weight</th>
-                <th style={{ width: "3rem" }}>Unusable Weight</th>
+                <th style={{ width: "3rem" }}>{`Max Fuel (${units.fuelUnits})`}</th>
+                <th style={{ width: "3rem" }}>{`Unusable Fuel (${units.fuelUnits})`}</th>
               </tr>
               {getSortedByArm(aircraft.fuelTanks).map((fuel: fuelTankT) => {
                 return <FuelSelection key={fuel.id + " fuelSelect"} configIndex={configIndex} fuelTank={fuel} aircraft={aircraft} setAircraft={setAircraft} />
