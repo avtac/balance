@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import "./Diagram.css"
-import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftT } from "./Types";
+import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftProps } from "./Types";
+import { Subregion } from "./Layout";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
@@ -128,14 +129,14 @@ function getPixelFromArm(arm: number): number {
   return arm * pixPerUnit;
 }
 
-interface diagramProps {
-  aircraft: aircraftT,
+interface diagramProps extends aircraftProps {
   diagramMode: DiagramModes,
   selectedConfig: string,
   selectedOpsConfig: string,
 }
 
 function Diagram({ aircraft, diagramMode, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
+  if (!aircraft) return (<></>);
   let seats = [...aircraft.seats]
   let cargoAreas = [...aircraft.cargoAreas]
 

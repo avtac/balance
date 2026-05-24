@@ -15,6 +15,7 @@ import AircraftConfig from './Aircraft.tsx'
 import { FuelConfig } from './Fuel.tsx'
 import Setup from './Setup.tsx'
 import { UnitContext } from '../../UnitsContext.tsx'
+import { activeConfigBuilder } from '../../utility.ts'
 
 export function getNewConfig(): configT {
   const config: configT = {
@@ -134,7 +135,7 @@ function ConfigBuilder() {
   const defaultValue = getNewConfig();
 
   let storageConfig: configT = defaultValue;
-  const local = localStorage.getItem("config");
+  const local = localStorage.getItem(activeConfigBuilder);
   if (local != null)
     storageConfig = JSON.parse(local);
 
@@ -167,14 +168,14 @@ function ConfigBuilder() {
   }
 
   function setConfigSpecial(value: configT): void {
-    localStorage.setItem("config", JSON.stringify(value));
+    localStorage.setItem(activeConfigBuilder, JSON.stringify(value));
     setConfig(value);
   }
 
   function setAircraftSpecial(value: aircraftT): void {
     const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.aircraft[aircraftIndex] = value;
-    localStorage.setItem("config", JSON.stringify(tmp));
+    localStorage.setItem(activeConfigBuilder, JSON.stringify(tmp));
     setConfig(tmp);
   }
 

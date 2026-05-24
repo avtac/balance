@@ -1,5 +1,10 @@
 import { type aircraftT, type maxMomentObjectT, type momentObjectT } from './Types';
 
+export const activeConfigBuilder = "activeConfigBuilder"
+export const savedBuilderConfigs = "savedBuilderConfigs"
+export const activeConfigData = "activeConfig"
+export const uploadedConfigs = "savedConfigs"
+
 export function getSortedByArm<T extends (maxMomentObjectT | momentObjectT)>(data: T[]) {
   const tmp: T[] = JSON.parse(JSON.stringify(data));
   return tmp.sort((a, b) => {

@@ -2,7 +2,7 @@ import './Setup.css'
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Subregion } from "../../Layout";
 import { weightUnits, lengthUnits, fuelUnits, type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
-import { roundNumber, saveStringToFile } from "../../utility";
+import { activeConfigBuilder, roundNumber, savedBuilderConfigs, saveStringToFile } from "../../utility";
 import { getNewConfig } from "./ConfigBuilder";
 import { convertDensityUnits, unitPrecision } from '../../UnitsContext';
 
@@ -144,21 +144,21 @@ function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
   }
 
   function saveFile(): void {
-    const dataString = localStorage.getItem("config");
+    const dataString = localStorage.getItem(activeConfigBuilder);
     if (!dataString) return;
     const data: configT = JSON.parse(dataString);
 
     // Get list of saved configs
-    let configString = localStorage.getItem("savedConfigs");
+    let configString = localStorage.getItem(savedBuilderConfigs);
     if (!configString) {
       configString = "{}"
     }
     let configs: savedConfigs = JSON.parse(configString);
     configs[data.id] = data;
 
-    localStorage.setItem("savedConfigs", JSON.stringify(configs));
+    localStorage.setItem(savedBuilderConfigs, JSON.stringify(configs));
 
-    const savedConfigsString = localStorage.getItem("savedConfigs");
+    const savedConfigsString = localStorage.getItem(savedBuilderConfigs);
     if (savedConfigsString) {
       const savedConfigs: { [key: string]: configT } = JSON.parse(savedConfigsString)
       const foundConfigs: { id: string, name: string }[] = Object.entries(savedConfigs).map(([id, config]) => ({ id: id, name: config.name }));
@@ -170,14 +170,14 @@ function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
 
   function deleteConfig() {
     // Get Configs
-    const savedConfigsString = localStorage.getItem("savedConfigs");
+    const savedConfigsString = localStorage.getItem(savedBuilderConfigs);
     if (!savedConfigsString) return;
     const savedConfigs: { [key: string]: configT } = JSON.parse(savedConfigsString)
     // Does it include the one to delete
     if (!Object.keys(savedConfigs).includes(config.id)) return;
     // Delete
     delete savedConfigs[config.id];
-    localStorage.setItem("savedConfigs", JSON.stringify(savedConfigs));
+    localStorage.setItem(savedBuilderConfigs, JSON.stringify(savedConfigs));
     // Set config to a different config
     if (Object.keys(savedConfigs).length > 0) {
       const foundConfigs: { id: string, name: string }[] = Object.entries(savedConfigs).map(([id, config]) => ({ id: id, name: config.name }));
@@ -190,7 +190,7 @@ function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
   }
 
   function downloadFile() {
-    const dataString = localStorage.getItem("config");
+    const dataString = localStorage.getItem(activeConfigBuilder);
     if (!dataString) return;
     saveStringToFile(dataString, "Config.json")
   }
@@ -218,13 +218,13 @@ function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
   }
 
   function selectConfig(configId: string): void {
-    const savedConfigsString = localStorage.getItem("savedConfigs");
+    const savedConfigsString = localStorage.getItem(savedBuilderConfigs);
     if (!savedConfigsString) return;
     const savedConfigs = JSON.parse(savedConfigsString)
 
     const selectedConfig: (configT | undefined) = savedConfigs[configId];
     if (!selectedConfig) return;
-    localStorage.setItem("config", JSON.stringify(selectedConfig));
+    localStorage.setItem(activeConfigBuilder, JSON.stringify(selectedConfig));
     setConfig(selectedConfig)
   }
 
