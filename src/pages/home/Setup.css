@@ -13,6 +13,21 @@
   }
 }
 
+#aircraftSelect {
+  div {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    max-width: 30rem;
+
+    label {
+      margin: auto 0px;
+    }
+  }
+}
+
 #unitsSelect {
   display: grid;
   grid-auto-flow: column;

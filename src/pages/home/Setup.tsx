@@ -228,20 +228,24 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
           <button onClick={openFile}>Upload Config</button>
         </div>
       </Subregion>
-      <Subregion>
+      <Subregion id='aircraftSelect'>
         <h3>{config.name}</h3>
-        <select
-          id='setAircraft'
-          value={selectedAircraft}
-          onChange={(e) => setSelectedAircraft(e.target.value)}>
-          {aircraftOptions}
-        </select>
-        <select
-          id='setOpsConfig'
-          value={selectedOpsConfig}
-          onChange={(e) => setSelectedOpsConfig(e.target.value)}>
-          {opsConfigOptions}
-        </select>
+        <div>
+          <label>Aircraft</label>
+          <select
+            id='setAircraft'
+            value={selectedAircraft}
+            onChange={(e) => setSelectedAircraft(e.target.value)}>
+            {aircraftOptions}
+          </select>
+          <label>Configuration</label>
+          <select
+            id='setOpsConfig'
+            value={selectedOpsConfig}
+            onChange={(e) => setSelectedOpsConfig(e.target.value)}>
+            {opsConfigOptions}
+          </select>
+        </div>
       </Subregion>
       <Units config={config} setConfig={setConfig} />
     </>
