@@ -4,6 +4,8 @@ import { Subregion } from "../../Layout";
 import { type cargoAreaT, type aircraftProps, type aircraftT, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { roundNumber } from "../../utility";
+import { faX } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface cargoInputProps extends aircraftProps {
   area: cargoAreaT,
@@ -53,7 +55,7 @@ function CargoInput({ area, index, aircraft, setAircraft }: cargoInputProps) {
           onChange={e => setValue('maxWeight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
       </td>
       <td>
-        <button onClick={() => removeCargo()}>X</button>
+        <button onClick={() => removeCargo()}><FontAwesomeIcon icon={faX} /></button>
       </td>
     </tr>
   );

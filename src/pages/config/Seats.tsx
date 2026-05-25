@@ -4,6 +4,8 @@ import { Subregion } from "../../Layout";
 import { type aircraftT, type seatT, type aircraftProps, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { roundNumber } from "../../utility";
+import { faX } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface seatInputProps extends aircraftProps {
   seat: seatT,
@@ -70,7 +72,7 @@ function SeatInput({ seat, index, aircraft, setAircraft }: seatInputProps) {
           onChange={e => setValue('seatCount', Number(e.target.value))} />
       </td>
       <td>
-        {index !== 0 && <button onClick={() => removeSeat()}>X</button>}
+        {index !== 0 && <button onClick={() => removeSeat()}><FontAwesomeIcon icon={faX} /></button>}
       </td>
     </tr >
   );

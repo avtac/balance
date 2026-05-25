@@ -4,6 +4,8 @@ import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type name
 import { getSortedByArm, roundNumber } from '../../utility';
 import { useContext, type ReactElement } from 'react';
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
+import { faX } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface equipmentRowProps {
   setAircraft: (arg0: aircraftT) => void,
@@ -77,7 +79,7 @@ function EquipmentRow({ equip, values, index, aircraft, setAircraft }: equipment
           onChange={(e) => setValue('arm', convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
       </td>
       <td>
-        <button onClick={deleteEquipment}>X</button>
+        <button onClick={deleteEquipment}><FontAwesomeIcon icon={faX} /></button>
       </td>
     </tr>
   );

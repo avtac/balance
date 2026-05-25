@@ -4,6 +4,8 @@ import { Subregion } from "../../Layout";
 import { type fuelTankT, type aircraftProps, type aircraftT, baseLengthUnit, baseFuelUnit } from "../../Types";
 import { convertFuelUnits, convertLengthUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { roundNumber } from "../../utility";
+import { faX } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface fuelInputProps extends aircraftProps {
   tank: fuelTankT,
@@ -66,7 +68,7 @@ function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
           onChange={e => setValue('removable', e.target.checked)} />
       </td>
       <td>
-        <button onClick={() => removeFuel()}>X</button>
+        <button onClick={() => removeFuel()}><FontAwesomeIcon icon={faX} /></button>
       </td>
     </tr>
   );

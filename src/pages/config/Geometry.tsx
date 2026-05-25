@@ -5,6 +5,8 @@ import { Subregion } from "../../Layout";
 import { type regionT, type regionPointT, type weightLimitT, type aircraftProps, type aircraftT, type nameProps, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { roundNumber } from "../../utility";
+import { faX } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
 
@@ -72,7 +74,7 @@ function WeightLimit({ limit, aircraft, setAircraft }: weightLimitProps): ReactN
         </select>
       </td>
       <td>
-        <button onClick={removeLimit}>X</button>
+        <button onClick={removeLimit}><FontAwesomeIcon icon={faX} /></button>
       </td>
     </tr>
   );
@@ -127,7 +129,7 @@ function WeightRegionRow({ regionPoint, aircraft, setAircraft, regionIndex, inde
       </td>
       <td>
         {aircraft.limits.regions[regionIndex].data.length > 3 &&
-          <button onClick={deletePoint}>X</button>}
+          <button onClick={deletePoint}><FontAwesomeIcon icon={faX} /></button>}
       </td>
       <td>
         {<button className="addButton" onClick={addPoint}></button>}
@@ -193,7 +195,7 @@ function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): Rea
             <option key={style[0]} value={style[1]}>{style[0]}</option>
           )}
         </select>
-        <button onClick={removeRegion}>X</button>
+        <button onClick={removeRegion}><FontAwesomeIcon icon={faX} /></button>
       </div>
       <table className="regionTable">
         <tbody>

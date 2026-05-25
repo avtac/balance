@@ -5,6 +5,8 @@ import { MultiPane, Subregion } from "../../Layout";
 import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type aircraftProps, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit } from "../../Types";
 import { getSortedByArm, roundNumber } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
+import { faCheck } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface seatSelectionProps extends aircraftProps {
   seat: seatT,
@@ -300,7 +302,7 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
           <table className="tableData">
             <tbody>
               <tr>
-                <th>✔</th>
+                <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
                 <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
                 <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
@@ -316,7 +318,7 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
           <table className="tableData">
             <tbody>
               <tr>
-                <th>✔</th>
+                <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
                 <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
                 <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
@@ -331,7 +333,7 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
           <table className="tableData">
             <tbody>
               <tr>
-                <th>✔</th>
+                <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
                 <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
                 <th style={{ width: "3rem" }}>{`Max Fuel (${units.fuelUnits})`}</th>
@@ -347,7 +349,7 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
           <table className="tableData">
             <tbody>
               <tr>
-                <th>✔</th>
+                <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
                 <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
                 <th style={{ width: "3rem" }}>{`Weight (${units.weightUnits})`}</th>
