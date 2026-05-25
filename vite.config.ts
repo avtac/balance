@@ -6,6 +6,13 @@ const root = resolve(__dirname, 'src');
 
 // https://vite.dev/config/
 export default defineConfig({
+  optimizeDeps: {
+    include: [
+      '@fortawesome/fontawesome-svg-core',
+      '@fortawesome/free-solid-svg-icons',
+      '@fortawesome/react-fontawesome' // or vue-fontawesome
+    ]
+  },
   plugins: [react(),
   {
     name: 'remove-path-from-html',
