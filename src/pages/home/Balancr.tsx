@@ -3,7 +3,7 @@ import { MultiPane } from '../../Layout'
 import Diagram from '../../Diagram'
 import Graph from '../../Graph.tsx'
 import { useMemo, useState } from 'react'
-import { type configT, DiagramModes, type aircraftT, type aircraftConfigT, type loadingT } from '../../Types'
+import { type configT, DiagramModes, type aircraftT, type aircraftConfigT, type loadingT, type operationConfigT } from '../../Types'
 import Header from '../../Header.tsx'
 import Setup from './Setup.tsx'
 import { UnitContext } from '../../UnitsContext.tsx'
@@ -103,6 +103,15 @@ function Balancr() {
     localStorage.setItem(activeConfigData, JSON.stringify(tmp));
     setConfig(tmp);
   }
+
+  useMemo(() => {
+    if (selectedPanel === 4) {
+      const opsConfigIndex = config.aircraft[aircraftIndex].operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
+      // Set the selected config to the one being used by the ops config
+      if (opsConfigIndex >= 0 && config.aircraft[aircraftIndex].operationConfigs[opsConfigIndex].config)
+        setSelectedConfig(config.aircraft[aircraftIndex].operationConfigs[opsConfigIndex].config);
+    }
+  }, [selectedPanel]);
 
   useMemo(() => {
     setLoadingData(defaultLoading);

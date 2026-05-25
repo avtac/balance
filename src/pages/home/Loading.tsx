@@ -2,7 +2,7 @@ import '../../Layout.css'
 import { useContext, type ReactNode } from "react";
 import { baseFuelUnit, baseLengthUnit, baseWeightUnit, type aircraftT, type cargoAreaT, type fuelTankT, type loadingProps, type loadingT, type nameProps, type seatT } from "../../Types";
 import { MultiPane, Subregion } from "../../Layout";
-import { calculateBalanceForLanding, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber } from "../../utility";
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber } from "../../utility";
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 
 interface seatLoadingProps extends loadingProps {
@@ -125,7 +125,7 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
     else {
       const index = tmp.fuel.findIndex(c => c.tank === fuelTank.id);
       tmp.fuel[index].loadedFuel = weight;
-      tmp.fuel[index].tripFuel = Math.min(weight, tmp.fuel[index].tripFuel);
+      tmp.fuel[index].tripFuel = Math.min(weight - fuelTank.unusable, tmp.fuel[index].tripFuel);
     }
     setLoading(tmp);
   }
@@ -148,7 +148,7 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
       <td>
         <input
           type='number'
-          min={0}
+          min={roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}
           max={roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}
           step={1}
           value={loadedWeight ? loadedWeight : ""}
@@ -160,7 +160,7 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
         <input
           type='number'
           min={0}
-          max={loadedWeight}
+          max={loadedWeight - roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}
           step={1}
           value={consumedFuel ? consumedFuel : ""}
           onChange={e => setUsed(Number(e.target.value))}
@@ -184,6 +184,8 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
 
   const [emptyWeight, emptyArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config);
+  const [opsWeight, opsArm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
+  const [takeoffWeight, takeoffArm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
   const [landWeight, landArm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
 
   let seatRows = getSortedByArm(aircraft.seats)
@@ -228,12 +230,20 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
         <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
         <div id='configTitleData'>
           <h4>Empty Weight</h4>
-          <h4>Empty Arm</h4>
-          <h4>Land Weight</h4>
-          <h4>Land Arm</h4>
           <p>{roundNumber(convertWeightUnit(emptyWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+          <h4>Empty Arm</h4>
           <p>{roundNumber(convertLengthUnit(emptyArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+          <h4>Ops Weight</h4>
+          <p>{roundNumber(convertWeightUnit(opsWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+          <h4>Ops Arm</h4>
+          <p>{roundNumber(convertLengthUnit(opsArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+          <h4>Takeoff Weight</h4>
+          <p>{roundNumber(convertWeightUnit(takeoffWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+          <h4>Takeoff Arm</h4>
+          <p>{roundNumber(convertLengthUnit(takeoffArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+          <h4>Land Weight</h4>
           <p>{roundNumber(convertWeightUnit(landWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+          <h4>Land Arm</h4>
           <p>{roundNumber(convertLengthUnit(landArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
         </div>
       </Subregion>
@@ -287,7 +297,7 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
               <tr>
                 <th>Name</th>
                 <th>Fuel Load ({units.fuelUnits})</th>
-                <th>Total Weight ({units.fuelUnits})</th>
+                <th>Consumed Fuel ({units.fuelUnits})</th>
                 <th>Landing Fuel ({units.fuelUnits})</th>
               </tr>
             </thead>

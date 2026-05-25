@@ -521,12 +521,12 @@ function Config({ aircraft, setAircraft, loading, selectedOpsConfig }: ConfigPro
         </div>
         <div id='configTitleData'>
           <h4>Empty Weight</h4>
-          <h4>Empty Arm</h4>
-          <h4>Ops Weight</h4>
-          <h4>Ops Arm</h4>
           <p>{roundNumber(convertWeightUnit(emptyWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+          <h4>Empty Arm</h4>
           <p>{roundNumber(convertLengthUnit(emptyArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+          <h4>Ops Weight</h4>
           <p>{roundNumber(convertWeightUnit(opsWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+          <h4>Ops Arm</h4>
           <p>{roundNumber(convertLengthUnit(opsArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
         </div>
       </Subregion>

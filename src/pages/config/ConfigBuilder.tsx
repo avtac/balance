@@ -250,7 +250,6 @@ function ConfigBuilder() {
               <div id='diagramHolder'>
                 <Diagram
                   aircraft={config.aircraft[aircraftIndex]}
-                  setAircraft={setAircraftSpecial}
                   diagramMode={selectedPanel === 6 ? DiagramModes.Ops : selectedPanel === 5 ? DiagramModes.Config : DiagramModes.All}
                   selectedConfig={selectedConfig}
                   selectedOpsConfig={selectedOpsConfig} />
