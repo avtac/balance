@@ -2,11 +2,11 @@ import './Config.css'
 import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement, type RefObject } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
-import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps } from "../../Types";
-import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber } from '../../utility';
+import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps, type configT } from "../../Types";
+import { activeConfigData, calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber, uploadedConfigs } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faEllipsisV } from "@fortawesome/free-solid-svg-icons"
+import { faArrowsRotate, faCheck, faEllipsisV } from "@fortawesome/free-solid-svg-icons"
 
 interface addDialogProps {
   ref: RefObject<null | HTMLDialogElement>
@@ -120,7 +120,7 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
           onAdd={addToConfig}
           onRemove={removeFromConfig} />
       </td>
-    </tr >
+    </tr>
   );
 }
 
@@ -296,25 +296,33 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
     setAircraft(tmp);
   }
 
-  function setWeight(weight: number): void {
+  function setValue<K extends keyof equipmentT, V extends equipmentT[K]>(key: K[], value: V[]) {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    tmp.equipment[equipmentIndex].weight = weight;
+    key.forEach((k, i) => {
+      tmp.equipment[equipmentIndex][k] = value[i];
+      if (k === 'area') {
+        const valueIndex = locationValues.findIndex(e => e.id === value[i]);
+        if (valueIndex >= 0)
+          tmp.equipment[equipmentIndex].arm = locationValues[valueIndex].arm;
+      }
+    });
     setAircraft(tmp);
   }
 
-  function setArm(arm: number): void {
-    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    tmp.equipment[equipmentIndex].arm = arm;
-    setAircraft(tmp);
-  }
+  function resetValue<K extends keyof equipmentT>(key: K[]) {
+    const originalConfigStrings = localStorage.getItem(uploadedConfigs);
+    const activeConfigString = localStorage.getItem(activeConfigData);
+    if (!originalConfigStrings || !activeConfigString) return;
 
-  function setArea(value: string): void {
-    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
-    tmp.equipment[equipmentIndex].area = value;
-    const valueIndex = locationValues.findIndex(e => e.id === value);
-    if (valueIndex >= 0)
-      tmp.equipment[equipmentIndex].arm = locationValues[valueIndex].arm;
-    setAircraft(tmp);
+    const originalConfigs: { [key: string]: configT } = JSON.parse(originalConfigStrings);
+    const activeConfig: configT = JSON.parse(activeConfigString);
+    const original = originalConfigs[activeConfig.id];
+    if (!original) return;
+
+    const originalAircraft = original.aircraft.find((a) => a.id === aircraft.id);
+    if (!originalAircraft) return;
+
+    setValue(key, key.map(k => originalAircraft.equipment[equipmentIndex][k]));
   }
 
   useEffect(() => {
@@ -322,6 +330,9 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
     setCount(inConfig ? aircraft.aircraftConfigs[airConfigIndex].equipment[index].count : 0);
     oldCount.current = 1;
   }, [aircraft])
+
+  const location = locationValues.find(e => e.id === equipment.area);
+  const arm = roundNumber(convertLengthUnit(location ? location.arm : equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision);
   return (
     <tr
       className={"equipmentSelect" + (!inConfig ? " unloaded" : "")}>
@@ -339,18 +350,21 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
       <td
         className='clickable armUpdate'
         onClick={() => { if (dialogRef.current && inConfig) dialogRef.current.show() }}>
-        {roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}
+        {arm}
         <dialog
           ref={dialogRef}
           closedby='any'>
           <div
             className='equipmentEdit'>
-            <label
-              htmlFor={"equipSelectArmLoc-" + equipment.id}>Arm</label>
+            <div>
+              <label
+                htmlFor={"equipSelectArmLoc-" + equipment.id}>Arm</label>
+              <FontAwesomeIcon onClick={() => { resetValue(['arm', 'area']) }} icon={faArrowsRotate} />
+            </div>
             <select
               id={"equipSelectArmLoc-" + equipment.id}
               value={equipment.area}
-              onChange={e => setArea(e.target.value)}>
+              onChange={e => setValue(['area'], [e.target.value])}>
               <option value={""}>Manual</option>
               {locationValues.map((area) => {
                 return <option key={area.id} value={area.id}>{area.name}</option>
@@ -362,8 +376,8 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
                 disabled={!(locationValueIndex < 0)}
                 placeholder={units.lengthUnits}
                 type='number'
-                onChange={e => setArm(Number(e.target.value))}
-                value={locationValueIndex < 0 ? (equipment.arm ? roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : "") : roundNumber(convertLengthUnit(locationValues[locationValueIndex].arm, baseLengthUnit, units.lengthUnits), unitPrecision)} />
+                onChange={e => setValue(['arm'], [Number(e.target.value)])}
+                value={arm} />
             }
           </div>
         </dialog>
@@ -377,13 +391,18 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
           closedby='any'>
           <div
             className='equipmentEdit'>
-            <label
-              htmlFor={"equipSelectWeightLoc-" + equipment.id}>Weight</label>
+            <div>
+              <label
+                htmlFor={"equipSelectWeightLoc-" + equipment.id}>Weight</label>
+              <FontAwesomeIcon
+                onClick={() => { resetValue(['weight']) }}
+                icon={faArrowsRotate} />
+            </div>
             <input
               id={'customEquipmentWeight' + equipment.id}
               placeholder={units.weightUnits}
               type='number'
-              onChange={e => setWeight(Number(e.target.value))}
+              onChange={e => setValue(['weight'], [Number(e.target.value)])}
               value={equipment.weight ? roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""} />
           </div>
         </dialog>
@@ -415,6 +434,15 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
 
   const [emptyWeight, emptyArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config);
   const [opsWeight, opsArm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
+
+  let equipmentRows = getSortedByArm(aircraft.equipment).map((equipment: equipmentT) => {
+    return <EquipmentSelection
+      key={equipment.id + " equipSelect"}
+      equipment={equipment}
+      aircraft={aircraft}
+      setAircraft={setAircraft}
+      airConfigIndex={configIndex} />
+  })
 
   return (
     <>
@@ -540,14 +568,7 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
                 <th>Count</th>
                 <th>{`Total Weight (${units.weightUnits})`}</th>
               </tr>
-              {getSortedByArm(aircraft.equipment).map((equipment: equipmentT) => {
-                return <EquipmentSelection
-                  key={equipment.id + " equipSelect"}
-                  equipment={equipment}
-                  aircraft={aircraft}
-                  setAircraft={setAircraft}
-                  airConfigIndex={configIndex} />
-              })}
+              {equipmentRows}
             </tbody>
           </table>
         </Subregion>

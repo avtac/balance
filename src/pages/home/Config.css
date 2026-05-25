@@ -102,3 +102,8 @@ dialog:has(.equipmentEdit) {
   display: flex;
   gap: 3px;
 }
+
+.equipmentEdit div {
+  display: flex;
+  gap: 8px;
+}
