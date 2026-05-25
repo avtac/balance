@@ -13,6 +13,10 @@
   h4 {
     margin: 4px 0px;
   }
+
+  p {
+    margin: auto 0px;
+  }
 }
 
 .unloaded td {

@@ -29,7 +29,7 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
       tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: Math.min(count, seat.seatCount) });
     else {
       const index = tmp.passengers.findIndex(s => s.location === seat.id);
-      tmp.passengers[index].count = Math.min(count, seat.seatCount);
+      tmp.passengers[index].count = Math.min(count, seat.seatCount - opsUsedSeats);
     }
     setLoading(tmp);
   }
@@ -77,7 +77,7 @@ function CargoLoading({ loading, setLoading, aircraft, opsConfigIndex, cargoArea
       tmp.cargo.push({ location: cargoArea.id, weight: weight });
     else {
       const index = tmp.cargo.findIndex(c => c.location === cargoArea.id);
-      tmp.cargo[index].weight = weight;
+      tmp.cargo[index].weight = Math.min(cargoArea.maxWeight - opsWeight, weight);
     }
     setLoading(tmp);
   }

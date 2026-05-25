@@ -1,5 +1,5 @@
 import './Setup.css'
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Subregion } from "../../Layout";
 import { type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
 import { activeConfigData, roundNumber, uploadedConfigs } from "../../utility";
@@ -14,6 +14,11 @@ function Units({ config, setConfig, macAvailable }: unitsProps): ReactNode {
   const index = fuelTypes.findIndex(t => t.density === config.setup.fuelDensity);
   const [selectedDensity, setSelectedDensity] = useState(index >= 0 ? index : fuelTypes.length - 1);
   const oldDensity = useRef(config.setup.fuelDensity);
+
+  useEffect(() => {
+    config.setup.useMAC = macAvailable;
+  }, [])
+
   function setValue<T extends keyof setupT, V extends setupT[T]>(name: T, value: V): void {
     const tmp: configT = JSON.parse(JSON.stringify(config));
     tmp.setup[name] = value;

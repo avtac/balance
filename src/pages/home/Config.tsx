@@ -63,7 +63,6 @@ function SeatSelection({ aircraft, setAircraft, loading, seat, opsConfigIndex, a
       tmp.operationConfigs[opsConfigIndex].seats.splice(seatIndex, 1);
     }
     setAircraft(tmp);
-    console.log(checked.current);
   }
 
   function addToConfig() {
