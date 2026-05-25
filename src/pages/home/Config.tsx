@@ -45,14 +45,14 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
   let checked = useRef(seatIndex >= 0);
   const oldWeight = useRef(convertWeightUnit(seat.maxWeight * seat.seatCount, baseWeightUnit, units.weightUnits));
 
-  const inConfig = aircraft.aircraftConfigs[airConfigIndex].seats.findIndex((s) => s === seat.id) >= 0;
+  const inConfig = aircraft.aircraftConfigs[airConfigIndex].seats.some((s) => s === seat.id);
 
   function selectCheckbox(): void {
     if (opsConfigIndex < 0 || !inConfig) return;
     checked.current = !checked.current;
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     if (checked.current) {
-      if (aircraft.operationConfigs[opsConfigIndex].seats.findIndex((s: { id: string, weight: number }) => s.id === seat.id) < 0) {
+      if (aircraft.operationConfigs[opsConfigIndex].seats.some(s => s.id === seat.id)) {
         tmp.operationConfigs[opsConfigIndex].seats.push({ id: seat.id, weight: oldWeight.current });
       }
     } else {
@@ -140,14 +140,14 @@ function CargoSelection({ aircraft, setAircraft, cargoArea, opsConfigIndex, airC
   let checked = useRef(cargoAreaIndex >= 0);
   const oldWeight = useRef(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits));
 
-  const inConfig = aircraft.aircraftConfigs[airConfigIndex].cargoAreas.findIndex((s) => s === cargoArea.id) >= 0;
+  const inConfig = aircraft.aircraftConfigs[airConfigIndex].cargoAreas.some((s) => s === cargoArea.id);
 
   function selectCheckbox(): void {
     if (opsConfigIndex < 0 || !inConfig) return;
     checked.current = !checked.current;
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     if (checked.current) {
-      if (aircraft.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s: { id: string, weight: number }) => s.id === cargoArea.id) < 0) {
+      if (aircraft.operationConfigs[opsConfigIndex].cargoAreas.some(s => s.id === cargoArea.id)) {
         tmp.operationConfigs[opsConfigIndex].cargoAreas.push({ id: cargoArea.id, weight: oldWeight.current });
       }
     } else {
@@ -218,7 +218,7 @@ interface fuelSelectionProps extends aircraftProps {
 function FuelSelection({ aircraft, setAircraft, fuelTank, airConfigIndex }: fuelSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
-  const inConfig = aircraft.aircraftConfigs[airConfigIndex].fuelTanks.findIndex((s) => s === fuelTank.id) >= 0;
+  const inConfig = aircraft.aircraftConfigs[airConfigIndex].fuelTanks.some(s => s === fuelTank.id);
 
   function addToConfig() {
     if (airConfigIndex < 0) return;
@@ -242,14 +242,18 @@ function FuelSelection({ aircraft, setAircraft, fuelTank, airConfigIndex }: fuel
       <td>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
       <td>{roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
       <td>{roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
-      <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
-        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} />
-        <AddDialog
-          ref={dialogRef}
-          mode={!inConfig}
-          onAdd={addToConfig}
-          onRemove={removeFromConfig} />
-      </td>
+      {fuelTank.removable ?
+        <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
+          <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} />
+          <AddDialog
+            ref={dialogRef}
+            mode={!inConfig}
+            onAdd={addToConfig}
+            onRemove={removeFromConfig} />
+        </td>
+        :
+        <td></td>
+      }
     </tr>
   );
 }
@@ -267,7 +271,7 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
   const [count, setCount] = useState(1);
   const equipmentIndex = aircraft.equipment.findIndex((e) => e.id === equipment.id);
 
-  const inConfig = aircraft.aircraftConfigs[airConfigIndex].equipment.findIndex((s) => s.id === equipment.id) >= 0;
+  const inConfig = aircraft.aircraftConfigs[airConfigIndex].equipment.some((s) => s.id === equipment.id);
 
   const locationValues = getSortedByArm([...aircraft.seats.map(s => { return { ...s, id: "S" + s.id } }), ...aircraft.cargoAreas.map(c => { return { ...c, id: "C" + c.id } })])
   const locationValueIndex = locationValues.findIndex((s) => s.id === equipment.area);
@@ -357,9 +361,8 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
           <div
             className='equipmentEdit'>
             <div>
-              <label
-                htmlFor={"equipSelectArmLoc-" + equipment.id}>Arm</label>
-              <FontAwesomeIcon onClick={() => { resetValue(['arm', 'area']) }} icon={faArrowsRotate} />
+              <p>Arm</p>
+              <FontAwesomeIcon style={{ cursor: 'pointer' }} onClick={() => { resetValue(['arm', 'area']) }} icon={faArrowsRotate} />
             </div>
             <select
               id={"equipSelectArmLoc-" + equipment.id}
@@ -392,9 +395,9 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
           <div
             className='equipmentEdit'>
             <div>
-              <label
-                htmlFor={"equipSelectWeightLoc-" + equipment.id}>Weight</label>
+              <p>Weight</p>
               <FontAwesomeIcon
+                style={{ cursor: 'pointer' }}
                 onClick={() => { resetValue(['weight']) }}
                 icon={faArrowsRotate} />
             </div>
@@ -428,6 +431,7 @@ interface ConfigProps extends aircraftProps {
 function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & nameProps): ReactElement {
   if (!aircraft) return (<></>);
   const units = useContext(UnitContext);
+  const [filter, setFilter] = useState(true);
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
@@ -435,19 +439,59 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
   const [emptyWeight, emptyArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config);
   const [opsWeight, opsArm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
 
-  let equipmentRows = getSortedByArm(aircraft.equipment).map((equipment: equipmentT) => {
-    return <EquipmentSelection
-      key={equipment.id + " equipSelect"}
-      equipment={equipment}
-      aircraft={aircraft}
-      setAircraft={setAircraft}
-      airConfigIndex={configIndex} />
-  })
+  let seatRows = getSortedByArm(aircraft.seats)
+    .filter(seat => !filter || aircraft.aircraftConfigs[configIndex].seats.some(s => s === seat.id))
+    .map((seat: seatT) => {
+      return <SeatSelection
+        key={seat.id + " seatSelect"}
+        aircraft={aircraft}
+        setAircraft={setAircraft}
+        airConfigIndex={configIndex}
+        opsConfigIndex={opsConfigIndex}
+        seat={seat} />
+    })
+
+  let cargoRows = getSortedByArm(aircraft.cargoAreas)
+    .filter(cargoArea => !filter || aircraft.aircraftConfigs[configIndex].cargoAreas.some(c => c === cargoArea.id))
+    .map((cargo: cargoAreaT) => {
+      return <CargoSelection
+        key={cargo.id + " cargoSelect"}
+        cargoArea={cargo}
+        aircraft={aircraft}
+        setAircraft={setAircraft}
+        opsConfigIndex={opsConfigIndex}
+        airConfigIndex={configIndex} />
+    })
+
+  let fuelRows = getSortedByArm(aircraft.fuelTanks)
+    .filter(fuelTank => !filter || !(fuelTank.removable && !aircraft.aircraftConfigs[configIndex].fuelTanks.some(f => f === fuelTank.id)))
+    .map((fuel: fuelTankT) => {
+      return <FuelSelection
+        key={fuel.id + " fuelSelect"}
+        fuelTank={fuel}
+        aircraft={aircraft}
+        setAircraft={setAircraft}
+        airConfigIndex={configIndex} />
+    })
+
+  let equipmentRows = getSortedByArm(aircraft.equipment)
+    .map((equipment: equipmentT) => {
+      return <EquipmentSelection
+        key={equipment.id + " equipSelect"}
+        equipment={equipment}
+        aircraft={aircraft}
+        setAircraft={setAircraft}
+        airConfigIndex={configIndex} />
+    })
 
   return (
     <>
       <Subregion id='balancr-configTitle'>
-        <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
+        <div>
+          <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
+          <label htmlFor='configFilter'>Filter Rows</label>
+          <input id='configFilter' type='checkbox' checked={filter} onChange={(e) => setFilter(e.target.checked)} />
+        </div>
         <div id='configTitleData'>
           <h4>Empty Weight</h4>
           <h4>Empty Arm</h4>
@@ -480,15 +524,7 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
                 <th >Ops Load</th>
                 <th></th>
               </tr>
-              {getSortedByArm(aircraft.seats).map((seat: seatT) => {
-                return <SeatSelection
-                  key={seat.id + " seatSelect"}
-                  aircraft={aircraft}
-                  setAircraft={setAircraft}
-                  airConfigIndex={configIndex}
-                  opsConfigIndex={opsConfigIndex}
-                  seat={seat} />
-              })}
+              {seatRows}
             </tbody>
           </table>
         </Subregion>
@@ -510,15 +546,7 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
                 <th>Ops Load</th>
                 <th></th>
               </tr>
-              {getSortedByArm(aircraft.cargoAreas).map((cargo: cargoAreaT) => {
-                return <CargoSelection
-                  key={cargo.id + " cargoSelect"}
-                  cargoArea={cargo}
-                  aircraft={aircraft}
-                  setAircraft={setAircraft}
-                  opsConfigIndex={opsConfigIndex}
-                  airConfigIndex={configIndex} />
-              })}
+              {cargoRows}
             </tbody>
           </table>
         </Subregion>
@@ -538,14 +566,7 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
                 <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
                 <th></th>
               </tr>
-              {getSortedByArm(aircraft.fuelTanks).map((fuel: fuelTankT) => {
-                return <FuelSelection
-                  key={fuel.id + " fuelSelect"}
-                  fuelTank={fuel}
-                  aircraft={aircraft}
-                  setAircraft={setAircraft}
-                  airConfigIndex={configIndex} />
-              })}
+              {fuelRows}
             </tbody>
           </table>
         </Subregion>

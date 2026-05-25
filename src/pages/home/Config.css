@@ -92,6 +92,7 @@ dialog:has(.equipmentEdit)::before {
 dialog:has(.equipmentEdit) {
   bottom: 8%;
   left: 100%;
+  cursor: initial;
 }
 
 .equipmentEdit {
