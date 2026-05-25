@@ -1,7 +1,7 @@
 import { Fragment, useContext, useMemo, useRef, type ReactNode } from 'react';
 import './Graph.css'
-import { type aircraftLimitsT, type cargoAreaT, type aircraftT, type momentObjectT, type regionPointT, type regionT, type seatT, type weightLimitT, type setupT, baseLengthUnit, baseWeightUnit } from './Types';
-import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, calculateMAC, calculateMaxBalanceForConfig, truncateNumber } from './utility';
+import { type aircraftLimitsT, type cargoAreaT, type aircraftT, type momentObjectT, type regionPointT, type regionT, type seatT, type weightLimitT, type setupT, baseLengthUnit, baseWeightUnit, type loadingT } from './Types';
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, calculateMAC, calculateMaxBalanceForConfig, truncateNumber } from './utility';
 import { convertLengthUnit, convertWeightUnit, UnitContext } from './UnitsContext';
 
 let width = 140;
@@ -394,21 +394,22 @@ function PlotPoint({ point, limits }: plotPointProps): ReactNode {
 }
 
 interface graphProps {
-  aircraft: aircraftT,
-  selectedConfig: string,
-  selectedOpsConfig: string
+  aircraft: aircraftT;
+  loading?: loadingT;
+  selectedConfig: string;
+  selectedOpsConfig: string;
 }
 
 interface lineProps {
-  weight1: number,
-  arm1: number,
-  weight2: number,
-  arm2: number,
-  color: string,
-  style?: string
+  weight1: number;
+  arm1: number;
+  weight2: number;
+  arm2: number;
+  color: string;
+  style?: string;
 }
 
-function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): ReactNode {
+function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphProps): ReactNode {
   const units = useContext(UnitContext);
   if (aircraft === undefined) return;
   let data: aircraftLimitsT = JSON.parse(JSON.stringify(aircraft.limits));
@@ -469,6 +470,25 @@ function Graph({ aircraft, selectedConfig, selectedOpsConfig }: graphProps): Rea
         size: 2,
         label: "Ops Config"
       });
+  }
+
+  if (loading) {
+    let [weight, arm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
+    points.push({
+      weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
+      arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+      style: 'square',
+      size: 2,
+      label: "Land"
+    });
+    [weight, arm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
+    points.push({
+      weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
+      arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+      style: 'square',
+      size: 2,
+      label: "Takeoff"
+    });
   }
 
   // Calculate graph bounding box

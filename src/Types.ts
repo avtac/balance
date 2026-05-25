@@ -9,6 +9,11 @@ export interface configProps {
   setConfig: (arg0: configT) => void;
 }
 
+export interface loadingProps {
+  loading: loadingT;
+  setLoading: (arg0: loadingT) => void;
+}
+
 export interface nameProps {
   name?: string;
 }
@@ -27,6 +32,31 @@ const DiagramModes = {
 
 type DiagramModes = (typeof DiagramModes)[keyof typeof DiagramModes]
 export { DiagramModes }
+
+// Loading data
+
+export interface passengerT {
+  location: string; // ID of seat
+  count: number;
+  avgWeight: number;
+}
+
+export interface cargoT {
+  location: string; // ID of cargo
+  weight: number;
+}
+
+export interface fuelLoadT {
+  tank: string; // ID of tank
+  loadedFuel: number;
+  tripFuel: number;
+}
+
+export interface loadingT {
+  fuel: fuelLoadT[];
+  passengers: passengerT[];
+  cargo: cargoT[];
+}
 
 // Data structure interfaces
 

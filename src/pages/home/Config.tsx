@@ -1,8 +1,11 @@
+// TODO: 5. Add loading page
+// TODO: 6. Add Overview/Printout page
+
 import './Config.css'
 import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement, type RefObject } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
-import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps, type configT } from "../../Types";
+import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps, type configT, type loadingT } from "../../Types";
 import { activeConfigData, calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber, uploadedConfigs } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -31,12 +34,13 @@ function AddDialog({ ref, mode, onAdd, onRemove }: addDialogProps): ReactElement
 }
 
 interface seatSelectionProps extends aircraftProps {
-  seat: seatT,
-  opsConfigIndex: number
-  airConfigIndex: number
+  seat: seatT;
+  loading: loadingT;
+  opsConfigIndex: number;
+  airConfigIndex: number;
 }
 
-function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigIndex }: seatSelectionProps): ReactElement {
+function SeatSelection({ aircraft, setAircraft, loading, seat, opsConfigIndex, airConfigIndex }: seatSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
   let seatIndex: number = -1;
@@ -52,13 +56,14 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
     checked.current = !checked.current;
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     if (checked.current) {
-      if (aircraft.operationConfigs[opsConfigIndex].seats.some(s => s.id === seat.id)) {
+      if (!aircraft.operationConfigs[opsConfigIndex].seats.some(s => s.id === seat.id)) {
         tmp.operationConfigs[opsConfigIndex].seats.push({ id: seat.id, weight: oldWeight.current });
       }
     } else {
       tmp.operationConfigs[opsConfigIndex].seats.splice(seatIndex, 1);
     }
     setAircraft(tmp);
+    console.log(checked.current);
   }
 
   function addToConfig() {
@@ -88,11 +93,14 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
     setAircraft(tmp);
   }
 
-  let loadedWeight = undefined;
+  let opsWeight = undefined;
   if (seatIndex >= 0) {
-    loadedWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
+    opsWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
     oldWeight.current = aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
   }
+
+  const passengers = loading.passengers.find(s => s.location === seat.id);
+
   checked.current = seatIndex >= 0;
   return (
     <tr className={"seatSelect" + (!inConfig ? " unused" : "")}>
@@ -108,8 +116,10 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
           id={"seatWeightInput" + seat.id}
           disabled={!inConfig || seatIndex < 0}
           type='number'
+          min={0}
+          max={seat.maxWeight * (seat.seatCount - (passengers ? passengers.count : 0))}
           placeholder={units.weightUnits}
-          value={loadedWeight ? roundNumber(convertWeightUnit(loadedWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+          value={opsWeight ? roundNumber(convertWeightUnit(opsWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
           onChange={(e) => { setWeight(Number(e.target.value)) }} />
       </td>
       <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
@@ -124,14 +134,14 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
   );
 }
 
-// {inConfig ? <button onClick={removeFromConfig} >Remove From Aircraft</button> : <button onClick={addToConfig} >Add To Aircraft</button>}
 interface cargoSelectionProps extends aircraftProps {
   cargoArea: cargoAreaT,
+  loading: loadingT,
   opsConfigIndex: number
   airConfigIndex: number
 }
 
-function CargoSelection({ aircraft, setAircraft, cargoArea, opsConfigIndex, airConfigIndex }: cargoSelectionProps): ReactElement {
+function CargoSelection({ aircraft, setAircraft, loading, cargoArea, opsConfigIndex, airConfigIndex }: cargoSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   let cargoAreaIndex: number = -1;
   const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
@@ -147,7 +157,7 @@ function CargoSelection({ aircraft, setAircraft, cargoArea, opsConfigIndex, airC
     checked.current = !checked.current;
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     if (checked.current) {
-      if (aircraft.operationConfigs[opsConfigIndex].cargoAreas.some(s => s.id === cargoArea.id)) {
+      if (!aircraft.operationConfigs[opsConfigIndex].cargoAreas.some(s => s.id === cargoArea.id)) {
         tmp.operationConfigs[opsConfigIndex].cargoAreas.push({ id: cargoArea.id, weight: oldWeight.current });
       }
     } else {
@@ -176,11 +186,22 @@ function CargoSelection({ aircraft, setAircraft, cargoArea, opsConfigIndex, airC
     setAircraft(tmp);
   }
 
-  let loadedWeight = undefined;
+  function setWeight(weight: number): void {
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    const newWeight = Math.min(cargoArea.maxWeight, convertWeightUnit(weight, units.weightUnits, baseWeightUnit));
+    tmp.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight = newWeight;
+    oldWeight.current = newWeight;
+    setAircraft(tmp);
+  }
+
+  let opsWeight = undefined;
   if (cargoAreaIndex >= 0) {
-    loadedWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
+    opsWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
     oldWeight.current = aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
   }
+
+  const loadedCargo = loading.cargo.find(c => c.location === cargoArea.id);
+
   checked.current = cargoAreaIndex >= 0;
   return (
     <tr className={"cargoAreaSelect" + (!inConfig ? " unused" : "")}>
@@ -194,9 +215,12 @@ function CargoSelection({ aircraft, setAircraft, cargoArea, opsConfigIndex, airC
         <input
           id={"cargoWeightInput" + cargoArea.id}
           disabled={!inConfig || cargoAreaIndex < 0}
-          onChange={() => { }}
+          min={0}
+          max={cargoArea.maxWeight - (loadedCargo ? loadedCargo.weight : 0)}
+          type='number'
+          onChange={(e) => { setWeight(Number(e.target.value)) }}
           placeholder={units.weightUnits}
-          value={loadedWeight ? roundNumber(convertWeightUnit(loadedWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""} />
+          value={opsWeight ?? ""} />
       </td>
       <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
         <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} />
@@ -426,9 +450,10 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
 
 interface ConfigProps extends aircraftProps {
   selectedOpsConfig: string,
+  loading: loadingT
 }
 
-function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & nameProps): ReactElement {
+function Config({ aircraft, setAircraft, loading, selectedOpsConfig }: ConfigProps & nameProps): ReactElement {
   if (!aircraft) return (<></>);
   const units = useContext(UnitContext);
   const [filter, setFilter] = useState(true);
@@ -446,6 +471,7 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
         key={seat.id + " seatSelect"}
         aircraft={aircraft}
         setAircraft={setAircraft}
+        loading={loading}
         airConfigIndex={configIndex}
         opsConfigIndex={opsConfigIndex}
         seat={seat} />
@@ -459,6 +485,7 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
         cargoArea={cargo}
         aircraft={aircraft}
         setAircraft={setAircraft}
+        loading={loading}
         opsConfigIndex={opsConfigIndex}
         airConfigIndex={configIndex} />
     })

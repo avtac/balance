@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import "./Diagram.css"
-import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftProps } from "./Types";
+import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftT, type loadingT } from "./Types";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
@@ -14,13 +14,22 @@ interface cargoIconProps {
   offY: number,
   width: number
   opsPercent?: number,
+  loadedPercent?: number,
 }
 
-function CargoIcon({ name, offX = 0, offY = 0, width = cargoSize, opsPercent = 0 }: cargoIconProps): ReactNode {
+function CargoIcon({ name, offX = 0, offY = 0, width = cargoSize, opsPercent = 0, loadedPercent = 0 }: cargoIconProps): ReactNode {
   const left = offX - cargoSize / 2;
   const top = -offY - width / 2;
   return (
     <>
+      <rect
+        className="loadingFill"
+        strokeWidth={0}
+        width={cargoSize}
+        height={width * loadedPercent}
+        x={left}
+        y={top + width * (1 - opsPercent - loadedPercent)}
+        ry={.4105551} />
       <rect
         className="cargoOpsFill"
         strokeWidth={0}
@@ -56,21 +65,25 @@ interface seatIconProps {
   offX: number,
   offY: number,
   count: number,
-  opsPercent?: number,
+  opsCount?: number,
+  loadedCount?: number,
 }
 
 // offX, offY are in canvas units
-function SeatIcon({ count, name, offX = 0, offY = 0, opsPercent = 0 }: seatIconProps): ReactNode {
+function SeatIcon({ count, name, offX = 0, offY = 0, opsCount = 0, loadedCount = 0 }: seatIconProps): ReactNode {
   const left = offX - seatSize / 2;
   return (
     <>
       {...Array(count).fill(0).map((_, i: number) => {
         const top = offY - (i - count / 2) * seatSize;
-        const filled = opsPercent > ((count - 1 - i) / count);
+        const index = count - 1 - i;
+        const opsFilled = opsCount > index;
+        const loadFilled = loadedCount + opsCount > index;
+        const fillClass = opsFilled ? " opsFilled" : (loadFilled ? " loadFilled" : "");
         return (
           <>
             <rect
-              className={"seat" + (filled ? " filled" : "")}
+              className={"seat" + fillClass}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize}
@@ -79,7 +92,7 @@ function SeatIcon({ count, name, offX = 0, offY = 0, opsPercent = 0 }: seatIconP
               y={-top}
               ry={2} />
             <rect
-              className={"seat" + (filled ? " filled" : "")}
+              className={"seat" + fillClass}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize / 3}
@@ -89,7 +102,7 @@ function SeatIcon({ count, name, offX = 0, offY = 0, opsPercent = 0 }: seatIconP
               ry={0.29849526}
               transform={"scale(1,-1)"} />
             <rect
-              className={"seat" + (filled ? " filled" : "")}
+              className={"seat" + fillClass}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize / 3}
@@ -99,7 +112,7 @@ function SeatIcon({ count, name, offX = 0, offY = 0, opsPercent = 0 }: seatIconP
               ry={0.29849526}
               transform={"scale(1,-1)"} />
             <rect
-              className={"seat" + (filled ? " filled" : "")}
+              className={"seat" + fillClass}
               stroke={"#000000"}
               strokeWidth={0.5}
               width={seatSize * 3 / 8}
@@ -128,13 +141,15 @@ function getPixelFromArm(arm: number): number {
   return arm * pixPerUnit;
 }
 
-interface diagramProps extends aircraftProps {
-  diagramMode: DiagramModes,
-  selectedConfig: string,
-  selectedOpsConfig: string,
+interface diagramProps {
+  aircraft: aircraftT;
+  loading?: loadingT;
+  diagramMode: DiagramModes;
+  selectedConfig: string;
+  selectedOpsConfig: string;
 }
 
-function Diagram({ aircraft, diagramMode, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
+function Diagram({ aircraft, loading, diagramMode, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
   if (!aircraft) return (<></>);
   let seats = [...aircraft.seats]
   let cargoAreas = [...aircraft.cargoAreas]
@@ -194,11 +209,17 @@ function Diagram({ aircraft, diagramMode, selectedConfig, selectedOpsConfig }: d
       && selectedOpsConfig != undefined
       && seatIndex >= 0;
 
-    const opsPercentUsed = isOps ? aircraft.operationConfigs[opsIndex].seats[seatIndex].weight / seat.maxWeight / seat.seatCount : 0;
+    const opsUsed = isOps ? Math.ceil(aircraft.operationConfigs[opsIndex].seats[seatIndex].weight / seat.maxWeight) : 0;
+    let loadedPax = 0;
+    if (loading) {
+      const pax = loading.passengers.find(s => s.location === seat.id);
+      loadedPax = pax ? pax.count : 0;
+    }
     return <SeatIcon
       key={seat.id}
       name={seat.name}
-      opsPercent={opsPercentUsed}
+      opsCount={opsUsed}
+      loadedCount={loadedPax}
       offX={-getPixelFromArm(seat.arm)}
       offY={getPixelFromArm(-seat.lateralDist)}
       count={Number(seat.seatCount)} />
@@ -212,10 +233,16 @@ function Diagram({ aircraft, diagramMode, selectedConfig, selectedOpsConfig }: d
       && selectedOpsConfig != undefined
       && cargoIndex >= 0;
     const opsPercentUsed = isOps ? aircraft.operationConfigs[opsIndex].cargoAreas[cargoIndex].weight / cargoArea.maxWeight : 0;
+    let loadedPercent = 0;
+    if (loading) {
+      const load = loading.cargo.find(c => c.location === cargoArea.id)
+      loadedPercent = load ? load.weight / cargoArea.maxWeight : 0;
+    }
     return <CargoIcon
       key={cargoArea.id}
       name={cargoArea.name}
       opsPercent={opsPercentUsed}
+      loadedPercent={loadedPercent}
       offX={-getPixelFromArm(cargoArea.arm)}
       offY={-planeTop - planeHeight / 2}
       width={planeHeight - planePadding * 2} />

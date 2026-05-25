@@ -37,6 +37,7 @@
   --diagram-aircraft-bg: #FFF;
   --diagram-seat-fill: #EEE;
   --diagram-ops-fill: #7799CC;
+  --diagram-load-fill: #AABBFF;
 
   /* Shadows */
   --shadow:
@@ -94,6 +95,7 @@
     --diagram-aircraft-bg: #444;
     --diagram-seat-fill: #999;
     --diagram-ops-fill: #358;
+    --diagram-load-fill: #125;
 
     /* Shadows */
     --shadow:

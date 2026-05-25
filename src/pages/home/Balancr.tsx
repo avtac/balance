@@ -3,12 +3,19 @@ import { MultiPane } from '../../Layout'
 import Diagram from '../../Diagram'
 import Graph from '../../Graph.tsx'
 import { useMemo, useState } from 'react'
-import { type configT, type operationConfigT, DiagramModes, type aircraftT, type aircraftConfigT } from '../../Types'
+import { type configT, DiagramModes, type aircraftT, type aircraftConfigT, type loadingT } from '../../Types'
 import Header from '../../Header.tsx'
 import Setup from './Setup.tsx'
 import { UnitContext } from '../../UnitsContext.tsx'
 import Config from './Config.tsx'
 import { activeConfigData, uploadedConfigs } from '../../utility.ts'
+import Loading from './Loading.tsx'
+
+const defaultLoading: loadingT = {
+  fuel: [],
+  passengers: [],
+  cargo: [],
+}
 
 function checkConfigChanged(activeConfig: configT) {
   const configsStrings = localStorage.getItem(uploadedConfigs);
@@ -48,11 +55,11 @@ function Balancr() {
   const [selectedAircraft, setSelectedAircraft] = useState(config.aircraft && config.aircraft.length > 0 ? config.aircraft[0].id : "")
   const aircraftIndex = config.aircraft && config.aircraft.findIndex(a => a.id === selectedAircraft);
 
-  // TODO: Save changes or changed data somewhere else for recall of config data
-  // but flag that there have been changes made
   const [selectedConfig, setSelectedConfig] = useState(aircraftIndex >= 0 && config.aircraft[aircraftIndex].aircraftConfigs.length > 0 ? config.aircraft[aircraftIndex].aircraftConfigs[0].id : "");
   const [selectedOpsConfig, setSelectedOpsConfig] = useState(aircraftIndex >= 0 && config.aircraft[aircraftIndex].operationConfigs.length > 0 ? config.aircraft[aircraftIndex].operationConfigs[0].id : "")
   const [selectedPanel, setSelectedPanel] = useState(0);
+
+  const [loadingData, setLoadingData] = useState(defaultLoading);
 
   useMemo(() => {
     if (config.aircraft && config.aircraft.findIndex(a => a.id === selectedAircraft) < 0)
@@ -98,13 +105,8 @@ function Balancr() {
   }
 
   useMemo(() => {
-    if (selectedPanel === 4) {
-      const opsConfigIndex = config.aircraft[aircraftIndex].operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
-      // Set the selected config to the one being used by the ops config
-      if (opsConfigIndex >= 0 && config.aircraft[aircraftIndex].operationConfigs[opsConfigIndex].config)
-        setSelectedConfig(config.aircraft[aircraftIndex].operationConfigs[opsConfigIndex].config);
-    }
-  }, [selectedPanel]);
+    setLoadingData(defaultLoading);
+  }, [selectedOpsConfig])
 
   const changed = checkConfigChanged(config)
   return (
@@ -132,6 +134,13 @@ function Balancr() {
                   name={"Config"}
                   aircraft={config.aircraft && config.aircraft[aircraftIndex]}
                   setAircraft={setAircraftSpecial}
+                  loading={loadingData}
+                  selectedOpsConfig={selectedOpsConfig} />
+                <Loading
+                  name={"Loading"}
+                  loading={loadingData}
+                  setLoading={setLoadingData}
+                  aircraft={config.aircraft && config.aircraft[aircraftIndex]}
                   selectedOpsConfig={selectedOpsConfig} />
               </MultiPane>
             </div>
@@ -139,13 +148,14 @@ function Balancr() {
               <div id='graphHolder'>
                 <Graph
                   aircraft={config.aircraft && config.aircraft[aircraftIndex]}
+                  loading={loadingData}
                   selectedConfig={selectedConfig}
                   selectedOpsConfig={selectedOpsConfig} />
               </div>
               <div id='diagramHolder'>
                 <Diagram
                   aircraft={config.aircraft && config.aircraft[aircraftIndex]}
-                  setAircraft={setAircraftSpecial}
+                  loading={loadingData}
                   diagramMode={selectedPanel >= 0 ? DiagramModes.Ops : DiagramModes.All}
                   selectedConfig={selectedConfig}
                   selectedOpsConfig={selectedOpsConfig} />

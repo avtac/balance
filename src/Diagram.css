@@ -22,10 +22,12 @@
     fill: transparent;
   }
 
-  .seat.filled {
-    fill: var(--diagram-ops-fill);
+  .seat.loadFilled,
+  .loadingFill {
+    fill: var(--diagram-load-fill);
   }
 
+  .seat.opsFilled,
   .cargoOpsFill {
     fill: var(--diagram-ops-fill);
   }
