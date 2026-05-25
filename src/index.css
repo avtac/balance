@@ -8,6 +8,7 @@
 
   /* Borders */
   --border: #8884;
+  --dialog-border: #000;
 
   /* Backgrounds */
   --bg: #DEF;
@@ -69,6 +70,7 @@
 
     /* Borders */
     --border: #1e202a;
+    --dialog-border: #FFF;
 
     /* Backgrounds */
     --bg: #30323e;

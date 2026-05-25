@@ -15,44 +15,54 @@
   }
 }
 
+.unloaded td {
+  color: #555;
+  background: #2353;
+
+}
+
+.unloaded .armUpdate {
+  cursor: unset !important;
+}
+
 .unused td {
   color: #555;
   background: #3002;
-
-  button {
-    cursor: pointer !important;
-  }
 }
 
 button {
   width: 100% !important;
 }
 
-.unused.clickable * {
+.unused .clickable {
   cursor: not-allowed !important;
 }
 
+td:has(.addRemoveDialog),
 td:has(.equipmentEdit) {
   position: relative;
-  cursor: pointer;
 }
 
-dialog:has(.equipmentEdit) {
+dialog {
   position: absolute;
-  /* width: 8rem; */
-  bottom: 10px;
-  left: 100%;
   z-index: 2;
   background: var(--dialog-bg);
   padding: 6px;
   border-radius: 6px;
-  border-width: 2px;
+  border: 2px solid var(--dialog-border);
 }
 
-dialog::before {
+dialog.addRemoveDialog {
+  top: 0rem;
+  bottom: 0rem;
+  left: 2rem;
+  width: 8rem;
+}
+
+dialog.addRemoveDialog::before {
   content: '';
   position: absolute;
-  border-right: 10px solid var(--dialog-bg);
+  border-right: 10px solid var(--dialog-border);
   border-bottom: 10px solid transparent;
   border-top: 10px solid transparent;
   /* Color and size of the arrow */
@@ -61,7 +71,27 @@ dialog::before {
   height: 0px;
   transform: translateX(-50%);
   left: -7px;
-  bottom: 0%;
+  bottom: calc(50% - 10px);
+}
+
+dialog:has(.equipmentEdit)::before {
+  content: '';
+  position: absolute;
+  border-right: 10px solid var(--dialog-border);
+  border-bottom: 10px solid transparent;
+  border-top: 10px solid transparent;
+  /* Color and size of the arrow */
+
+  width: 0px;
+  height: 0px;
+  transform: translateX(-50%);
+  left: -7px;
+  bottom: calc(4%);
+}
+
+dialog:has(.equipmentEdit) {
+  bottom: 8%;
+  left: 100%;
 }
 
 .equipmentEdit {

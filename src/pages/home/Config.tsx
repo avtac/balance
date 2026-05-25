@@ -1,10 +1,34 @@
 import './Config.css'
 import '../../Layout.css'
-import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
+import { useContext, useEffect, useRef, useState, type ReactElement, type RefObject } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
 import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps } from "../../Types";
 import { calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faEllipsisV } from "@fortawesome/free-solid-svg-icons"
+
+interface addDialogProps {
+  ref: RefObject<null | HTMLDialogElement>
+  mode: boolean; // True for add/False for remove
+  onAdd: () => void;
+  onRemove: () => void;
+}
+
+function AddDialog({ ref, mode, onAdd, onRemove }: addDialogProps): ReactElement {
+  return (
+    <dialog
+      ref={ref}
+      closedby='any'
+      className='addRemoveDialog'>
+      {mode ?
+        <button onClick={onAdd}>{"Add To Aircraft"}</button>
+        :
+        <button onClick={onRemove}>{"Remove From Aircraft"}</button>
+      }
+    </dialog>
+  );
+}
 
 interface seatSelectionProps extends aircraftProps {
   seat: seatT,
@@ -14,6 +38,7 @@ interface seatSelectionProps extends aircraftProps {
 
 function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigIndex }: seatSelectionProps): ReactElement {
   const units = useContext(UnitContext);
+  const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
   let seatIndex: number = -1;
   if (opsConfigIndex >= 0) seatIndex = aircraft.operationConfigs[opsConfigIndex].seats.findIndex((s) => s.id === seat.id);
 
@@ -37,17 +62,16 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
   }
 
   function addToConfig() {
-    if (airConfigIndex < 0) return;
+    if (aircraft.aircraftConfigs[airConfigIndex].seats.includes(seat.id) || airConfigIndex < 0) return;
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.aircraftConfigs[airConfigIndex].seats.push(seat.id);
     setAircraft(tmp);
   }
 
   function removeFromConfig() {
-    if (airConfigIndex < 0) return;
+    if (!aircraft.aircraftConfigs[airConfigIndex].seats.includes(seat.id) || airConfigIndex < 0) return;
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     const index = tmp.aircraftConfigs[airConfigIndex].seats.findIndex(a => a === seat.id);
-    if (index < 0) return;
     tmp.aircraftConfigs[airConfigIndex].seats.splice(index, 1);
     const opsIndex = tmp.operationConfigs[opsConfigIndex].seats.findIndex(a => a.id === seat.id);
     if (opsIndex >= 0) {
@@ -71,14 +95,14 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
   }
   checked.current = seatIndex >= 0;
   return (
-    <tr className={"clickable seatSelect" + (!inConfig ? " unused" : "")}>
-      <td onClick={selectCheckbox}>
-        <input disabled={!inConfig} onChange={() => { }} checked={checked.current} type={"checkbox"} />
+    <tr className={"seatSelect" + (!inConfig ? " unused" : "")}>
+      <td className="clickable" onClick={selectCheckbox}>
+        <input className="clickable" disabled={!inConfig} onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
-      <td onClick={selectCheckbox}>{seat.name}</td>
-      <td onClick={selectCheckbox}>{roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td onClick={selectCheckbox}>{roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
-      <td onClick={selectCheckbox}>{seat.seatCount}</td>
+      <td className="clickable" onClick={selectCheckbox}>{seat.name}</td>
+      <td>{roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td>{seat.seatCount}</td>
       <td>
         <input
           id={"seatWeightInput" + seat.id}
@@ -88,13 +112,19 @@ function SeatSelection({ aircraft, setAircraft, seat, opsConfigIndex, airConfigI
           value={loadedWeight ? roundNumber(convertWeightUnit(loadedWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
           onChange={(e) => { setWeight(Number(e.target.value)) }} />
       </td>
-      <td>
-        {inConfig ? <button onClick={removeFromConfig} >Remove From Aircraft</button> : <button onClick={addToConfig} >Add To Aircraft</button>}
+      <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
+        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} />
+        <AddDialog
+          ref={dialogRef}
+          mode={!inConfig}
+          onAdd={addToConfig}
+          onRemove={removeFromConfig} />
       </td>
     </tr >
   );
 }
 
+// {inConfig ? <button onClick={removeFromConfig} >Remove From Aircraft</button> : <button onClick={addToConfig} >Add To Aircraft</button>}
 interface cargoSelectionProps extends aircraftProps {
   cargoArea: cargoAreaT,
   opsConfigIndex: number
@@ -104,6 +134,7 @@ interface cargoSelectionProps extends aircraftProps {
 function CargoSelection({ aircraft, setAircraft, cargoArea, opsConfigIndex, airConfigIndex }: cargoSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   let cargoAreaIndex: number = -1;
+  const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
   if (opsConfigIndex >= 0) cargoAreaIndex = aircraft.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s) => s.id === cargoArea.id);
 
   let checked = useRef(cargoAreaIndex >= 0);
@@ -152,33 +183,28 @@ function CargoSelection({ aircraft, setAircraft, cargoArea, opsConfigIndex, airC
   }
   checked.current = cargoAreaIndex >= 0;
   return (
-    <tr className={"clickable cargoAreaSelect" + (!inConfig ? " unused" : "")}>
-      <td onClick={selectCheckbox}>
-        <input disabled={!inConfig} onChange={() => { }} checked={checked.current} type={"checkbox"} />
+    <tr className={"cargoAreaSelect" + (!inConfig ? " unused" : "")}>
+      <td className="clickable" onClick={selectCheckbox}>
+        <input className="clickable" disabled={!inConfig} onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
-      <td onClick={selectCheckbox}>{cargoArea.name}</td>
-      <td onClick={selectCheckbox}>{roundNumber(convertLengthUnit(cargoArea.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td onClick={selectCheckbox}>{roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td className="clickable" onClick={selectCheckbox}>{cargoArea.name}</td>
+      <td>{roundNumber(convertLengthUnit(cargoArea.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
       <td>
         <input
           id={"cargoWeightInput" + cargoArea.id}
-          disabled={!inConfig}
+          disabled={!inConfig || cargoAreaIndex < 0}
           onChange={() => { }}
           placeholder={units.weightUnits}
           value={loadedWeight ? roundNumber(convertWeightUnit(loadedWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""} />
       </td>
-      <td>
-        {inConfig
-          ?
-          <button
-            onClick={removeFromConfig} >
-            Remove From Aircraft
-          </button>
-          :
-          <button
-            onClick={addToConfig} >
-            Add To Aircraft
-          </button>}
+      <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
+        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} />
+        <AddDialog
+          ref={dialogRef}
+          mode={!inConfig}
+          onAdd={addToConfig}
+          onRemove={removeFromConfig} />
       </td>
     </tr>
   );
@@ -191,6 +217,7 @@ interface fuelSelectionProps extends aircraftProps {
 
 function FuelSelection({ aircraft, setAircraft, fuelTank, airConfigIndex }: fuelSelectionProps): ReactElement {
   const units = useContext(UnitContext);
+  const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
   const inConfig = aircraft.aircraftConfigs[airConfigIndex].fuelTanks.findIndex((s) => s === fuelTank.id) >= 0;
 
   function addToConfig() {
@@ -215,8 +242,13 @@ function FuelSelection({ aircraft, setAircraft, fuelTank, airConfigIndex }: fuel
       <td>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
       <td>{roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
       <td>{roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
-      <td>
-        {fuelTank.removable && (inConfig ? <button onClick={removeFromConfig} >Remove From Aircraft</button> : <button onClick={addToConfig} >Add To Aircraft</button>)}
+      <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
+        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} />
+        <AddDialog
+          ref={dialogRef}
+          mode={!inConfig}
+          onAdd={addToConfig}
+          onRemove={removeFromConfig} />
       </td>
     </tr>
   );
@@ -230,7 +262,8 @@ interface EquipmentSelectionProps extends aircraftProps {
 function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }: EquipmentSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   const oldCount = useRef(1);
-  const [visible, setVisible] = useState(false);
+  const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
+  const weightDialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
   const [count, setCount] = useState(1);
   const equipmentIndex = aircraft.equipment.findIndex((e) => e.id === equipment.id);
 
@@ -263,6 +296,12 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
     setAircraft(tmp);
   }
 
+  function setWeight(weight: number): void {
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    tmp.equipment[equipmentIndex].weight = weight;
+    setAircraft(tmp);
+  }
+
   function setArm(arm: number): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.equipment[equipmentIndex].arm = arm;
@@ -284,13 +323,30 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
     oldCount.current = 1;
   }, [aircraft])
   return (
-    <tr className={"equipmentSelect" + (!inConfig ? " unused" : "")}>
-      <td>{equipment.name}</td>
-      <td onClick={() => setVisible(inConfig && true)}>
+    <tr
+      className={"equipmentSelect" + (!inConfig ? " unloaded" : "")}>
+      <td
+        className='clickable'
+        onClick={() => { if (!inConfig) addToConfig(); else removeFromConfig(); }}>
+        <input
+          type='checkbox'
+          checked={inConfig}
+          onChange={() => { if (!inConfig) addToConfig(); else removeFromConfig(); }} />
+      </td>
+      <td
+        className='clickable'
+        onClick={() => { if (!inConfig) addToConfig(); else removeFromConfig(); }}>{equipment.name}</td>
+      <td
+        className='clickable armUpdate'
+        onClick={() => { if (dialogRef.current && inConfig) dialogRef.current.show() }}>
         {roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}
-        <dialog open={visible} onClose={() => setVisible(false)} closedby='any'>
-          <div className='equipmentEdit'>
-            <label htmlFor={"equipSelectArmLoc-" + equipment.id}>Arm</label>
+        <dialog
+          ref={dialogRef}
+          closedby='any'>
+          <div
+            className='equipmentEdit'>
+            <label
+              htmlFor={"equipSelectArmLoc-" + equipment.id}>Arm</label>
             <select
               id={"equipSelectArmLoc-" + equipment.id}
               value={equipment.area}
@@ -304,6 +360,7 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
               <input
                 id={'customEquipmentArm' + equipment.id}
                 disabled={!(locationValueIndex < 0)}
+                placeholder={units.lengthUnits}
                 type='number'
                 onChange={e => setArm(Number(e.target.value))}
                 value={locationValueIndex < 0 ? (equipment.arm ? roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision) : "") : roundNumber(convertLengthUnit(locationValues[locationValueIndex].arm, baseLengthUnit, units.lengthUnits), unitPrecision)} />
@@ -311,7 +368,26 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
           </div>
         </dialog>
       </td>
-      <td>{roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td
+        className='clickable armUpdate'
+        onClick={() => { if (weightDialogRef.current && inConfig) weightDialogRef.current.show() }}>
+        {roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)}
+        <dialog
+          ref={weightDialogRef}
+          closedby='any'>
+          <div
+            className='equipmentEdit'>
+            <label
+              htmlFor={"equipSelectWeightLoc-" + equipment.id}>Weight</label>
+            <input
+              id={'customEquipmentWeight' + equipment.id}
+              placeholder={units.weightUnits}
+              type='number'
+              onChange={e => setWeight(Number(e.target.value))}
+              value={equipment.weight ? roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""} />
+          </div>
+        </dialog>
+      </td>
       <td>
         <input
           id={`equipmentCount-${equipment.id}`}
@@ -322,9 +398,6 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
           onChange={(e) => setAircraftCount(Number(e.target.value))} />
       </td>
       <td>{roundNumber(convertWeightUnit(equipment.weight * count, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
-      <td>
-        {inConfig ? <button onClick={removeFromConfig} >Remove From Aircraft</button> : <button onClick={addToConfig} >Add To Aircraft</button>}
-      </td>
     </tr>
   );
 }
@@ -368,11 +441,10 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
               <col style={{ width: "3rem" }} />
               <col style={{ width: "3rem" }} />
               <col style={{ width: "3rem" }} />
-              <col style={{ width: "10rem" }} />
             </colgroup>
             <tbody>
               <tr>
-                <th>✔</th>
+                <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th>Name</th>
                 <th >{`Arm (${units.lengthUnits})`}</th>
                 <th >{`Max Weight (${units.weightUnits})`}</th>
@@ -400,11 +472,10 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
               <col style={{ width: "3rem" }} />
               <col style={{ width: "3rem" }} />
               <col style={{ width: "3rem" }} />
-              <col style={{ width: "10rem" }} />
             </colgroup>
             <tbody>
               <tr>
-                <th>✔</th>
+                <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th>Name</th>
                 <th>{`Arm (${units.lengthUnits})`}</th>
                 <th>{`Max Weight (${units.weightUnits})`}</th>
@@ -430,7 +501,6 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
               <col style={{ width: "3rem" }} />
               <col style={{ width: "3rem" }} />
               <col style={{ width: "3rem" }} />
-              <col style={{ width: "10rem" }} />
             </colgroup>
             <tbody>
               <tr>
@@ -454,21 +524,21 @@ function Config({ aircraft, setAircraft, selectedOpsConfig }: ConfigProps & name
         <Subregion name={"Equipment"}>
           <table className="tableData">
             <colgroup>
+              <col />
               <col style={{ width: "9rem" }} />
               <col style={{ width: "3rem" }} />
               <col style={{ width: "3rem" }} />
               <col style={{ width: "3rem" }} />
               <col style={{ width: "3rem" }} />
-              <col style={{ width: "10rem" }} />
             </colgroup>
             <tbody>
               <tr>
+                <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th>Name</th>
                 <th>{`Arm (${units.lengthUnits})`}</th>
                 <th>{`Weight (${units.weightUnits})`}</th>
                 <th>Count</th>
                 <th>{`Total Weight (${units.weightUnits})`}</th>
-                <th></th>
               </tr>
               {getSortedByArm(aircraft.equipment).map((equipment: equipmentT) => {
                 return <EquipmentSelection
