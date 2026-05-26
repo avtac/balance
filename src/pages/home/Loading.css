@@ -14,13 +14,16 @@
 
 .rightDialog {
   position: absolute;
+  z-index: 10;
+  left: 100%;
+  top: -15px;
+  bottom: 0px;
+}
+
+.rightDialog>div {
   display: flex;
   row-gap: 4px;
   flex-direction: column;
   align-items: center;
   width: max-content;
-  z-index: 10;
-  left: 100%;
-  top: -15px;
-  bottom: 0px;
 }

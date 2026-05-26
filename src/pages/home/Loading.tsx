@@ -269,21 +269,23 @@ function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps)
             onChange={(e) => loadSeats(Number(e.target.value), direction)} />
           <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} onClick={() => dialogRef.current ? dialogRef.current.show() : undefined} />
           <dialog ref={dialogRef} className='rightDialog' closedby='any'>
-            <label htmlFor='seatLoadingDirectionSelect'>Seat Load Mode</label>
-            <select id='seatLoadingDirectionSelect' value={direction} onChange={(e) => setDirection(e.target.value as seatLoadingDirectionsT)}>
-              {seatLoadingDirections.map(d => <option value={d} key={d + "seatLoadingDirections"} >{seatLoadingDirectionsNames[d]}</option>)}
-            </select>
-            {direction === 'point' &&
-              <>
-                <input
-                  id='seatLoadCenterPoint'
-                  type='number'
-                  style={{ width: "5rem" }}
-                  placeholder={units.lengthUnits}
-                  value={fillCenter ? roundNumber(convertLengthUnit(fillCenter, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
-                  onChange={(e) => setFillCenter(convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
-              </>
-            }
+            <div>
+              <label htmlFor='seatLoadingDirectionSelect'>Seat Load Mode</label>
+              <select id='seatLoadingDirectionSelect' value={direction} onChange={(e) => setDirection(e.target.value as seatLoadingDirectionsT)}>
+                {seatLoadingDirections.map(d => <option value={d} key={d + "seatLoadingDirections"} >{seatLoadingDirectionsNames[d]}</option>)}
+              </select>
+              {direction === 'point' &&
+                <>
+                  <input
+                    id='seatLoadCenterPoint'
+                    type='number'
+                    style={{ width: "5rem" }}
+                    placeholder={units.lengthUnits}
+                    value={fillCenter ? roundNumber(convertLengthUnit(fillCenter, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+                    onChange={(e) => setFillCenter(convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
+                </>
+              }
+            </div>
           </dialog>
         </div>
       </div>
