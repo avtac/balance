@@ -12,6 +12,12 @@ export function getSortedByArm<T extends (maxMomentObjectT | momentObjectT)>(dat
   }).filter((s: T) => s != undefined);
 }
 
+export function getSortedByArmClosest<T extends (maxMomentObjectT | momentObjectT)>(data: T[], target: number) {
+  const tmp: T[] = JSON.parse(JSON.stringify(data));
+  return tmp.sort((a, b) => Math.abs(a.arm - target) - Math.abs(b.arm - target))
+    .filter(s => s != undefined);
+}
+
 export function calculateMAC(arm: number, mac: (number | undefined), leadingMac: (number | undefined), useMAC: boolean = false): number {
   if (!useMAC || !leadingMac || !mac) return arm;
   return (arm - leadingMac) / mac * 100;

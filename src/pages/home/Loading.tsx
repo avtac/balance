@@ -1,9 +1,12 @@
 import '../../Layout.css'
-import { useContext, useState, type ReactNode } from "react";
+import './Loading.css'
+import { useContext, useRef, useState, type ReactNode, type RefObject } from "react";
 import { baseFuelUnit, baseLengthUnit, baseWeightUnit, type aircraftT, type cargoAreaT, type fuelTankT, type loadingProps, type loadingT, type nameProps, type passengerT, type seatT } from "../../Types";
 import { MultiPane, Subregion } from "../../Layout";
-import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber } from "../../utility";
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, getSortedByArm, getSortedByArmClosest, roundNumber } from "../../utility";
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 
 interface seatLoadingProps extends loadingProps {
   aircraft: aircraftT;
@@ -179,6 +182,7 @@ interface titleProps extends loadingProps {
 
 function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps): ReactNode {
   const units = useContext(UnitContext);
+  const [fillCenter, setFillCenter] = useState(0);
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
@@ -189,7 +193,8 @@ function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps)
   const [takeoffWeight, takeoffArm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
   const [landWeight, landArm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
 
-  const seatLoadingDirections = ['fronttoback', 'backtofront'] as const;
+  const seatLoadingDirections = ['frontToBack', 'backToFront', 'point'] as const;
+  const seatLoadingDirectionsNames = { frontToBack: "Front To Back", backToFront: "Back To Front", point: "Point" } as const;
   type seatLoadingDirectionsT = typeof seatLoadingDirections[number];
 
   function loadSeats(count: number, direction: seatLoadingDirectionsT): void {
@@ -199,9 +204,13 @@ function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps)
 
     // Seat locations sorted by arm
     let seats: seatT[] = [];
-    seats = getSortedByArm(aircraft.aircraftConfigs[configIndex].seats.map(seatId => aircraft.seats.find(s => s.id === seatId)).filter(s => s != undefined));
-    if ('backtofront' === direction)
-      seats = seats.reverse();
+    if (['frontToBack', 'backToFront'].includes(direction)) {
+      seats = getSortedByArm(aircraft.aircraftConfigs[configIndex].seats.map(seatId => aircraft.seats.find(s => s.id === seatId)).filter(s => s != undefined));
+      if ('backToFront' === direction)
+        seats = seats.reverse();
+    }
+    else if ('point' === direction)
+      seats = getSortedByArmClosest(aircraft.aircraftConfigs[configIndex].seats.map(seatId => aircraft.seats.find(s => s.id === seatId)).filter(s => s != undefined), fillCenter);
 
     const originalFill: passengerT[] = loading.passengers;
     // Fill original seats to ensure they don't move
@@ -242,21 +251,41 @@ function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps)
     setLoading(tmp);
   }
 
-  const [direction, setDirection] = useState('fronttoback' as seatLoadingDirectionsT)
+  const [direction, setDirection] = useState('frontToBack' as seatLoadingDirectionsT)
+  const dialogRef: RefObject<(null | HTMLDialogElement)> = useRef(null);
 
   return (
     <>
       <div>
         <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
-        <select id='seatLoadingDirectionSelect' value={direction} onChange={(e) => setDirection(e.target.value as seatLoadingDirectionsT)}>
-          {seatLoadingDirections.map(d => <option value={d} key={d + "seatLoadingDirections"} >{d}</option>)}
-        </select>
-        <input
-          type='number'
-          min={0}
-          max={aircraft.seats.reduce((sum, s) => sum + s.seatCount, 0)}
-          value={totalSeats}
-          onChange={(e) => loadSeats(Number(e.target.value), direction)} />
+        <div className='filler'>
+          <label htmlFor='seatTotalPassengersLoaded'>Passengers</label>
+          <input
+            id='seatTotalPassengersLoaded'
+            type='number'
+            min={0}
+            max={aircraft.seats.reduce((sum, s) => sum + s.seatCount, 0)}
+            value={totalSeats}
+            onChange={(e) => loadSeats(Number(e.target.value), direction)} />
+          <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} onClick={() => dialogRef.current ? dialogRef.current.show() : undefined} />
+          <dialog ref={dialogRef} className='rightDialog' closedby='any'>
+            <label htmlFor='seatLoadingDirectionSelect'>Seat Load Mode</label>
+            <select id='seatLoadingDirectionSelect' value={direction} onChange={(e) => setDirection(e.target.value as seatLoadingDirectionsT)}>
+              {seatLoadingDirections.map(d => <option value={d} key={d + "seatLoadingDirections"} >{seatLoadingDirectionsNames[d]}</option>)}
+            </select>
+            {direction === 'point' &&
+              <>
+                <input
+                  id='seatLoadCenterPoint'
+                  type='number'
+                  style={{ width: "5rem" }}
+                  placeholder={units.lengthUnits}
+                  value={fillCenter ? roundNumber(convertLengthUnit(fillCenter, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+                  onChange={(e) => setFillCenter(convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
+              </>
+            }
+          </dialog>
+        </div>
       </div>
       <div id='configTitleData'>
         <h4>Empty Weight</h4>
