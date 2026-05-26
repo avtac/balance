@@ -26,7 +26,7 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
   function setCount(count: number): void {
     const tmp: loadingT = JSON.parse(JSON.stringify(loading));
     if (!tmp.passengers.some(s => s.location === seat.id))
-      tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: Math.min(count, seat.seatCount) });
+      tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: Math.min(count, seat.seatCount - opsUsedSeats) });
     else {
       const index = tmp.passengers.findIndex(s => s.location === seat.id);
       tmp.passengers[index].count = Math.min(count, seat.seatCount - opsUsedSeats);
@@ -172,6 +172,76 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
   )
 }
 
+interface titleProps extends loadingProps {
+  aircraft: aircraftT;
+  selectedOpsConfig: string;
+}
+
+function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps): ReactNode {
+  const units = useContext(UnitContext);
+  const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
+  if (opsConfigIndex < 0) return (<></>);
+  const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
+  const totalSeats = loading.passengers.reduce((sum, s) => sum + s.count, 0);
+
+  const [emptyWeight, emptyArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config);
+  const [opsWeight, opsArm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
+  const [takeoffWeight, takeoffArm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
+  const [landWeight, landArm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
+
+  function loadSeats(count: number): void {
+    const tmp: loadingT = JSON.parse(JSON.stringify(loading));
+    let remaining = count;
+    tmp.passengers = [];
+    const seats = getSortedByArm(aircraft.aircraftConfigs[configIndex].seats.map(seatId => aircraft.seats.find(s => s.id === seatId)).filter(s => s != undefined));
+    for (const seat of seats) {
+      if (remaining <= 0) break;
+
+      const seatIndex = aircraft.operationConfigs[opsConfigIndex].seats.findIndex(s => s.id === seat.id);
+      let opsUsedSeats = 0;
+      if (seatIndex >= 0)
+        opsUsedSeats = Math.ceil(aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight / seat.maxWeight)
+
+      const numToSet = Math.min(remaining, seat.seatCount - opsUsedSeats);
+      remaining -= numToSet;
+      tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: numToSet });
+    }
+    setLoading(tmp);
+  }
+
+  return (
+    <>
+      <div>
+        <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
+        <input
+          type='number'
+          min={0}
+          max={aircraft.seats.reduce((sum, s) => sum + s.seatCount, 0)}
+          value={totalSeats}
+          onChange={(e) => loadSeats(Number(e.target.value))} />
+      </div>
+      <div id='configTitleData'>
+        <h4>Empty Weight</h4>
+        <p>{roundNumber(convertWeightUnit(emptyWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+        <h4>Empty Arm</h4>
+        <p>{roundNumber(convertLengthUnit(emptyArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+        <h4>Ops Weight</h4>
+        <p>{roundNumber(convertWeightUnit(opsWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+        <h4>Ops Arm</h4>
+        <p>{roundNumber(convertLengthUnit(opsArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+        <h4>Takeoff Weight</h4>
+        <p>{roundNumber(convertWeightUnit(takeoffWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+        <h4>Takeoff Arm</h4>
+        <p>{roundNumber(convertLengthUnit(takeoffArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+        <h4>Land Weight</h4>
+        <p>{roundNumber(convertWeightUnit(landWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
+        <h4>Land Arm</h4>
+        <p>{roundNumber(convertLengthUnit(landArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
+      </div>
+    </>
+  )
+}
+
 interface localLoadingProps extends loadingProps {
   aircraft: aircraftT;
   selectedOpsConfig: string;
@@ -182,11 +252,6 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
-
-  const [emptyWeight, emptyArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config);
-  const [opsWeight, opsArm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
-  const [takeoffWeight, takeoffArm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
-  const [landWeight, landArm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
 
   let seatRows = getSortedByArm(aircraft.seats)
     .filter(seat => aircraft.aircraftConfigs[configIndex].seats.some(s => s === seat.id))
@@ -227,25 +292,11 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
   return (
     <>
       <Subregion id='balancr-configTitle'>
-        <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
-        <div id='configTitleData'>
-          <h4>Empty Weight</h4>
-          <p>{roundNumber(convertWeightUnit(emptyWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
-          <h4>Empty Arm</h4>
-          <p>{roundNumber(convertLengthUnit(emptyArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
-          <h4>Ops Weight</h4>
-          <p>{roundNumber(convertWeightUnit(opsWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
-          <h4>Ops Arm</h4>
-          <p>{roundNumber(convertLengthUnit(opsArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
-          <h4>Takeoff Weight</h4>
-          <p>{roundNumber(convertWeightUnit(takeoffWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
-          <h4>Takeoff Arm</h4>
-          <p>{roundNumber(convertLengthUnit(takeoffArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
-          <h4>Land Weight</h4>
-          <p>{roundNumber(convertWeightUnit(landWeight, baseWeightUnit, units.weightUnits), 100)} {units.weightUnits}</p>
-          <h4>Land Arm</h4>
-          <p>{roundNumber(convertLengthUnit(landArm, baseLengthUnit, units.lengthUnits), 100)} {units.lengthUnits}</p>
-        </div>
+        <Title
+          aircraft={aircraft}
+          selectedOpsConfig={selectedOpsConfig}
+          loading={loading}
+          setLoading={setLoading} />
       </Subregion>
       <MultiPane>
         <Subregion name="Passengers">
