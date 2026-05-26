@@ -1,6 +1,6 @@
 import '../../Layout.css'
-import { useContext, type ReactNode } from "react";
-import { baseFuelUnit, baseLengthUnit, baseWeightUnit, type aircraftT, type cargoAreaT, type fuelTankT, type loadingProps, type loadingT, type nameProps, type seatT } from "../../Types";
+import { useContext, useState, type ReactNode } from "react";
+import { baseFuelUnit, baseLengthUnit, baseWeightUnit, type aircraftT, type cargoAreaT, type fuelTankT, type loadingProps, type loadingT, type nameProps, type passengerT, type seatT } from "../../Types";
 import { MultiPane, Subregion } from "../../Layout";
 import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber } from "../../utility";
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
@@ -189,36 +189,74 @@ function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps)
   const [takeoffWeight, takeoffArm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
   const [landWeight, landArm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
 
-  function loadSeats(count: number): void {
+  const seatLoadingDirections = ['fronttoback', 'backtofront'] as const;
+  type seatLoadingDirectionsT = typeof seatLoadingDirections[number];
+
+  function loadSeats(count: number, direction: seatLoadingDirectionsT): void {
+    let remainingToLoad = count;
     const tmp: loadingT = JSON.parse(JSON.stringify(loading));
-    let remaining = count;
     tmp.passengers = [];
-    const seats = getSortedByArm(aircraft.aircraftConfigs[configIndex].seats.map(seatId => aircraft.seats.find(s => s.id === seatId)).filter(s => s != undefined));
+
+    // Seat locations sorted by arm
+    let seats: seatT[] = [];
+    seats = getSortedByArm(aircraft.aircraftConfigs[configIndex].seats.map(seatId => aircraft.seats.find(s => s.id === seatId)).filter(s => s != undefined));
+    if ('backtofront' === direction)
+      seats = seats.reverse();
+
+    const originalFill: passengerT[] = loading.passengers;
+    // Fill original seats to ensure they don't move
     for (const seat of seats) {
-      if (remaining <= 0) break;
+      if (remainingToLoad <= 0) break;
+      const originalSeat = originalFill.find(s => s.location === seat.id);
+      if (!originalSeat) continue;
+      const numToLoad = Math.min(originalSeat.count, remainingToLoad);
+      tmp.passengers.push({ ...originalSeat, count: numToLoad });
+      remainingToLoad -= numToLoad;
+    }
+
+    // Fill seats with new passengers
+    for (const seat of seats) {
+      if (remainingToLoad <= 0) break;
 
       const seatIndex = aircraft.operationConfigs[opsConfigIndex].seats.findIndex(s => s.id === seat.id);
       let opsUsedSeats = 0;
       if (seatIndex >= 0)
         opsUsedSeats = Math.ceil(aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight / seat.maxWeight)
+      if (opsUsedSeats === seat.seatCount) continue;
 
-      const numToSet = Math.min(remaining, seat.seatCount - opsUsedSeats);
-      remaining -= numToSet;
-      tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: numToSet });
+      // If seat already taken skip it
+      let takenSeatIndex = originalFill.findIndex(c => c.location === seat.id);
+      let alreadyTaken = 0;
+      if (takenSeatIndex >= 0)
+        alreadyTaken = originalFill[takenSeatIndex].count;
+      if (opsUsedSeats + alreadyTaken === seat.seatCount) continue;
+
+      const numToSet = Math.min(remainingToLoad, seat.seatCount - opsUsedSeats);
+      remainingToLoad -= numToSet;
+      if (takenSeatIndex < 0)
+        tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: numToSet + alreadyTaken });
+      else {
+        tmp.passengers[takenSeatIndex].count = numToSet + alreadyTaken;
+      }
     }
     setLoading(tmp);
   }
+
+  const [direction, setDirection] = useState('fronttoback' as seatLoadingDirectionsT)
 
   return (
     <>
       <div>
         <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
+        <select id='seatLoadingDirectionSelect' value={direction} onChange={(e) => setDirection(e.target.value as seatLoadingDirectionsT)}>
+          {seatLoadingDirections.map(d => <option value={d} key={d + "seatLoadingDirections"} >{d}</option>)}
+        </select>
         <input
           type='number'
           min={0}
           max={aircraft.seats.reduce((sum, s) => sum + s.seatCount, 0)}
           value={totalSeats}
-          onChange={(e) => loadSeats(Number(e.target.value))} />
+          onChange={(e) => loadSeats(Number(e.target.value), direction)} />
       </div>
       <div id='configTitleData'>
         <h4>Empty Weight</h4>
