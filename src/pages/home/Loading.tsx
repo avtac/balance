@@ -20,7 +20,7 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
   let opsUsedSeats = 0;
   if (seatIndex >= 0)
     opsUsedSeats = Math.ceil(aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight / seat.maxWeight)
-  const opsWeight = opsUsedSeats * seat.maxWeight;
+  const opsWeight = seatIndex >= 0 ? aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight : 0;
 
   const s = loading.passengers.find(s => s.location === seat.id);
   const loadedWeight = (s ? s.count * s.avgWeight : 0);
@@ -48,7 +48,7 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
             type='number'
             min={0}
             max={seat.seatCount - opsUsedSeats}
-            value={s ? s.count : ""}
+            value={s && s.count > 0 ? s.count : ""}
             onChange={e => setCount(Number(e.target.value))}
             placeholder='Count'
           />}

@@ -1,3 +1,7 @@
+h2 {
+  text-align: start;
+}
+
 .filler {
   display: grid;
   grid-auto-flow: column;
@@ -5,7 +9,6 @@
   column-gap: 10px;
   justify-content: start;
   align-items: center;
-
 }
 
 .filler:has(.rightDialog) {
