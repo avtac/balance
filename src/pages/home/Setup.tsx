@@ -106,9 +106,10 @@ function Units({ config, setConfig, macAvailable }: unitsProps): ReactNode {
                 <input
                   id="fuelDensityInput"
                   type="number"
+                  min={0}
                   placeholder={`${config.setup.weightUnits}/${config.setup.fuelUnits}`}
-                  value={config.setup.fuelDensity ? roundNumber(config.setup.fuelDensity, unitPrecision) : ""}
-                  onChange={(e) => setManualDensity(Number(e.target.value))} />
+                  value={config.setup.fuelDensity ? roundNumber(convertDensityUnits(config.setup.fuelDensity, baseVolumeUnit, baseWeightUnit, config.setup.fuelUnits as volumeUnitsT, config.setup.weightUnits), unitPrecision) : ""}
+                  onChange={(e) => setManualDensity(convertDensityUnits(Number(e.target.value), config.setup.fuelUnits as volumeUnitsT, config.setup.weightUnits, baseVolumeUnit, baseWeightUnit))} />
               }
             </div>
           </>
