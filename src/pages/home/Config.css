@@ -59,6 +59,7 @@ dialog {
 dialog.addRemoveDialog {
   top: 0rem;
   bottom: 0rem;
+  top: 0rem;
   left: 2rem;
   width: 8rem;
 }
@@ -90,11 +91,12 @@ dialog:has(.equipmentEdit)::before {
   height: 0px;
   transform: translateX(-50%);
   left: -7px;
-  bottom: calc(4%);
+  bottom: calc(50% - 10px);
 }
 
 dialog:has(.equipmentEdit) {
-  bottom: 8%;
+  bottom: 0px;
+  top: 0rem;
   left: 100%;
   cursor: initial;
 }

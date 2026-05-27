@@ -1,7 +1,7 @@
 import '../../Layout.css'
 import './Loading.css'
 import { useContext, useRef, useState, type ReactNode, type RefObject } from "react";
-import { baseFuelUnit, baseLengthUnit, baseWeightUnit, type aircraftT, type cargoAreaT, type fuelTankT, type loadingProps, type loadingT, type nameProps, type passengerT, type seatT } from "../../Types";
+import { baseFuelUnit, baseLengthUnit, baseWeightUnit, type aircraftT, type cargoAreaT, type cargoT, type fuelTankT, type loadingProps, type loadingT, type nameProps, type passengerT, type seatT } from "../../Types";
 import { MultiPane, Subregion } from "../../Layout";
 import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, getSortedByArm, getSortedByArmClosest, roundNumber } from "../../utility";
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
@@ -170,34 +170,28 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
           placeholder={units.fuelUnits}
         />
       </td>
-      <td>{loadedWeight - consumedFuel}</td>
+      <td>{roundNumber(loadedWeight - consumedFuel, unitPrecision)}</td>
     </tr>
   )
 }
 
-interface titleProps extends loadingProps {
-  aircraft: aircraftT;
-  selectedOpsConfig: string;
-}
+const loadingDirections = ['frontToBack', 'backToFront', 'point'] as const;
+const loadingDirectionsNames = { frontToBack: "Front To Back", backToFront: "Back To Front", point: "Point" } as const;
+type loadingDirectionsT = typeof loadingDirections[number];
 
-function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps): ReactNode {
+function PassengerLoader({ loading, setLoading, aircraft, selectedOpsConfig }: titleProps) {
   const units = useContext(UnitContext);
   const [fillCenter, setFillCenter] = useState(0);
+  const [direction, setDirection] = useState('frontToBack' as loadingDirectionsT)
+  const dialogRef: RefObject<(null | HTMLDialogElement)> = useRef(null);
+
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
+
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
   const totalSeats = loading.passengers.reduce((sum, s) => sum + s.count, 0);
 
-  const [emptyWeight, emptyArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config);
-  const [opsWeight, opsArm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
-  const [takeoffWeight, takeoffArm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
-  const [landWeight, landArm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
-
-  const seatLoadingDirections = ['frontToBack', 'backToFront', 'point'] as const;
-  const seatLoadingDirectionsNames = { frontToBack: "Front To Back", backToFront: "Back To Front", point: "Point" } as const;
-  type seatLoadingDirectionsT = typeof seatLoadingDirections[number];
-
-  function loadSeats(count: number, direction: seatLoadingDirectionsT): void {
+  function loadSeats(count: number, direction: loadingDirectionsT): void {
     let remainingToLoad = count;
     const tmp: loadingT = JSON.parse(JSON.stringify(loading));
     tmp.passengers = [];
@@ -240,54 +234,182 @@ function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps)
         alreadyTaken = originalFill[takenSeatIndex].count;
       if (opsUsedSeats + alreadyTaken === seat.seatCount) continue;
 
-      const numToSet = Math.min(remainingToLoad, seat.seatCount - opsUsedSeats);
-      remainingToLoad -= numToSet;
-      if (takenSeatIndex < 0)
-        tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: numToSet + alreadyTaken });
+      const numToLoad = Math.min(remainingToLoad, seat.seatCount - opsUsedSeats);
+      remainingToLoad -= numToLoad;
+      let newSeatIndex = tmp.passengers.findIndex(c => c.location === seat.id);
+      if (newSeatIndex < 0)
+        tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: numToLoad + alreadyTaken });
       else {
-        tmp.passengers[takenSeatIndex].count = numToSet + alreadyTaken;
+        tmp.passengers[newSeatIndex].count = numToLoad + alreadyTaken;
       }
     }
     setLoading(tmp);
   }
 
-  const [direction, setDirection] = useState('frontToBack' as seatLoadingDirectionsT)
+  return (
+    <div className='filler'>
+      <label htmlFor='seatTotalPassengersLoaded'>Passengers</label>
+      <div>
+        <input
+          id='seatTotalPassengersLoaded'
+          type='number'
+          min={0}
+          max={aircraft.seats.reduce((sum, s) => sum + s.seatCount, 0)}
+          value={totalSeats ? totalSeats : ""}
+          onChange={(e) => loadSeats(Number(e.target.value), direction)} />
+        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} onClick={() => dialogRef.current ? dialogRef.current.show() : undefined} />
+        <dialog ref={dialogRef} className='rightDialog' closedby='any'>
+          <div>
+            <label htmlFor='seatLoadingDirectionSelect'>Seat Load Mode</label>
+            <select id='seatLoadingDirectionSelect' value={direction} onChange={(e) => setDirection(e.target.value as loadingDirectionsT)}>
+              {loadingDirections.map(d => <option value={d} key={d + "seatLoadingDirections"} >{loadingDirectionsNames[d]}</option>)}
+            </select>
+            {direction === 'point' &&
+              <>
+                <input
+                  id='seatLoadCenterPoint'
+                  type='number'
+                  style={{ width: "5rem" }}
+                  placeholder={units.lengthUnits}
+                  value={fillCenter ? roundNumber(convertLengthUnit(fillCenter, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+                  onChange={(e) => setFillCenter(convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
+              </>
+            }
+          </div>
+        </dialog>
+      </div>
+    </div>
+  )
+}
+
+function CargoLoader({ loading, setLoading, aircraft, selectedOpsConfig }: titleProps) {
+  const units = useContext(UnitContext);
+  const [fillCenter, setFillCenter] = useState(0);
+  const [direction, setDirection] = useState('frontToBack' as loadingDirectionsT)
   const dialogRef: RefObject<(null | HTMLDialogElement)> = useRef(null);
+
+  const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
+  if (opsConfigIndex < 0) return (<></>);
+
+  const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
+  const totalCargo = loading.cargo.reduce((sum, s) => sum + s.weight, 0);
+
+  function loadCargo(weight: number, direction: loadingDirectionsT): void {
+    let remainingToLoad = weight;
+    const tmp: loadingT = JSON.parse(JSON.stringify(loading));
+    tmp.cargo = [];
+
+    // Cargo locations sorted by arm
+    let sortedCargoAreas: cargoAreaT[] = [];
+    if (['frontToBack', 'backToFront'].includes(direction)) {
+      sortedCargoAreas = getSortedByArm(aircraft.aircraftConfigs[configIndex].cargoAreas.map(cargoId => aircraft.cargoAreas.find(c => c.id === cargoId)).filter(c => c != undefined));
+      if ('backToFront' === direction)
+        sortedCargoAreas = sortedCargoAreas.reverse();
+    }
+    else if ('point' === direction)
+      sortedCargoAreas = getSortedByArmClosest(aircraft.aircraftConfigs[configIndex].cargoAreas.map(cargoId => aircraft.cargoAreas.find(c => c.id === cargoId)).filter(c => c != undefined), fillCenter);
+
+    const originalFill: cargoT[] = loading.cargo;
+    // Fill original cargoAreas to ensure they don't move
+    for (const cargoArea of sortedCargoAreas) {
+      if (remainingToLoad <= 0) break;
+      const originalCargoArea = originalFill.find(c => c.location === cargoArea.id);
+      if (!originalCargoArea) continue;
+      const numToLoad = Math.min(originalCargoArea.weight, remainingToLoad);
+      if (numToLoad == 0) continue;
+      tmp.cargo.push({ ...originalCargoArea, weight: numToLoad });
+      remainingToLoad -= numToLoad;
+    }
+    // When filling from start to end and something is in an end area it clears the end area and sets it to the value that should go in the first area ??????????
+
+    // Fill cargoAreas with new cargo
+    for (const cargoArea of sortedCargoAreas) {
+      if (remainingToLoad <= 0) break;
+
+      const cargoIndex = aircraft.operationConfigs[opsConfigIndex].cargoAreas.findIndex(s => s.id === cargoArea.id);
+      let opsUsedCargo = 0;
+      if (cargoIndex >= 0)
+        opsUsedCargo = aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoIndex].weight
+      if (opsUsedCargo === cargoArea.maxWeight) continue;
+
+      // If cargoArea already taken skip it
+      let takenCargoIndex = originalFill.findIndex(c => c.location === cargoArea.id);
+      let alreadyTaken = 0;
+      if (takenCargoIndex >= 0)
+        alreadyTaken = originalFill[takenCargoIndex].weight;
+      if (opsUsedCargo + alreadyTaken === cargoArea.maxWeight) continue;
+
+      const numToLoad = Math.min(remainingToLoad, cargoArea.maxWeight - opsUsedCargo);
+      remainingToLoad -= numToLoad;
+      let newCargoIndex = tmp.cargo.findIndex(c => c.location === cargoArea.id);
+      if (newCargoIndex < 0)
+        tmp.cargo.push({ location: cargoArea.id, weight: numToLoad + alreadyTaken });
+      else {
+        tmp.cargo[newCargoIndex].weight = numToLoad + alreadyTaken;
+      }
+    }
+    setLoading(tmp);
+  }
+
+  return (
+    <div className='filler'>
+      <label htmlFor='cargoTotalLoaded'>Cargo</label>
+      <div>
+        <input
+          id='cargoTotalLoaded'
+          type='number'
+          min={0}
+          max={aircraft.cargoAreas.reduce((sum, s) => sum + s.maxWeight, 0)}
+          step={5}
+          placeholder={units.weightUnits}
+          value={totalCargo ? totalCargo : ""}
+          onChange={(e) => loadCargo(convertWeightUnit(Number(e.target.value), baseWeightUnit, units.weightUnits), direction)} />
+        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} onClick={() => dialogRef.current ? dialogRef.current.show() : undefined} />
+        <dialog ref={dialogRef} className='rightDialog' closedby='any'>
+          <div>
+            <label htmlFor='cargoLoadingDirectionSelect'>Cargo Load Mode</label>
+            <select id='cargoLoadingDirectionSelect' value={direction} onChange={(e) => setDirection(e.target.value as loadingDirectionsT)}>
+              {loadingDirections.map(d => <option value={d} key={d + "cargoLoadingDirections"} >{loadingDirectionsNames[d]}</option>)}
+            </select>
+            {direction === 'point' &&
+              <>
+                <input
+                  id='cargoLoadCenterPoint'
+                  type='number'
+                  style={{ width: "5rem" }}
+                  placeholder={units.lengthUnits}
+                  value={fillCenter ? roundNumber(convertLengthUnit(fillCenter, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
+                  onChange={(e) => setFillCenter(convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
+              </>
+            }
+          </div>
+        </dialog>
+      </div>
+    </div>
+  )
+}
+
+interface titleProps extends loadingProps {
+  aircraft: aircraftT;
+  selectedOpsConfig: string;
+}
+
+function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps): ReactNode {
+  const units = useContext(UnitContext);
+  const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
+  if (opsConfigIndex < 0) return (<></>);
+
+  const [emptyWeight, emptyArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config);
+  const [opsWeight, opsArm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
+  const [takeoffWeight, takeoffArm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
+  const [landWeight, landArm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
 
   return (
     <>
-      <div>
+      <div id='loadingTitle'>
         <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
-        <div className='filler'>
-          <label htmlFor='seatTotalPassengersLoaded'>Passengers</label>
-          <input
-            id='seatTotalPassengersLoaded'
-            type='number'
-            min={0}
-            max={aircraft.seats.reduce((sum, s) => sum + s.seatCount, 0)}
-            value={totalSeats}
-            onChange={(e) => loadSeats(Number(e.target.value), direction)} />
-          <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} onClick={() => dialogRef.current ? dialogRef.current.show() : undefined} />
-          <dialog ref={dialogRef} className='rightDialog' closedby='any'>
-            <div>
-              <label htmlFor='seatLoadingDirectionSelect'>Seat Load Mode</label>
-              <select id='seatLoadingDirectionSelect' value={direction} onChange={(e) => setDirection(e.target.value as seatLoadingDirectionsT)}>
-                {seatLoadingDirections.map(d => <option value={d} key={d + "seatLoadingDirections"} >{seatLoadingDirectionsNames[d]}</option>)}
-              </select>
-              {direction === 'point' &&
-                <>
-                  <input
-                    id='seatLoadCenterPoint'
-                    type='number'
-                    style={{ width: "5rem" }}
-                    placeholder={units.lengthUnits}
-                    value={fillCenter ? roundNumber(convertLengthUnit(fillCenter, baseLengthUnit, units.lengthUnits), unitPrecision) : ""}
-                    onChange={(e) => setFillCenter(convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
-                </>
-              }
-            </div>
-          </dialog>
-        </div>
+        <PassengerLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
+        <CargoLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
       </div>
       <div id='configTitleData'>
         <h4>Empty Weight</h4>

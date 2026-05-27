@@ -11,10 +11,12 @@
 
 .internalPadding {
   margin: var(--margin-size);
-  overflow-y: auto;
+  overflow-y: visible;
 }
 
 .subregion {
+  padding: var(--margin-size);
+  overflow: visible;
   background: var(--sub-region-bg);
 }
 

@@ -22,10 +22,8 @@ interface subregionProps extends childrenProps, nameProps {
 
 function Subregion({ children, id }: subregionProps) {
   return (
-    <div className='subregion'>
-      <div className='internalPadding' id={id}>
-        {children}
-      </div>
+    <div className='subregion' id={id}>
+      {children}
     </div>
   );
 }

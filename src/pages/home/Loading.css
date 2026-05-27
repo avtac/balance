@@ -2,6 +2,10 @@ h2 {
   text-align: start;
 }
 
+#balancr-configTitle {
+  height: fit-content;
+}
+
 .filler {
   display: grid;
   grid-auto-flow: column;
@@ -11,8 +15,14 @@ h2 {
   align-items: center;
 }
 
-.filler:has(.rightDialog) {
+.filler div:has(.rightDialog) {
   position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    width: 5rem;
+  }
 }
 
 .rightDialog {
