@@ -234,7 +234,7 @@ function PassengerLoader({ loading, setLoading, aircraft, selectedOpsConfig }: t
         alreadyTaken = originalFill[takenSeatIndex].count;
       if (opsUsedSeats + alreadyTaken === seat.seatCount) continue;
 
-      const numToLoad = Math.min(remainingToLoad, seat.seatCount - opsUsedSeats);
+      const numToLoad = Math.min(remainingToLoad, seat.seatCount - opsUsedSeats - alreadyTaken);
       remainingToLoad -= numToLoad;
       let newSeatIndex = tmp.passengers.findIndex(c => c.location === seat.id);
       if (newSeatIndex < 0)
@@ -321,7 +321,6 @@ function CargoLoader({ loading, setLoading, aircraft, selectedOpsConfig }: title
       tmp.cargo.push({ ...originalCargoArea, weight: numToLoad });
       remainingToLoad -= numToLoad;
     }
-    // When filling from start to end and something is in an end area it clears the end area and sets it to the value that should go in the first area ??????????
 
     // Fill cargoAreas with new cargo
     for (const cargoArea of sortedCargoAreas) {
@@ -340,7 +339,7 @@ function CargoLoader({ loading, setLoading, aircraft, selectedOpsConfig }: title
         alreadyTaken = originalFill[takenCargoIndex].weight;
       if (opsUsedCargo + alreadyTaken === cargoArea.maxWeight) continue;
 
-      const numToLoad = Math.min(remainingToLoad, cargoArea.maxWeight - opsUsedCargo);
+      const numToLoad = Math.min(remainingToLoad, cargoArea.maxWeight - opsUsedCargo - alreadyTaken);
       remainingToLoad -= numToLoad;
       let newCargoIndex = tmp.cargo.findIndex(c => c.location === cargoArea.id);
       if (newCargoIndex < 0)
