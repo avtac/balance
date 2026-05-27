@@ -255,6 +255,7 @@ function PassengerLoader({ loading, setLoading, aircraft, selectedOpsConfig }: t
           type='number'
           min={0}
           max={aircraft.seats.reduce((sum, s) => sum + s.seatCount, 0)}
+          placeholder='Count'
           value={totalSeats ? totalSeats : ""}
           onChange={(e) => loadSeats(Number(e.target.value), direction)} />
         <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} onClick={() => dialogRef.current ? dialogRef.current.show() : undefined} />

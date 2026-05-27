@@ -529,7 +529,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
   useMemo(() => {
     if (selectedConfig)
       configAreaPoints.current = generateConfigArea(aircraft, limits, selectedConfig, units).join(" ");
-  }, [aircraft, selectedConfig]);
+  }, [aircraft, selectedConfig, limits]);
 
   // Convert interval to spacing of 1, 2, or 5 * 10^x
   function getCleanInterval(width: number, desiredTicks: number): number {
