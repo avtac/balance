@@ -109,15 +109,15 @@
 
 #root {
   border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  /* box-sizing: border-box; */
+  box-sizing: border-box;
+  height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
-  overflow: hidden;
 }
 
 h1,
@@ -132,11 +132,6 @@ h1 {
   font-size: 40px;
   letter-spacing: -1.68px;
   margin: 32px 0;
-
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
 }
 
 h2 {
@@ -144,10 +139,6 @@ h2 {
   line-height: 118%;
   letter-spacing: -0.24px;
   margin: 0 0 8px;
-
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
 }
 
 p {
@@ -200,4 +191,23 @@ button:hover {
 
 button:active {
   background-color: oklch(from var(--button-bg) calc(l * 0.85) c h);
+}
+
+/* Primary layout */
+
+#content {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  overflow-x: auto;
+}
+
+#leftPanel {
+  min-width: 43rem;
+}
+
+#rightPanel {
+  display: flex;
+  flex-direction: column;
+  max-width: 70rem;
+  min-width: 30rem;
 }

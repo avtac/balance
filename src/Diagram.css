@@ -1,10 +1,12 @@
+#diagramHolder {
+  flex: 1;
+  display: grid;
+}
+
 #diagram {
-  background: var(--diagram-bg);
-  border-radius: 6px;
+  margin: auto;
   user-select: none;
-  max-height: calc(100% - var(--margin-size) * 2);
-  min-height: 50%;
-  overflow: visible;
+  max-height: 100%;
 
   text {
     fill: var(--text-d);

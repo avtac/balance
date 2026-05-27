@@ -128,48 +128,46 @@ function Balancr() {
           </div>
         }
         <UnitContext value={config.setup}>
-          <div id="split">
-            <div id='leftPanel'>
-              <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
-                <Setup
-                  name={"Setup"}
-                  config={config}
-                  setConfig={setConfigSpecial}
-                  selectedAircraft={selectedAircraft}
-                  setSelectedAircraft={setSelectedAircraftSpecial}
-                  selectedOpsConfig={selectedOpsConfig}
-                  setSelectedOpsConfig={setSelectedOpsConfigSpecial} />
-                <Config
-                  name={"Config"}
-                  aircraft={config.aircraft && config.aircraft[aircraftIndex]}
-                  setAircraft={setAircraftSpecial}
-                  loading={loadingData}
-                  setLoading={setLoadingData}
-                  selectedOpsConfig={selectedOpsConfig} />
-                <Loading
-                  name={"Loading"}
-                  loading={loadingData}
-                  setLoading={setLoadingData}
-                  aircraft={config.aircraft && config.aircraft[aircraftIndex]}
-                  selectedOpsConfig={selectedOpsConfig} />
-              </MultiPane>
+          <div className='panel' id='leftPanel'>
+            <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
+              <Setup
+                name={"Setup"}
+                config={config}
+                setConfig={setConfigSpecial}
+                selectedAircraft={selectedAircraft}
+                setSelectedAircraft={setSelectedAircraftSpecial}
+                selectedOpsConfig={selectedOpsConfig}
+                setSelectedOpsConfig={setSelectedOpsConfigSpecial} />
+              <Config
+                name={"Config"}
+                aircraft={config.aircraft && config.aircraft[aircraftIndex]}
+                setAircraft={setAircraftSpecial}
+                loading={loadingData}
+                setLoading={setLoadingData}
+                selectedOpsConfig={selectedOpsConfig} />
+              <Loading
+                name={"Loading"}
+                loading={loadingData}
+                setLoading={setLoadingData}
+                aircraft={config.aircraft && config.aircraft[aircraftIndex]}
+                selectedOpsConfig={selectedOpsConfig} />
+            </MultiPane>
+          </div>
+          <div id='rightPanel'>
+            <div className='panel' id='graphHolder'>
+              <Graph
+                aircraft={config.aircraft && config.aircraft[aircraftIndex]}
+                loading={loadingData}
+                selectedConfig={selectedConfig}
+                selectedOpsConfig={selectedOpsConfig} />
             </div>
-            <div id='rightPanel'>
-              <div id='graphHolder'>
-                <Graph
-                  aircraft={config.aircraft && config.aircraft[aircraftIndex]}
-                  loading={loadingData}
-                  selectedConfig={selectedConfig}
-                  selectedOpsConfig={selectedOpsConfig} />
-              </div>
-              <div id='diagramHolder'>
-                <Diagram
-                  aircraft={config.aircraft && config.aircraft[aircraftIndex]}
-                  loading={loadingData}
-                  diagramMode={selectedPanel >= 0 ? DiagramModes.Ops : DiagramModes.All}
-                  selectedConfig={selectedConfig}
-                  selectedOpsConfig={selectedOpsConfig} />
-              </div>
+            <div className='panel' id='diagramHolder'>
+              <Diagram
+                aircraft={config.aircraft && config.aircraft[aircraftIndex]}
+                loading={loadingData}
+                diagramMode={selectedPanel >= 0 ? DiagramModes.Ops : DiagramModes.All}
+                selectedConfig={selectedConfig}
+                selectedOpsConfig={selectedOpsConfig} />
             </div>
           </div>
         </UnitContext>

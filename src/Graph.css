@@ -1,10 +1,15 @@
+#graphHolder {
+  flex: 1;
+  display: grid;
+}
+
 svg.graph {
-  width: 39vw;
   margin: auto;
   user-select: none;
+  max-height: 100%;
 
   text {
-    font-size: 2.7px;
+    font-size: .18rem;
   }
 
   text.title {

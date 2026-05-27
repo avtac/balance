@@ -7,7 +7,8 @@
 
 #configTitleData {
   display: grid;
-  grid-template-columns: repeat(4, 8rem);
+  grid-template-columns: repeat(2, 8rem 4rem);
+  column-gap: 8px;
   justify-content: start;
 
   h4 {
@@ -22,7 +23,6 @@
 .unloaded td {
   color: #555;
   background: #2353;
-
 }
 
 .unloaded .armUpdate {

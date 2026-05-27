@@ -86,11 +86,11 @@ function MultiPane({ selected, setSelected, children }: MultiPaneProps) {
   }
 
   return (
-    <div className='multiPane internalPadding'>
-      <div id='topBar'>
+    <div className='multiPane'>
+      <div className='multiPane-topBar'>
         {Children.map(children, addButton)}
       </div>
-      <div id='body'>
+      <div className='multiPane-body'>
         {Children.map(children, (child: ReactNode, index: number) => {
           return index === selected && child;
         })}

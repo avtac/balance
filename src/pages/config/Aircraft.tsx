@@ -158,6 +158,8 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
               placeholder="Type"
               onChange={(e) => setValue('type', e.target.value)} />
           </div>
+        </div>
+        <div className='rows'>
           <div>
             <h3>Empty Weight ({config.setup.weightUnits}) *</h3>
             <input

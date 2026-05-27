@@ -251,41 +251,43 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
   }
 
   return (
-    <div>
-      <table className="tableData">
-        <tbody>
-          <tr>
-            <th>Name</th>
-            <th>Weight Limit ({units.weightUnits})</th>
-            <th>Color</th>
-            <th>Style</th>
-            <th></th>
-          </tr>
-          {aircraft.limits.limits.map((limit: weightLimitT) => {
-            return <WeightLimit
-              key={limit.id}
-              limit={limit}
-              aircraft={aircraft}
-              setAircraft={setAircraft} />
-          })}
-        </tbody>
-      </table>
-      <button onClick={() => addLimit()}>Add Limit</button>
-      <section id="regions">
+    <>
+      <Subregion>
+        <table className="tableData">
+          <tbody>
+            <tr>
+              <th>Name</th>
+              <th>Weight Limit ({units.weightUnits})</th>
+              <th>Color</th>
+              <th>Style</th>
+              <th></th>
+            </tr>
+            {aircraft.limits.limits.map((limit: weightLimitT) => {
+              return <WeightLimit
+                key={limit.id}
+                limit={limit}
+                aircraft={aircraft}
+                setAircraft={setAircraft} />
+            })}
+          </tbody>
+        </table>
+        <button onClick={() => addLimit()}>Add Limit</button>
+      </Subregion>
+      <Subregion id="regions">
         {aircraft.limits.regions.map((region: regionT) => (
           <WeightRegion key={region.id} region={region} aircraft={aircraft} setAircraft={setAircraft} />
         ))}
         <button onClick={addRegion}>Add Region</button>
-      </section>
-    </div>
+      </Subregion>
+    </>
   );
 }
 
 function Geometry({ aircraft, setAircraft }: aircraftProps & nameProps): ReactNode {
   return (
-    <Subregion>
+    <>
       <AircraftLimits aircraft={aircraft} setAircraft={setAircraft} />
-    </Subregion>
+    </>
   );
 }
 
