@@ -5,7 +5,7 @@ import './Config.css'
 import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement, type RefObject } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
-import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps, type configT, type loadingT } from "../../Types";
+import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps, type configT, type loadingT, type loadingProps } from "../../Types";
 import { activeConfigData, calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber, uploadedConfigs } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -33,21 +33,21 @@ function AddDialog({ ref, mode, onAdd, onRemove }: addDialogProps): ReactElement
   );
 }
 
-interface seatSelectionProps extends aircraftProps {
+interface seatSelectionProps extends aircraftProps, loadingProps {
   seat: seatT;
-  loading: loadingT;
   opsConfigIndex: number;
   airConfigIndex: number;
 }
 
-function SeatSelection({ aircraft, setAircraft, loading, seat, opsConfigIndex, airConfigIndex }: seatSelectionProps): ReactElement {
+function SeatSelection({ aircraft, setAircraft, loading, setLoading, seat, opsConfigIndex, airConfigIndex }: seatSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
   let seatIndex: number = -1;
   if (opsConfigIndex >= 0) seatIndex = aircraft.operationConfigs[opsConfigIndex].seats.findIndex((s) => s.id === seat.id);
 
   let checked = useRef(seatIndex >= 0);
-  const oldWeight = useRef(convertWeightUnit(seat.maxWeight * seat.seatCount, baseWeightUnit, units.weightUnits));
+  const passengers = loading.passengers.find(s => s.location === seat.id);
+  const oldWeight = useRef(convertWeightUnit(seat.maxWeight * seat.seatCount - (passengers ? passengers.count * passengers.avgWeight : 0), baseWeightUnit, units.weightUnits));
 
   const inConfig = aircraft.aircraftConfigs[airConfigIndex].seats.some((s) => s === seat.id);
 
@@ -81,6 +81,12 @@ function SeatSelection({ aircraft, setAircraft, loading, seat, opsConfigIndex, a
     if (opsIndex >= 0) {
       tmp.operationConfigs[opsConfigIndex].seats.splice(opsIndex, 1);
     }
+    const loadIndex = loading.passengers.findIndex(a => a.location === seat.id);
+    if (loadIndex >= 0) {
+      const tmpLoad: loadingT = JSON.parse(JSON.stringify(loading));
+      tmpLoad.passengers.splice(loadIndex, 1);
+      setLoading(tmpLoad);
+    }
     setAircraft(tmp);
   }
 
@@ -97,8 +103,6 @@ function SeatSelection({ aircraft, setAircraft, loading, seat, opsConfigIndex, a
     opsWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
     oldWeight.current = aircraft.operationConfigs[opsConfigIndex].seats[seatIndex].weight;
   }
-
-  const passengers = loading.passengers.find(s => s.location === seat.id);
 
   checked.current = seatIndex >= 0;
   return (
@@ -133,21 +137,21 @@ function SeatSelection({ aircraft, setAircraft, loading, seat, opsConfigIndex, a
   );
 }
 
-interface cargoSelectionProps extends aircraftProps {
+interface cargoSelectionProps extends aircraftProps, loadingProps {
   cargoArea: cargoAreaT,
-  loading: loadingT,
   opsConfigIndex: number
   airConfigIndex: number
 }
 
-function CargoSelection({ aircraft, setAircraft, loading, cargoArea, opsConfigIndex, airConfigIndex }: cargoSelectionProps): ReactElement {
+function CargoSelection({ aircraft, setAircraft, loading, setLoading, cargoArea, opsConfigIndex, airConfigIndex }: cargoSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   let cargoAreaIndex: number = -1;
   const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
   if (opsConfigIndex >= 0) cargoAreaIndex = aircraft.operationConfigs[opsConfigIndex].cargoAreas.findIndex((s) => s.id === cargoArea.id);
 
   let checked = useRef(cargoAreaIndex >= 0);
-  const oldWeight = useRef(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits));
+  const loadedCargo = loading.cargo.find(c => c.location === cargoArea.id);
+  const oldWeight = useRef(convertWeightUnit(cargoArea.maxWeight - (loadedCargo ? loadedCargo.weight : 0), baseWeightUnit, units.weightUnits));
 
   const inConfig = aircraft.aircraftConfigs[airConfigIndex].cargoAreas.some((s) => s === cargoArea.id);
 
@@ -182,6 +186,12 @@ function CargoSelection({ aircraft, setAircraft, loading, cargoArea, opsConfigIn
     if (opsIndex >= 0) {
       tmp.operationConfigs[opsConfigIndex].cargoAreas.splice(opsIndex, 1);
     }
+    const loadIndex = loading.cargo.findIndex(a => a.location === cargoArea.id);
+    if (loadIndex >= 0) {
+      const tmpLoad: loadingT = JSON.parse(JSON.stringify(loading));
+      tmpLoad.cargo.splice(loadIndex, 1);
+      setLoading(tmpLoad);
+    }
     setAircraft(tmp);
   }
 
@@ -198,8 +208,6 @@ function CargoSelection({ aircraft, setAircraft, loading, cargoArea, opsConfigIn
     opsWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight, baseWeightUnit, units.weightUnits), unitPrecision);
     oldWeight.current = aircraft.operationConfigs[opsConfigIndex].cargoAreas[cargoAreaIndex].weight;
   }
-
-  const loadedCargo = loading.cargo.find(c => c.location === cargoArea.id);
 
   checked.current = cargoAreaIndex >= 0;
   return (
@@ -219,7 +227,7 @@ function CargoSelection({ aircraft, setAircraft, loading, cargoArea, opsConfigIn
           type='number'
           onChange={(e) => { setWeight(Number(e.target.value)) }}
           placeholder={units.weightUnits}
-          value={opsWeight ?? ""} />
+          value={opsWeight ? opsWeight : ""} />
       </td>
       <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
         <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} />
@@ -233,12 +241,12 @@ function CargoSelection({ aircraft, setAircraft, loading, cargoArea, opsConfigIn
   );
 }
 
-interface fuelSelectionProps extends aircraftProps {
+interface fuelSelectionProps extends aircraftProps, loadingProps {
   fuelTank: fuelTankT,
   airConfigIndex: number
 }
 
-function FuelSelection({ aircraft, setAircraft, fuelTank, airConfigIndex }: fuelSelectionProps): ReactElement {
+function FuelSelection({ aircraft, setAircraft, loading, setLoading, fuelTank, airConfigIndex }: fuelSelectionProps): ReactElement {
   const units = useContext(UnitContext);
   const dialogRef: RefObject<null | HTMLDialogElement> = useRef(null);
   const inConfig = aircraft.aircraftConfigs[airConfigIndex].fuelTanks.some(s => s === fuelTank.id);
@@ -256,6 +264,12 @@ function FuelSelection({ aircraft, setAircraft, fuelTank, airConfigIndex }: fuel
     const index = tmp.aircraftConfigs[airConfigIndex].fuelTanks.findIndex(a => a === fuelTank.id);
     if (index < 0) return;
     tmp.aircraftConfigs[airConfigIndex].fuelTanks.splice(index, 1);
+    const loadIndex = loading.fuel.findIndex(a => a.tank === fuelTank.id);
+    if (loadIndex >= 0) {
+      const tmpLoad: loadingT = JSON.parse(JSON.stringify(loading));
+      tmpLoad.fuel.splice(loadIndex, 1);
+      setLoading(tmpLoad);
+    }
     setAircraft(tmp);
   }
 
@@ -447,12 +461,11 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
   );
 }
 
-interface ConfigProps extends aircraftProps {
+interface ConfigProps extends aircraftProps, loadingProps {
   selectedOpsConfig: string,
-  loading: loadingT
 }
 
-function Config({ aircraft, setAircraft, loading, selectedOpsConfig }: ConfigProps & nameProps): ReactElement {
+function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig }: ConfigProps & nameProps): ReactElement {
   if (!aircraft) return (<></>);
   const units = useContext(UnitContext);
   const [filter, setFilter] = useState(true);
@@ -471,6 +484,7 @@ function Config({ aircraft, setAircraft, loading, selectedOpsConfig }: ConfigPro
         aircraft={aircraft}
         setAircraft={setAircraft}
         loading={loading}
+        setLoading={setLoading}
         airConfigIndex={configIndex}
         opsConfigIndex={opsConfigIndex}
         seat={seat} />
@@ -485,6 +499,7 @@ function Config({ aircraft, setAircraft, loading, selectedOpsConfig }: ConfigPro
         aircraft={aircraft}
         setAircraft={setAircraft}
         loading={loading}
+        setLoading={setLoading}
         opsConfigIndex={opsConfigIndex}
         airConfigIndex={configIndex} />
     })
@@ -495,6 +510,8 @@ function Config({ aircraft, setAircraft, loading, selectedOpsConfig }: ConfigPro
       return <FuelSelection
         key={fuel.id + " fuelSelect"}
         fuelTank={fuel}
+        loading={loading}
+        setLoading={setLoading}
         aircraft={aircraft}
         setAircraft={setAircraft}
         airConfigIndex={configIndex} />

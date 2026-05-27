@@ -144,6 +144,7 @@ function Balancr() {
                   aircraft={config.aircraft && config.aircraft[aircraftIndex]}
                   setAircraft={setAircraftSpecial}
                   loading={loadingData}
+                  setLoading={setLoadingData}
                   selectedOpsConfig={selectedOpsConfig} />
                 <Loading
                   name={"Loading"}
