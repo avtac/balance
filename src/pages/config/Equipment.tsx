@@ -1,3 +1,4 @@
+import './Equipment.css'
 import '../../Layout.css'
 import { Subregion } from '../../Layout'
 import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type nameProps, baseLengthUnit, baseWeightUnit } from '../../Types'
@@ -108,7 +109,7 @@ function Equipment({ aircraft, setAircraft }: equipmentProps & nameProps): React
   }
 
   return (
-    <Subregion>
+    <Subregion id='editEquipmentTable'>
       <button onClick={addEquipment}>Add Equipment</button>
       <table className='tableData'>
         <tbody>

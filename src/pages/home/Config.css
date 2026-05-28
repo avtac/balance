@@ -11,6 +11,10 @@
   column-gap: 8px;
   justify-content: start;
 
+  @media (max-width: 580px) {
+    grid-template-columns: 8rem 4rem;
+  }
+
   h4 {
     margin: 4px 0px;
   }

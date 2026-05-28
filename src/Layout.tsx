@@ -84,18 +84,37 @@ function MultiPane({ selected, setSelected, children }: MultiPaneProps) {
       {name}
     </button>
   }
+  const mobile = false;
 
   return (
-    <div className='multiPane'>
-      <div className='multiPane-topBar'>
-        {Children.map(children, addButton)}
-      </div>
-      <div className='multiPane-body'>
-        {Children.map(children, (child: ReactNode, index: number) => {
-          return index === selected && child;
-        })}
-      </div>
-    </div>
+    <>
+      {mobile ? (
+        <div className='multiPane' >
+          <div className='multiPane-topBar'>
+            {Children.map(children, addButton)}
+          </div>
+          <div className='multiPane-body'>
+            {Children.map(children, (child: ReactNode, index: number) => {
+              return index === selected && child;
+            })}
+          </div>
+        </div>
+      )
+        :
+        (
+          <div className='multiPane'>
+            <div className='multiPane-topBar'>
+              {Children.map(children, addButton)}
+            </div>
+            <div className='multiPane-body'>
+              {Children.map(children, (child: ReactNode, index: number) => {
+                return index === selected && child;
+              })}
+            </div>
+          </div>
+        )
+      }
+    </>
   );
 }
 

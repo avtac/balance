@@ -1,10 +1,20 @@
 .rows {
-  display: flex;
+  display: grid;
+  max-width: 25rem;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 
+  @media (max-width: 580px) {
+    grid-template-columns: 1fr;
+
+    h3 {
+      margin: .2rem;
+    }
+  }
+
   input {
-    width: 12vw;
-    min-width: 8rem;
+    min-width: 10.4rem;
+    max-width: 10.4rem;
   }
 }
 
@@ -12,6 +22,12 @@
   margin: 3px;
   display: grid;
   gap: 5px;
+
+
+  @media (max-width: 580px) {
+    grid-auto-flow: column;
+    align-items: center;
+  }
 
   #selector {
     display: grid;
@@ -24,14 +40,22 @@
       text-align: center;
       margin: auto;
     }
+
+    @media (max-width: 580px) {
+      grid-template-columns: 1fr;
+    }
   }
 
   #buttons {
     display: grid;
-    grid-template-columns: repeat(3, 7rem);
+    grid-template-columns: repeat(3, 1fr);
     justify-content: space-between;
     gap: 5px;
     max-width: 25rem;
+
+    @media (max-width: 580px) {
+      grid-template-columns: repeat(1, 1fr);
+    }
   }
 }
 
@@ -44,13 +68,16 @@
     margin: 3px 0px;
     display: grid;
     gap: 6px;
-    grid-template-columns: repeat(2, 7.5rem);
+    grid-template-columns: repeat(2, 9rem);
     text-align: center;
+
+    @media (max-width: 580px) {
+      grid-template-columns: repeat(1, 9rem);
+    }
   }
 
   #childAircraftSelect {
     flex-grow: 1;
     max-width: 25rem;
-    ;
   }
 }

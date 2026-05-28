@@ -1,4 +1,5 @@
 import '../../Layout.css'
+import './Cargo.css'
 import { useContext } from "react";
 import { Subregion } from "../../Layout";
 import { type cargoAreaT, type aircraftProps, type aircraftT, baseLengthUnit, baseWeightUnit } from "../../Types";
@@ -83,10 +84,10 @@ function CargoConfig({ aircraft, setAircraft }: aircraftProps) {
         <table className="tableData">
           <tbody>
             <tr>
-              <th style={{ width: "10rem" }}>Name</th>
-              <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-              <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
-              <th style={{ width: "3rem" }}></th>
+              <th>Name</th>
+              <th>{`Arm (${units.lengthUnits})`}</th>
+              <th>{`Max Weight (${units.weightUnits})`}</th>
+              <th></th>
             </tr>
             {aircraft.cargoAreas.map((area: cargoAreaT, index: number) => (
               <CargoInput

@@ -1,18 +1,3 @@
-#configSelectRow {
-  display: flex;
-  justify-content: space-between;
-
-  select {
-    margin: 0px 6px;
-    width: 14rem;
-  }
-
-  #buttons {
-    display: flex;
-    gap: 6px;
-  }
-}
-
 #aircraftSelect {
   div {
     display: grid;
@@ -24,24 +9,6 @@
 
     label {
       margin: auto 0px;
-    }
-  }
-}
-
-#unitsSelect {
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-columns: 8rem 8rem 8rem 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 6px;
-  justify-content: start;
-
-  #fuelDensityHolder {
-    display: flex;
-    gap: 6px;
-
-    input {
-      max-width: 4rem;
     }
   }
 }

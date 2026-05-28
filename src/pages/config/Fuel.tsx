@@ -1,4 +1,5 @@
 import '../../Layout.css'
+import './Fuel.css'
 import { useContext } from "react";
 import { Subregion } from "../../Layout";
 import { type fuelTankT, type aircraftProps, type aircraftT, baseLengthUnit, baseFuelUnit } from "../../Types";
@@ -98,12 +99,12 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
         <table className="tableData">
           <tbody>
             <tr>
-              <th style={{ width: "10rem" }}>Name</th>
-              <th style={{ width: "5rem" }}>{`Arm (${units.lengthUnits})`}</th>
-              <th style={{ width: "5rem" }}>{`Max Fuel (${units.fuelUnits})`}</th>
-              <th style={{ width: "5rem" }}>{`Unusable Fuel (${units.fuelUnits})`}</th>
-              <th style={{ width: "3rem" }}>Removable</th>
-              <th style={{ width: "2rem" }}></th>
+              <th>Name</th>
+              <th>{`Arm (${units.lengthUnits})`}</th>
+              <th>{`Max Fuel (${units.fuelUnits})`}</th>
+              <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
+              <th>Removable</th>
+              <th></th>
             </tr>
             {
               aircraft.fuelTanks.map((tank: fuelTankT, index: number) => (

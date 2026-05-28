@@ -1,14 +1,16 @@
-@media (max-width: 580px) {
-  #editEquipmentTable {
+@media (max-width: 650px) {
+  #fuelConfig {
     tr {
       display: grid;
       grid-auto-flow: column;
-      grid-template-columns: 1fr 1fr 3rem;
+      grid-template-columns: 1fr 1.5fr 5rem;
       grid-template-rows: auto auto;
+      justify-items: center;
     }
 
     th {
       height: min-content;
+      max-width: unset;
     }
   }
 }

@@ -8,8 +8,13 @@
   }
 
   #buttons {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 6px;
+  }
+
+  @media (max-width: 650px) {
+    display: block;
   }
 }
 
@@ -20,6 +25,16 @@
   grid-template-rows: 1fr 1fr;
   gap: 6px;
   justify-content: start;
+
+  @media (max-width: 650px) {
+    grid-auto-flow: row;
+    grid-template-columns: 8rem 8rem;
+    grid-template-rows: unset;
+
+    select {
+      max-width: 6rem;
+    }
+  }
 
   #fuelDensityHolder {
     display: flex;

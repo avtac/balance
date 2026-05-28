@@ -1,4 +1,5 @@
 import '../../Layout.css'
+import './Seats.css'
 import { useContext } from "react";
 import { Subregion } from "../../Layout";
 import { type aircraftT, type seatT, type aircraftProps, baseLengthUnit, baseWeightUnit } from "../../Types";
@@ -101,12 +102,12 @@ function SeatConfig({ aircraft, setAircraft }: aircraftProps) {
         <table className="tableData">
           <tbody>
             <tr>
-              <th style={{ width: "10rem" }}>Name</th>
-              <th style={{ width: "5rem" }}>{`Arm (${units.lengthUnits})`}</th>
-              <th style={{ width: "5rem" }}>{`Max Weight (${units.weightUnits})`}</th>
-              <th style={{ width: "5rem" }}>{`Lateral Offset (${units.lengthUnits})`}</th>
-              <th style={{ width: "5rem" }}># of Seats</th>
-              <th style={{ width: "2rem" }}></th>
+              <th>Name</th>
+              <th>{`Arm (${units.lengthUnits})`}</th>
+              <th>{`Max Weight (${units.weightUnits})`}</th>
+              <th>{`Lateral Offset (${units.lengthUnits})`}</th>
+              <th># of Seats</th>
+              <th></th>
             </tr>
             {aircraft.seats.map((seat: seatT, index: number) => (
               <SeatInput

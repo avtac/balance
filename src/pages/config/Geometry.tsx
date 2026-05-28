@@ -252,7 +252,7 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
 
   return (
     <>
-      <Subregion>
+      <Subregion id="limits">
         <table className="tableData">
           <tbody>
             <tr>

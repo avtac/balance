@@ -1,8 +1,33 @@
-.weightLimit {
+#limits {
+
+  th,
   td {
     padding: 3px;
   }
+
+  @media (max-width: 580px) {
+    tr {
+      display: grid;
+      grid-auto-flow: column;
+      grid-template-columns: 1.4fr 1fr 3rem;
+      grid-template-rows: auto auto;
+    }
+
+    th {
+      height: min-content;
+    }
+
+    td {
+      max-width: 40svw;
+    }
+
+    select,
+    input {
+      max-width: 100%;
+    }
+  }
 }
+
 
 .weightRegion {
   display: flex;

@@ -43,8 +43,16 @@
   flex-direction: column;
   min-height: 0px;
 
+  @media (max-width: 1200px) {
+    width: 100%;
+  }
+
   .multiPane-topBar {
     display: flex;
+
+    @media (max-width: 1200px) {
+      flex-wrap: wrap;
+    }
 
     .topButton {
       padding: 3px;
@@ -52,6 +60,7 @@
       border-radius: 0px;
       background: none;
       font-size: 1.1rem;
+      text-wrap-mode: nowrap;
     }
 
     .topButton:hover {
@@ -86,10 +95,13 @@
     cursor: pointer;
   }
 
-  th {
+  tr:first-child {
     border-bottom: 1px solid black;
+  }
+
+  th {
     height: 2.4rem;
-    color: var(--text-l)
+    color: var(--text-l);
   }
 
   tr:nth-child(even) {

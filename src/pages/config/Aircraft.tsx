@@ -158,8 +158,6 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
               placeholder="Type"
               onChange={(e) => setValue('type', e.target.value)} />
           </div>
-        </div>
-        <div className='rows'>
           <div>
             <h3>Empty Weight ({config.setup.weightUnits}) *</h3>
             <input
@@ -178,8 +176,6 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
               placeholder={config.setup.lengthUnits}
               onChange={(e) => setValue('emptyArm', convertLengthUnit(Number(e.target.value), config.setup.lengthUnits, baseLengthUnit))} />
           </div>
-        </div>
-        <div className='rows'>
           <div>
             <h3>Leading MAC ({config.setup.lengthUnits})</h3>
             <input
