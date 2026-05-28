@@ -210,4 +210,5 @@ button:active {
   flex-direction: column;
   max-width: 70rem;
   min-width: 30rem;
+  min-height: 0px;
 }
