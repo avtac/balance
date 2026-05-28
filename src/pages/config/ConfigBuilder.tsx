@@ -204,6 +204,7 @@ function ConfigBuilder() {
             <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
               <Setup
                 name={"Setup"}
+                selectedAircraft={selectedAircraft}
                 config={config}
                 setConfig={setConfigSpecial} />
               <AircraftConfig name={"Aircraft"}

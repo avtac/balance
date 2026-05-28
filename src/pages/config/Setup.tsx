@@ -6,7 +6,11 @@ import { activeConfigBuilder, roundNumber, savedBuilderConfigs, saveStringToFile
 import { getNewConfig } from "./ConfigBuilder";
 import { convertDensityUnits, fuelTypes, fuelUnitsElements, lengthUnitsElements, unitPrecision, weightUnitsElements } from '../../UnitsContext';
 
-function Units({ config, setConfig }: configProps): ReactNode {
+interface unitsProps extends configProps {
+  macAvailable: boolean;
+}
+
+function Units({ config, setConfig, macAvailable }: unitsProps): ReactNode {
   const index = fuelTypes.findIndex(t => t.density === config.setup.fuelDensity);
   const [selectedDensity, setSelectedDensity] = useState(index >= 0 ? index : fuelTypes.length - 1);
   const oldDensity = useRef(config.setup.fuelDensity);
@@ -15,6 +19,10 @@ function Units({ config, setConfig }: configProps): ReactNode {
     tmp.setup[name] = value;
     setConfig(tmp);
   }
+
+  useEffect(() => {
+    config.setup.useMAC = macAvailable;
+  }, [])
 
   function setSelectedDensitySpecial(selection: number) {
     setSelectedDensity(selection);
@@ -66,8 +74,11 @@ function Units({ config, setConfig }: configProps): ReactNode {
   return (
     <Subregion>
       <h3>Units</h3>
-      <label>Use MAC</label>
-      <input type='checkbox' checked={config.setup.useMAC} onChange={(e) => setValue('useMAC', e.target.checked)} />
+      {macAvailable && (<>
+        <label>Use MAC</label>
+        <input type='checkbox' checked={config.setup.useMAC} onChange={(e) => setValue('useMAC', e.target.checked)} />
+      </>
+      )}
       <div id='unitsSelect'>
         <label htmlFor="weightUnitSelect">Weight</label>
         <select id="weightUnitSelect" value={config.setup.weightUnits} onChange={e => setValue('weightUnits', e.target.value as weightUnitsT)}>
@@ -108,7 +119,11 @@ function Units({ config, setConfig }: configProps): ReactNode {
   )
 }
 
-function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
+interface SetupProps extends configProps {
+  selectedAircraft: string;
+}
+
+function Setup({ config, setConfig, selectedAircraft }: SetupProps & nameProps): ReactNode {
   const foundConfigs: { id: string, name: string }[] = []
   const [availableConfigList, setAvailableConfigList] = useState(foundConfigs);
 
@@ -217,6 +232,7 @@ function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
     setConfig(selectedConfig)
   }
 
+  const selectedAircraftIndex = config.aircraft ? config.aircraft.findIndex(a => a.id === selectedAircraft) : -1;
   let availableConfigs = availableConfigList.sort((a, b) => a.name.localeCompare(b.name)).map((v) => <option value={v.id} key={v.id}>{v.name}</option>)
   return (
     <>
@@ -238,7 +254,10 @@ function Setup({ config, setConfig }: configProps & nameProps): ReactNode {
         <h3>Name</h3>
         <input id="configName" value={config.name} onChange={(e) => setName(e.target.value)} />
       </Subregion>
-      <Units config={config} setConfig={setConfig} />
+      <Units
+        macAvailable={selectedAircraftIndex >= 0 ? (config.aircraft[selectedAircraftIndex].config.mac != 0 && config.aircraft[selectedAircraftIndex].config.leadingEdgeMAC != 0) : false}
+        config={config}
+        setConfig={setConfig} />
     </>
   )
 }
