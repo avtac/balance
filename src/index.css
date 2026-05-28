@@ -49,6 +49,10 @@
 
   --margin-size: 9px;
 
+  @media (max-width: 1200px) {
+    --margin-size: 5px;
+  }
+
   /* font: 18px/145% var(--sans); */
   letter-spacing: 0.18px;
   color-scheme: light dark;
@@ -199,16 +203,43 @@ button:active {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   overflow-x: auto;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 #leftPanel {
-  min-width: 43rem;
+  min-width: 44rem;
 }
 
 #rightPanel {
   display: flex;
   flex-direction: column;
   max-width: 70rem;
-  min-width: 30rem;
+  min-width: 25rem;
   min-height: 0px;
+
+  @media (max-width: 1200px) {
+    position: absolute;
+    flex-direction: row;
+    right: 0px;
+    top: 0px;
+    height: 75px;
+    width: 250px;
+    min-width: 0px;
+
+    transition-property: width, height, top, right;
+    transition-duration: 300ms;
+    transition-timing-function: ease;
+  }
+}
+
+@media (max-width: 1200px) {
+  #rightPanel:hover {
+    height: 40svh;
+    width: calc(100svw - var(--margin-size) * 2);
+    top: var(--margin-size);
+    right: var(--margin-size);
+  }
 }
