@@ -12,3 +12,9 @@
     }
   }
 }
+
+#seatConfig {
+  input {
+    max-width: 8rem;
+  }
+}

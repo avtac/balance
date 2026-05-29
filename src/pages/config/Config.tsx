@@ -48,8 +48,8 @@ function SeatSelection({ seat, configIndex, aircraft, setAircraft }: seatSelecti
         <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td>{seat.name}</td>
-      <td>{roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td>{roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision)} {units.lengthUnits}</td>
+      <td>{roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
       <td>{seat.seatCount}</td>
     </tr>
   );
@@ -95,8 +95,8 @@ function CargoSelection({ cargoArea, configIndex, aircraft, setAircraft }: cargo
         <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td>{cargoArea.name}</td>
-      <td>{roundNumber(convertLengthUnit(cargoArea.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td>{roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertLengthUnit(cargoArea.arm, baseLengthUnit, units.lengthUnits), unitPrecision)} {units.lengthUnits}</td>
+      <td>{roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
     </tr>
   );
 }
@@ -137,9 +137,9 @@ function FuelSelection({ fuelTank, configIndex, aircraft, setAircraft }: fuelSel
           type={"checkbox"} />
       </td>
       <td>{fuelTank.name}</td>
-      <td>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td>{roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
-      <td>{roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
+      <td>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)} {units.fuelUnits}</td>
+      <td>{roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)} {units.fuelUnits}</td>
+      <td>{roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)} {units.fuelUnits}</td>
     </tr>
   );
 }
@@ -199,8 +199,8 @@ function EquipmentSelection({ equipment, configIndex, aircraft, setAircraft }: E
         <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{equipment.name}</td>
-      <td onClick={selectCheckbox}>{roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td onClick={selectCheckbox}>{roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td onClick={selectCheckbox}>{roundNumber(convertLengthUnit(equipment.arm, baseLengthUnit, units.lengthUnits), unitPrecision)} {units.lengthUnits}</td>
+      <td onClick={selectCheckbox}>{roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
       <td>
         <input
           id={`equipmentCount-${equipment.id}`}

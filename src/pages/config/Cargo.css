@@ -14,3 +14,9 @@
     }
   }
 }
+
+#cargoConfig {
+  input {
+    max-width: 8rem;
+  }
+}

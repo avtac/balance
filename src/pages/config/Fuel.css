@@ -14,3 +14,9 @@
     }
   }
 }
+
+#fuelConfig {
+  input {
+    max-width: 8rem;
+  }
+}

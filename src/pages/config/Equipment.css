@@ -12,3 +12,9 @@
     }
   }
 }
+
+#editEquipmentTable {
+  input {
+    max-width: 8rem;
+  }
+}
