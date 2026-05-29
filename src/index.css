@@ -240,8 +240,8 @@ button:active {
     flex-direction: row;
     right: 0px;
     top: 0px;
-    height: 75px;
-    width: 250px;
+    height: 60px;
+    width: 200px;
     min-width: 0px;
 
     transition-property: width, height, top, right;

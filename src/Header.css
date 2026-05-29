@@ -17,4 +17,19 @@
     width: 8rem;
     border-radius: 0px;
   }
+
+  @media (max-width: 580px) {
+    grid-template-columns: auto auto;
+    justify-content: start;
+    height: 60px;
+
+    h1 {
+      font-size: 2rem;
+      margin: auto .5rem;
+    }
+
+    button {
+      display: none;
+    }
+  }
 }

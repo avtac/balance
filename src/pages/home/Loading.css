@@ -40,3 +40,31 @@ h2 {
   align-items: center;
   width: max-content;
 }
+
+#fuel,
+#cargo,
+#passengers {
+  table {
+    width: 100%;
+    max-width: fit-content;
+  }
+
+  tr {
+    display: grid;
+    grid-template-columns: minmax(8rem, 16rem) minmax(4rem, 10rem) minmax(5rem, 9rem);
+  }
+}
+
+#fuel {
+  tr {
+    grid-template-columns: minmax(7rem, 14rem) minmax(3rem, 9rem) minmax(3rem, 10rem) minmax(3rem, 9rem);
+  }
+
+  @media (max-width: 450px) {
+    grid-template-columns: minmax(7rem, 14rem) minmax(3rem, 9rem) minmax(3rem, 9rem);
+
+    .narrowFilter {
+      display: none;
+    }
+  }
+}

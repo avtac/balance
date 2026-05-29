@@ -15,7 +15,7 @@ interface seatLoadingProps extends loadingProps {
 }
 
 function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: seatLoadingProps): ReactNode {
-  // const units = useContext(UnitContext);
+  const units = useContext(UnitContext);
   const seatIndex = aircraft.operationConfigs[opsConfigIndex].seats.findIndex(s => s.id === seat.id);
   let opsUsedSeats = 0;
   if (seatIndex >= 0)
@@ -53,7 +53,7 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
             placeholder='Count'
           />}
       </td>
-      <td>{totalWeight}</td>
+      <td>{totalWeight} {units.weightUnits}</td>
     </tr>
   )
 }
@@ -102,7 +102,7 @@ function CargoLoading({ loading, setLoading, aircraft, opsConfigIndex, cargoArea
             placeholder={units.weightUnits}
           />}
       </td>
-      <td>{totalWeight}</td>
+      <td>{totalWeight} {units.weightUnits}</td>
     </tr>
   )
 }
@@ -170,7 +170,7 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
           placeholder={units.fuelUnits}
         />
       </td>
-      <td>{roundNumber(loadedWeight - consumedFuel, unitPrecision)}</td>
+      <td className='narrowFilter'>{roundNumber(loadedWeight - consumedFuel, unitPrecision)} {units.fuelUnits}</td>
     </tr>
   )
 }
@@ -490,13 +490,8 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
           setLoading={setLoading} />
       </Subregion>
       <MultiPane>
-        <Subregion name="Passengers">
+        <Subregion id='passengers' name="Passengers">
           <table className="tableData">
-            <colgroup>
-              <col style={{ width: "9rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-            </colgroup>
             <thead>
               <tr>
                 <th>Name</th>
@@ -509,13 +504,8 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
             </tbody>
           </table>
         </Subregion>
-        <Subregion name="Cargo">
+        <Subregion id='cargo' name="Cargo">
           <table className="tableData">
-            <colgroup>
-              <col style={{ width: "9rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-            </colgroup>
             <thead>
               <tr>
                 <th>Name</th>
@@ -528,19 +518,14 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
             </tbody>
           </table>
         </Subregion>
-        <Subregion name="Fuel">
+        <Subregion id='fuel' name="Fuel">
           <table className="tableData">
-            <colgroup>
-              <col style={{ width: "9rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-            </colgroup>
             <thead>
               <tr>
                 <th>Name</th>
                 <th>Fuel Load ({units.fuelUnits})</th>
                 <th>Consumed Fuel ({units.fuelUnits})</th>
-                <th>Landing Fuel ({units.fuelUnits})</th>
+                <th className='narrowFilter'>Landing Fuel ({units.fuelUnits})</th>
               </tr>
             </thead>
             <tbody>

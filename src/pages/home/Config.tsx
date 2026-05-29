@@ -111,8 +111,8 @@ function SeatSelection({ aircraft, setAircraft, loading, setLoading, seat, opsCo
         <input className="clickable" disabled={!inConfig} onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td className="clickable" onClick={selectCheckbox}>{seat.name}</td>
-      <td>{roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td>{roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td className='narrowFilter'>{roundNumber(convertLengthUnit(seat.arm, baseLengthUnit, units.lengthUnits), unitPrecision)} {units.lengthUnits}</td>
+      <td className='narrowFilter'>{roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
       <td>{seat.seatCount}</td>
       <td>
         <input
@@ -216,8 +216,8 @@ function CargoSelection({ aircraft, setAircraft, loading, setLoading, cargoArea,
         <input className="clickable" disabled={!inConfig} onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td className="clickable" onClick={selectCheckbox}>{cargoArea.name}</td>
-      <td>{roundNumber(convertLengthUnit(cargoArea.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td>{roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td className='narrowFilter'>{roundNumber(convertLengthUnit(cargoArea.arm, baseLengthUnit, units.lengthUnits), unitPrecision)} {units.lengthUnits}</td>
+      <td>{roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
       <td>
         <input
           id={"cargoWeightInput" + cargoArea.id}
@@ -276,9 +276,9 @@ function FuelSelection({ aircraft, setAircraft, loading, setLoading, fuelTank, a
   return (
     <tr className={"fuelTankSelect" + (fuelTank.removable && !inConfig ? " unused" : "")}>
       <td>{fuelTank.name}</td>
-      <td>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)}</td>
-      <td>{roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
-      <td>{roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}</td>
+      <td className='narrowFilter'>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)} {units.lengthUnits}</td>
+      <td>{roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)} {units.fuelUnits}</td>
+      <td>{roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)} {units.fuelUnits}</td>
       {fuelTank.removable ?
         <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
           <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} />
@@ -389,9 +389,9 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
         className='clickable'
         onClick={() => { if (!inConfig) addToConfig(); else removeFromConfig(); }}>{equipment.name}</td>
       <td
-        className='clickable armUpdate'
+        className='clickable armUpdate narrowFilter'
         onClick={() => { if (dialogRef.current && inConfig) dialogRef.current.show() }}>
-        {arm}
+        {arm} {units.lengthUnits}
         <dialog
           ref={dialogRef}
           closedby='any'>
@@ -423,9 +423,9 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
         </dialog>
       </td>
       <td
-        className='clickable armUpdate'
+        className='clickable armUpdate narrowFilter'
         onClick={() => { if (weightDialogRef.current && inConfig) weightDialogRef.current.show() }}>
-        {roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)}
+        {roundNumber(convertWeightUnit(equipment.weight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}
         <dialog
           ref={weightDialogRef}
           closedby='any'>
@@ -456,7 +456,7 @@ function EquipmentSelection({ aircraft, setAircraft, equipment, airConfigIndex }
           type={"number"}
           onChange={(e) => setAircraftCount(Number(e.target.value))} />
       </td>
-      <td>{roundNumber(convertWeightUnit(equipment.weight * count, baseWeightUnit, units.weightUnits), unitPrecision)}</td>
+      <td>{roundNumber(convertWeightUnit(equipment.weight * count, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
     </tr>
   );
 }
@@ -547,91 +547,70 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
         </div>
       </Subregion>
       <MultiPane>
-        <Subregion name={"Seats"}>
+        <Subregion id='seatConfigTable' name={"Seats"}>
           <table className="tableData">
-            <colgroup>
-              <col />
-              <col style={{ width: "9rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-            </colgroup>
-            <tbody>
+            <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th>Name</th>
-                <th >{`Arm (${units.lengthUnits})`}</th>
-                <th >{`Max Weight (${units.weightUnits})`}</th>
+                <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
+                <th className='narrowFilter'>{`Max Weight (${units.weightUnits})`}</th>
                 <th ># of Seats</th>
                 <th >Ops Load</th>
                 <th></th>
               </tr>
+            </thead>
+            <tbody>
               {seatRows}
             </tbody>
           </table>
         </Subregion>
-        <Subregion name={"Cargo Areas"}>
+        <Subregion id='cargoConfigTable' name={"Cargo Areas"}>
           <table className="tableData">
-            <colgroup>
-              <col />
-              <col style={{ width: "9rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-            </colgroup>
-            <tbody>
+            <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th>Name</th>
-                <th>{`Arm (${units.lengthUnits})`}</th>
+                <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
                 <th>{`Max Weight (${units.weightUnits})`}</th>
                 <th>Ops Load</th>
                 <th></th>
               </tr>
+            </thead>
+            <tbody>
               {cargoRows}
             </tbody>
           </table>
         </Subregion>
-        <Subregion name={"Fuel Tanks"}>
+        <Subregion id='fuelConfigTable' name={"Fuel Tanks"}>
           <table className="tableData">
-            <colgroup>
-              <col style={{ width: "9rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-            </colgroup>
-            <tbody>
+            <thead>
               <tr>
                 <th>Name</th>
-                <th>{`Arm (${units.lengthUnits})`}</th>
+                <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
                 <th>{`Max Fuel (${units.fuelUnits})`}</th>
                 <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
                 <th></th>
               </tr>
+            </thead>
+            <tbody>
               {fuelRows}
             </tbody>
           </table>
         </Subregion>
-        <Subregion name={"Equipment"}>
+        <Subregion id='equipmentConfigTable' name={"Equipment"}>
           <table className="tableData">
-            <colgroup>
-              <col />
-              <col style={{ width: "9rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-              <col style={{ width: "3rem" }} />
-            </colgroup>
-            <tbody>
+            <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th>Name</th>
-                <th>{`Arm (${units.lengthUnits})`}</th>
-                <th>{`Weight (${units.weightUnits})`}</th>
+                <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
+                <th className='narrowFilter'>{`Weight (${units.weightUnits})`}</th>
                 <th>Count</th>
                 <th>{`Total Weight (${units.weightUnits})`}</th>
               </tr>
+            </thead>
+            <tbody>
               {equipmentRows}
             </tbody>
           </table>
