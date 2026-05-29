@@ -218,7 +218,7 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
 
   return (
     <>
-      <Subregion id="configSelectRow">
+      <Subregion id="balancr-configSelectRow">
         <div>
           <label htmlFor='configFileSelect'>Active Config File</label>
           <select id="configFileSelect" value={config.id} onChange={e => selectConfig(e.target.value)}>

@@ -45,6 +45,7 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
           <p>Seats Filled</p>
           :
           <input
+            id={'seatCount' + seat.id}
             type='number'
             min={0}
             max={seat.seatCount - opsUsedSeats}
@@ -93,6 +94,7 @@ function CargoLoading({ loading, setLoading, aircraft, opsConfigIndex, cargoArea
           <p>Cargo Filled</p>
           :
           <input
+            id={'cargoLoad' + cargoArea.id}
             type='number'
             min={0}
             max={roundNumber(convertWeightUnit(cargoArea.maxWeight - opsWeight, baseWeightUnit, units.weightUnits), unitPrecision)}
@@ -122,20 +124,22 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
 
   function setLoad(weight: number): void {
     const tmp: loadingT = JSON.parse(JSON.stringify(loading));
-    weight = convertFuelUnits(Math.min(weight, fuelTank.maxWeight), units.fuelUnits, baseFuelUnit, units.fuelDensity);
+    weight = Math.min(
+      convertFuelUnits(weight, units.fuelUnits, baseFuelUnit, units.fuelDensity),
+      fuelTank.maxWeight);
     if (!tmp.fuel.some(c => c.tank === fuelTank.id))
-      tmp.fuel.push({ tank: fuelTank.id, tripFuel: weight, loadedFuel: weight });
+      tmp.fuel.push({ tank: fuelTank.id, tripFuel: Math.max(weight - fuelTank.unusable, 0), loadedFuel: weight });
     else {
       const index = tmp.fuel.findIndex(c => c.tank === fuelTank.id);
       tmp.fuel[index].loadedFuel = weight;
-      tmp.fuel[index].tripFuel = Math.min(weight - fuelTank.unusable, tmp.fuel[index].tripFuel);
+      tmp.fuel[index].tripFuel = Math.min(Math.max(weight - fuelTank.unusable, 0), tmp.fuel[index].tripFuel);
     }
     setLoading(tmp);
   }
 
   function setUsed(weight: number): void {
     const tmp: loadingT = JSON.parse(JSON.stringify(loading));
-    weight = convertFuelUnits(Math.min(weight, loadedWeight - fuelTank.unusable), units.fuelUnits, baseFuelUnit, units.fuelDensity);
+    weight = Math.min(convertFuelUnits(weight, units.fuelUnits, baseFuelUnit, units.fuelDensity), fuel ? Math.max(fuel.loadedFuel - fuelTank.unusable, 0) : fuelTank.maxWeight);
     if (!tmp.fuel.some(c => c.tank === fuelTank.id))
       tmp.fuel.push({ tank: fuelTank.id, tripFuel: weight, loadedFuel: fuelTank.maxWeight });
     else {
@@ -150,10 +154,10 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
       <td>{fuelTank.name}</td>
       <td>
         <input
+          id={'fuelTankLoad' + fuelTank.id}
           type='number'
-          min={roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}
-          max={roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}
-          step={1}
+          min={0}
+          max={roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) + 1}
           value={loadedWeight ? loadedWeight : ""}
           onChange={e => setLoad(Number(e.target.value))}
           placeholder={units.fuelUnits}
@@ -161,10 +165,10 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
       </td>
       <td>
         <input
+          id={'fuelTankUnusable' + fuelTank.id}
           type='number'
           min={0}
-          max={loadedWeight - roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)}
-          step={1}
+          max={loadedWeight - roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) + 1}
           value={consumedFuel ? consumedFuel : ""}
           onChange={e => setUsed(Number(e.target.value))}
           placeholder={units.fuelUnits}

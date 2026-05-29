@@ -21,7 +21,7 @@
   --input-bg: #FFF;
   --button-bg: #77d;
   --dialog-bg: #777;
-  --warn-bg: #3114;
+  --warn-bg: #311;
 
   /* Accents */
   --accent: #3333BB;
@@ -88,7 +88,7 @@
     --input-bg: #131639;
     --button-bg: #323a86;
     --dialog-bg: #555;
-    --warn-bg: #4225;
+    --warn-bg: #422;
 
     /* Accents */
     --accent: #3041eb;
@@ -243,29 +243,35 @@ button:active {
     height: 60px;
     width: 200px;
     min-width: 0px;
-
-    transition-property: width, height, top, right;
-    transition-duration: 300ms;
-    transition-timing-function: ease;
   }
 }
 
 @media (max-width: 1200px) and (min-width: 500px) {
   #rightPanel:hover {
-    height: 30rem;
-    max-height: 60svh;
+    max-width: unset;
+    max-height: fit-content;
+    height: fit-content;
     width: calc(100svw - var(--margin-size) * 2);
     top: var(--margin-size);
     right: var(--margin-size);
+
+    transition-property: width, height, top, right;
+    transition-duration: 300ms;
+    transition-timing-function: ease-out;
   }
 }
 
 @media (max-width: 500px) {
   #rightPanel:hover {
     display: grid;
+    height: fit-content;
     width: calc(100svw - var(--margin-size) * 2);
-    height: calc(60svh - var(--margin-size) * 2);
+    /* height: calc(50svh - var(--margin-size) * 2); */
     top: var(--margin-size);
     right: var(--margin-size);
+
+    transition-property: width, height, top, right;
+    transition-duration: 300ms;
+    transition-timing-function: ease-out;
   }
 }

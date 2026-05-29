@@ -11,11 +11,28 @@
     margin: 0;
   }
 
-  button {
-    margin: auto;
-    padding: 5px;
-    width: 8rem;
-    border-radius: 0px;
+  nav {
+    margin: 6px;
+    display: grid;
+    gap: 4px;
+
+    button {
+      margin: auto;
+      padding: 5px;
+      width: 8rem;
+      border-radius: 0px;
+      background-color: #0003;
+      border-left: 1px solid var(--accent);
+      color: var(--text-h);
+    }
+
+    button:hover {
+      background-color: oklch(from #0004 calc(l * 2) c h);
+    }
+
+    button:active {
+      background-color: oklch(from var(--button-bg) calc(l * 0.5) c h);
+    }
   }
 
   @media (max-width: 580px) {
@@ -28,8 +45,12 @@
       margin: auto .5rem;
     }
 
-    button {
-      display: none;
+    nav {
+      width: 4rem;
+
+      button {
+        padding: 4px 0px;
+      }
     }
   }
 }

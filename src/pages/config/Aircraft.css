@@ -23,9 +23,8 @@
   display: grid;
   gap: 5px;
 
-
   @media (max-width: 580px) {
-    grid-auto-flow: column;
+    grid-template-columns: auto 8rem;
     align-items: center;
   }
 
@@ -33,7 +32,7 @@
     display: grid;
     grid-template-columns: 5rem 1fr;
     justify-content: space-between;
-    max-width: 25rem;
+    max-width: 20rem;
 
     label {
       margin: 0px 3px;
@@ -48,13 +47,12 @@
 
   #buttons {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 8rem);
     justify-content: space-between;
     gap: 5px;
-    max-width: 25rem;
 
     @media (max-width: 580px) {
-      grid-template-columns: repeat(1, 1fr);
+      grid-template-columns: 8rem;
     }
   }
 }

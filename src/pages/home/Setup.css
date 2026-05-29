@@ -1,3 +1,23 @@
+#balancr-configSelectRow {
+  display: flex;
+  justify-content: space-between;
+
+  select {
+    margin: 0px 6px;
+    width: 14rem;
+  }
+
+  #buttons {
+    display: grid;
+    grid-template-columns: 8rem;
+    gap: 6px;
+  }
+
+  @media (max-width: 580px) {
+    display: block;
+  }
+}
+
 #aircraftSelect {
   div {
     display: grid;

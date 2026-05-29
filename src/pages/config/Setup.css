@@ -4,12 +4,13 @@
 
   select {
     margin: 0px 6px;
-    width: 14rem;
+    width: 13rem;
   }
 
   #buttons {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    margin-top: var(--margin-size);
+    grid-template-columns: 8rem 8rem;
     gap: 6px;
   }
 
@@ -26,7 +27,7 @@
   gap: 6px;
   justify-content: start;
 
-  @media (max-width: 650px) {
+  @media (max-width: 580px) {
     grid-auto-flow: row;
     grid-template-columns: 8rem 8rem;
     grid-template-rows: unset;

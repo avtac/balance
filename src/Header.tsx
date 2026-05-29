@@ -5,10 +5,10 @@ function Header(): ReactNode {
   const title = "Teeter"
   return (
     <header id='header'>
-      <div>
+      <nav>
         <button onClick={() => window.location.href = '/'}>Home</button>
         <button onClick={() => window.location.href = '/config'}>Config</button>
-      </div>
+      </nav>
       <h1>{title}</h1>
     </header>
   );

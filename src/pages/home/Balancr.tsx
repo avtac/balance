@@ -2,7 +2,7 @@ import './Balancr.css'
 import { MultiPane } from '../../Layout'
 import Diagram from '../../Diagram'
 import Graph from '../../Graph.tsx'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { type configT, DiagramModes, type aircraftT, type aircraftConfigT, type loadingT, type operationConfigT } from '../../Types'
 import Header from '../../Header.tsx'
 import Setup from './Setup.tsx'
@@ -41,6 +41,28 @@ function checkConfigChanged(activeConfig: configT) {
     }
   }
   return false;
+}
+
+interface warningProps {
+  display: boolean;
+  text: string;
+}
+
+function Warning({ display, text }: warningProps): ReactNode {
+  const [displaying, setDisplaying] = useState(display);
+
+  return (
+    <>
+      {display &&
+        <div
+          id="changeWarning"
+          className={displaying ? "" : "hide"}
+          onClick={() => setDisplaying(false)}>
+          <p>{text}</p>
+        </div>
+      }
+    </>
+  )
 }
 
 function Balancr() {
@@ -121,12 +143,8 @@ function Balancr() {
   return (
     <>
       <Header />
+      <Warning text={"Config has changed and does not match original"} display={changed} />
       <section id="content">
-        {changed &&
-          <div id="changeWarning">
-            <p>Config has changed and does not match original</p>
-          </div>
-        }
         <UnitContext value={config.setup}>
           <div className='panel' id='leftPanel'>
             <MultiPane selected={selectedPanel} setSelected={setSelectedPanel}>
