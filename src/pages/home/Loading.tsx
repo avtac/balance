@@ -122,7 +122,7 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
 
   function setLoad(weight: number): void {
     const tmp: loadingT = JSON.parse(JSON.stringify(loading));
-    weight = convertFuelUnits(weight, units.fuelUnits, baseFuelUnit, units.fuelDensity);
+    weight = convertFuelUnits(Math.min(weight, fuelTank.maxWeight), units.fuelUnits, baseFuelUnit, units.fuelDensity);
     if (!tmp.fuel.some(c => c.tank === fuelTank.id))
       tmp.fuel.push({ tank: fuelTank.id, tripFuel: weight, loadedFuel: weight });
     else {
@@ -135,7 +135,7 @@ function FuelLoading({ loading, setLoading, fuelTank }: fuelLoadingProps): React
 
   function setUsed(weight: number): void {
     const tmp: loadingT = JSON.parse(JSON.stringify(loading));
-    weight = convertFuelUnits(weight, units.fuelUnits, baseFuelUnit, units.fuelDensity);
+    weight = convertFuelUnits(Math.min(weight, loadedWeight - fuelTank.unusable), units.fuelUnits, baseFuelUnit, units.fuelDensity);
     if (!tmp.fuel.some(c => c.tank === fuelTank.id))
       tmp.fuel.push({ tank: fuelTank.id, tripFuel: weight, loadedFuel: fuelTank.maxWeight });
     else {
