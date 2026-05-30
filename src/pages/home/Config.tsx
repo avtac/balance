@@ -548,16 +548,16 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
       </Subregion>
       <MultiPane>
         <Subregion id='seatConfigTable' name={"Seats"}>
-          <table className="tableData">
+          <table className="tableData sortedTable">
             <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th>Name</th>
                 <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
                 <th className='narrowFilter'>{`Max Weight (${units.weightUnits})`}</th>
-                <th ># of Seats</th>
-                <th >Ops Load</th>
-                <th></th>
+                <th># of Seats</th>
+                <th>Ops Load</th>
+                <th className="noSort"></th>
               </tr>
             </thead>
             <tbody>
@@ -566,7 +566,7 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
           </table>
         </Subregion>
         <Subregion id='cargoConfigTable' name={"Cargo Areas"}>
-          <table className="tableData">
+          <table className="tableData sortedTable">
             <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
@@ -574,7 +574,7 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
                 <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
                 <th>{`Max Weight (${units.weightUnits})`}</th>
                 <th>Ops Load</th>
-                <th></th>
+                <th className="noSort"></th>
               </tr>
             </thead>
             <tbody>
@@ -583,14 +583,14 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
           </table>
         </Subregion>
         <Subregion id='fuelConfigTable' name={"Fuel Tanks"}>
-          <table className="tableData">
+          <table className="tableData sortedTable">
             <thead>
               <tr>
                 <th>Name</th>
                 <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
                 <th>{`Max Fuel (${units.fuelUnits})`}</th>
                 <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
-                <th></th>
+                <th className="noSort"></th>
               </tr>
             </thead>
             <tbody>
@@ -599,7 +599,7 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
           </table>
         </Subregion>
         <Subregion id='equipmentConfigTable' name={"Equipment"}>
-          <table className="tableData">
+          <table className="tableData sortedTable">
             <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>

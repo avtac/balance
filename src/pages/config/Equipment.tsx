@@ -111,15 +111,17 @@ function Equipment({ aircraft, setAircraft }: equipmentProps & nameProps): React
   return (
     <Subregion id='editEquipmentTable'>
       <button onClick={addEquipment}>Add Equipment</button>
-      <table className='tableData'>
-        <tbody>
+      <table className='tableData sortedTable'>
+        <thead>
           <tr>
             <th>Name</th>
             <th>{`Weight (${units.weightUnits})`}</th>
             <th>Cargo Area</th>
             <th>{`Arm (${units.lengthUnits})`}</th>
-            <th></th>
+            <th className='noSort'></th>
           </tr>
+        </thead>
+        <tbody>
           {[...aircraft.equipment].map((data, i) => {
             return <EquipmentRow
               key={data.id}

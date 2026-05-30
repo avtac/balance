@@ -299,8 +299,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
       </Subregion>
       <MultiPane>
         <Subregion name={"Seats"}>
-          <table className="tableData">
-            <tbody>
+          <table className="tableData sortedTable">
+            <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
@@ -308,6 +308,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
                 <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
                 <th style={{ width: "3rem" }}># of Seats</th>
               </tr>
+            </thead>
+            <tbody>
               {getSortedByArm(aircraft.seats).map((seat: seatT) => {
                 return <SeatSelection key={seat.id + " seatSelect"} configIndex={configIndex} seat={seat} aircraft={aircraft} setAircraft={setAircraft} />
               })}
@@ -315,14 +317,16 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
           </table>
         </Subregion>
         <Subregion name={"Cargo Areas"}>
-          <table className="tableData">
-            <tbody>
+          <table className="tableData sortedTable">
+            <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
                 <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
                 <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
               </tr>
+            </thead>
+            <tbody>
               {getSortedByArm(aircraft.cargoAreas).map((cargo: cargoAreaT) => {
                 return <CargoSelection key={cargo.id + " cargoSelect"} configIndex={configIndex} cargoArea={cargo} aircraft={aircraft} setAircraft={setAircraft} />
               })}
@@ -330,8 +334,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
           </table>
         </Subregion>
         <Subregion name={"Fuel Tanks"}>
-          <table className="tableData">
-            <tbody>
+          <table className="tableData sortedTable">
+            <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
@@ -339,6 +343,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
                 <th style={{ width: "3rem" }}>{`Max Fuel (${units.fuelUnits})`}</th>
                 <th style={{ width: "3rem" }}>{`Unusable Fuel (${units.fuelUnits})`}</th>
               </tr>
+            </thead>
+            <tbody>
               {getSortedByArm(aircraft.fuelTanks).map((fuel: fuelTankT) => {
                 return <FuelSelection key={fuel.id + " fuelSelect"} configIndex={configIndex} fuelTank={fuel} aircraft={aircraft} setAircraft={setAircraft} />
               })}
@@ -346,8 +352,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
           </table>
         </Subregion>
         <Subregion name={"Equipment"}>
-          <table className="tableData">
-            <tbody>
+          <table className="tableData sortedTable">
+            <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
@@ -355,6 +361,8 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
                 <th style={{ width: "3rem" }}>{`Weight (${units.weightUnits})`}</th>
                 <th style={{ width: "3rem" }}>Count</th>
               </tr>
+            </thead>
+            <tbody>
               {getSortedByArm(aircraft.equipment).map((equipment: equipmentT) => {
                 return <EquipmentSelection key={equipment.id + " equipSelect"} configIndex={configIndex} equipment={equipment} aircraft={aircraft} setAircraft={setAircraft} />
               })}

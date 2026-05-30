@@ -1,6 +1,7 @@
-import { Children, isValidElement, useState, type ReactNode } from 'react';
+import { Children, isValidElement, useEffect, useState, type ReactNode } from 'react';
 import { type nameProps } from './Types.ts'
 import './Layout.css'
+import { tableSort } from './tableSort.ts';
 
 interface childrenProps {
   children: ReactNode
@@ -85,6 +86,10 @@ function MultiPane({ selected, setSelected, children }: MultiPaneProps) {
     </button>
   }
   const mobile = false;
+
+  useEffect(() => {
+    tableSort()
+  }, [selected]);
 
   return (
     <>

@@ -192,6 +192,24 @@ button:active {
   background-color: oklch(from var(--button-bg) calc(l * 0.85) c h);
 }
 
+/* Table Styles */
+
+.sortable {
+  cursor: pointer;
+}
+
+.forward::after {
+  content: '\2191';
+}
+
+.reverse::after {
+  content: '\2193';
+}
+
+.sortable:not(.reverse):not(.forward)::after {
+  content: '\2195';
+}
+
 /* Primary layout */
 
 #content {

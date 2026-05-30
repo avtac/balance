@@ -81,14 +81,16 @@ function CargoConfig({ aircraft, setAircraft }: aircraftProps) {
       <div id="cargoConfig">
         <h3>Cargo Config</h3>
         <button onClick={addCargo}>Add Cargo Area</button>
-        <table className="tableData">
-          <tbody>
+        <table className="tableData sortedTable">
+          <thead>
             <tr>
               <th>Name</th>
               <th>{`Arm (${units.lengthUnits})`}</th>
               <th>{`Max Weight (${units.weightUnits})`}</th>
-              <th></th>
+              <th className='noSort'></th>
             </tr>
+          </thead>
+          <tbody>
             {aircraft.cargoAreas.map((area: cargoAreaT, index: number) => (
               <CargoInput
                 key={area.id}

@@ -96,16 +96,18 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
       <div id="fuelConfig">
         <h3>Fuel Config</h3>
         <button onClick={addFuel}>Add Fuel Tank</button>
-        <table className="tableData">
-          <tbody>
+        <table className="tableData sortedTable">
+          <thead>
             <tr>
               <th>Name</th>
               <th>{`Arm (${units.lengthUnits})`}</th>
               <th>{`Max Fuel (${units.fuelUnits})`}</th>
               <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
               <th>Removable</th>
-              <th></th>
+              <th className='noSort'></th>
             </tr>
+          </thead>
+          <tbody>
             {
               aircraft.fuelTanks.map((tank: fuelTankT, index: number) => (
                 <FuelInput

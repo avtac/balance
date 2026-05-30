@@ -276,13 +276,15 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
       </Subregion>
       <MultiPane>
         <Subregion name={"Seats"}>
-          <table className="tableData">
-            <tbody>
+          <table className="tableData sortedTable">
+            <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
                 <th style={{ width: "3rem" }}>Weight ({units.weightUnits})</th>
               </tr>
+            </thead>
+            <tbody>
               {getSortedByArm(seats).map((seat: seatT) => {
                 return <SeatSelection
                   key={seat.id + " seatSelect"}
@@ -295,13 +297,15 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
           </table>
         </Subregion>
         <Subregion name={"Cargo Areas"}>
-          <table className="tableData">
-            <tbody>
+          <table className="tableData sortedTable">
+            <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
                 <th style={{ width: "3rem" }}>Weight ({units.weightUnits})</th>
               </tr>
+            </thead>
+            <tbody>
               {getSortedByArm(cargoAreas).map((cargoArea: cargoAreaT) => {
                 return <CargoSelection
                   key={cargoArea.id + " cargoSelect"}

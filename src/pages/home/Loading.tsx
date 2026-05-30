@@ -495,7 +495,7 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
       </Subregion>
       <MultiPane>
         <Subregion id='passengers' name="Passengers">
-          <table className="tableData">
+          <table className="tableData sortedTable">
             <thead>
               <tr>
                 <th>Name</th>
@@ -509,7 +509,7 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
           </table>
         </Subregion>
         <Subregion id='cargo' name="Cargo">
-          <table className="tableData">
+          <table className="tableData sortedTable">
             <thead>
               <tr>
                 <th>Name</th>
@@ -523,7 +523,7 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
           </table>
         </Subregion>
         <Subregion id='fuel' name="Fuel">
-          <table className="tableData">
+          <table className="tableData sortedTable">
             <thead>
               <tr>
                 <th>Name</th>

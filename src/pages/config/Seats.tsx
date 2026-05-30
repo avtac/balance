@@ -99,16 +99,18 @@ function SeatConfig({ aircraft, setAircraft }: aircraftProps) {
       <div id="seatConfig">
         <h3>Seat Config</h3>
         <button onClick={addSeat}>Add Seat</button>
-        <table className="tableData">
-          <tbody>
+        <table className="tableData sortedTable">
+          <thead>
             <tr>
               <th>Name</th>
               <th>{`Arm (${units.lengthUnits})`}</th>
               <th>{`Max Weight (${units.weightUnits})`}</th>
               <th>{`Lateral Offset (${units.lengthUnits})`}</th>
               <th># of Seats</th>
-              <th></th>
+              <th className='noSort'></th>
             </tr>
+          </thead>
+          <tbody>
             {aircraft.seats.map((seat: seatT, index: number) => (
               <SeatInput
                 key={seat.id}
