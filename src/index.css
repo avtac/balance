@@ -1,43 +1,40 @@
 :root {
+  --baseColor: #243f6a;
   /* Text */
   --text: #111;
-  --text-h: #08060d;
-  --text-l: #222;
-  --text-d: #444;
+  --text-h: oklch(from var(--text) calc(l * 1.05) c h);
+  --text-l: oklch(from var(--text) calc(l * 1.25) c h);
+  --text-p: oklch(from var(--text) .4 c h);
+  --text-i: oklch(from var(--text) calc(1 - l) c h);
+  --text-d: var(--text);
   --text-w: #944;
 
   /* Borders */
-  --border: #8884;
-  --dialog-border: #000;
+  --border: oklch(from var(--accent) .6 calc(c * .2) h);
+  --dialog-border: oklch(from var(--accent) .4 0 h);
 
   /* Backgrounds */
-  --bg: #DEF;
-  --code-bg: #f4f3ec;
-  --header-bg: #667;
-  --region-bg: #89B;
-  --sub-region-bg: #aab0cc;
-  --diagram-bg: #889;
-  --graph-bg: #FFF;
-  --input-bg: #FFF;
-  --button-bg: #77d;
-  --dialog-bg: #777;
+  --bg: oklch(from var(--baseColor) 0.95 calc(c * 0.2) h);
+  --region-bg: oklch(from var(--baseColor) 0.85 calc(c * 0.4) h);
+  --sub-region-bg: oklch(from var(--baseColor) 0.75 calc(c * 0.5) h);
+  --header-bg: oklch(from var(--accent) 0.7 calc(c * .5) h);
+  --graph-bg: oklch(from var(--baseColor) 0.95 calc(c * 0.05) h);
+  --input-bg: oklch(from var(--accent) 0.7 calc(c * 0.7) h);
+  --button-bg: oklch(from var(--accent) 0.7 calc(c * 0.8) h);
+  --dialog-bg: oklch(from var(--baseColor) 0.9 0 h);
   --warn-bg: #311;
 
   /* Accents */
-  --accent: #3333BB;
-  --accent-bg: rgba(70, 50, 230, 0.1);
-  --accent-border: rgba(80, 90, 137, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
+  --accent: oklch(from var(--baseColor) 0.8 calc(c * 1.0) h);
   --table-bg: #0002;
 
-
   /* SVGs */
-  --graph-grid-lines-text: #000;
-  --graph-grid-lines: #1118;
-  --diagram-aircraft-bg: #FFF;
-  --diagram-seat-fill: #EEE;
-  --diagram-ops-fill: #7799CC;
-  --diagram-load-fill: #AABBFF;
+  --graph-grid-lines-text: var(--text);
+  --graph-grid-lines: rgb(from var(--text) r g b / 0.7);
+  --diagram-aircraft-bg: oklch(from var(--sub-region-bg) calc(l * 1.3) calc(c * 0.3) h);
+  --diagram-seat-fill: oklch(from var(--sub-region-bg) 0.95 calc(c * 0.3) h);
+  --diagram-ops-fill: oklch(from var(--accent) 0.5 calc(c * 0.8) h);
+  --diagram-load-fill: oklch(from var(--accent) 0.7 calc(c * 0.95) h);
 
   /* Shadows */
   --shadow:
@@ -67,43 +64,42 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Text */
-    --text: #CCC;
-    --text-h: #f3f4f6;
-    --text-l: #AAA;
-    --text-d: #FFF;
+    --text: #FFF;
+    --text-h: oklch(from var(--text) calc(l * .95) c h);
+    --text-l: oklch(from var(--text) calc(l * .75) c h);
+    --text-p: oklch(from var(--text) calc(l * .75) c h);
+    --text-d: var(--text);
     --text-w: #F22;
 
     /* Borders */
-    --border: #1e202a;
-    --dialog-border: #FFF;
+    --border: oklch(from var(--accent) .3 calc(c * .3) h);
+    --dialog-border: oklch(from var(--accent) l 0 h);
 
     /* Backgrounds */
-    --bg: #30323e;
-    --code-bg: #1f2028;
-    --header-bg: #1c1d24;
-    --region-bg: #1f2134;
-    --sub-region-bg: #2f314f;
-    --diagram-bg: #334;
-    --graph-bg: #444;
-    --input-bg: #131639;
-    --button-bg: #323a86;
-    --dialog-bg: #555;
+    --bg: oklch(from var(--baseColor) 0.15 calc(c * 10%) h);
+    --region-bg: oklch(from var(--baseColor) 0.2 calc(c * 30%) h);
+    --sub-region-bg: oklch(from var(--baseColor) 0.3 calc(c * 50%) h);
+    --header-bg: oklch(from var(--accent) 0.4 calc(c * 70%) h);
+    --graph-bg: oklch(from var(--baseColor) 0.3 calc(c * 15%) h);
+    --input-bg: oklch(from var(--accent) 0.2 calc(c * 80%) h);
+    --button-bg: oklch(from var(--accent) .4 calc(c * 90%) h);
+    --dialog-bg: oklch(from var(--baseColor) l 0 h);
     --warn-bg: #422;
 
     /* Accents */
-    --accent: #3041eb;
+    --accent: oklch(from var(--baseColor) .3 calc(c * 0.9) h);
 
     /* SVGs */
-    --graph-grid-lines-text: #EEE;
-    --graph-grid-lines: #fff6;
-    --diagram-aircraft-bg: #444;
-    --diagram-seat-fill: #999;
-    --diagram-ops-fill: #358;
-    --diagram-load-fill: #125;
+    --graph-grid-lines-text: var(--text);
+    --graph-grid-lines: rgb(from var(--text) r g b / 0.5);
+    --diagram-aircraft-bg: oklch(from var(--sub-region-bg) 45% calc(c * 0.05) h);
+    --diagram-seat-fill: lch(90% 0% 0);
+    --diagram-ops-fill: oklch(from var(--accent) 0.35 calc(c * .8) h);
+    --diagram-load-fill: oklch(from var(--accent) 0.5 calc(c * .7) h);
 
     /* Shadows */
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px,
+      rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
 
   #social .button-icon {
@@ -112,7 +108,6 @@
 }
 
 #root {
-  border-inline: 1px solid var(--border);
   box-sizing: border-box;
   height: 100svh;
   display: grid;
@@ -150,20 +145,6 @@ p {
   color: var(--text);
 }
 
-code {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
-
 select,
 input {
   outline: unset;
@@ -179,6 +160,10 @@ input {
     padding: 2px;
     border-radius: 3px;
   }
+}
+
+input::placeholder {
+  color: var(--text-p);
 }
 
 input[type="checkbox"] {
