@@ -1,73 +1,60 @@
-# React + TypeScript + Vite
+# Balancr
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<picture>
+  <img height="100px" src="public/favicon.svg" alt="Balancr Logo">
+</picture>
 
-Currently, two official plugins are available:
+> [!NOTE]
+> Developers of Balancr do not take any responsibility for incorrect calculations
+> that may lead to exceeding aircraft limitations. Using this planning tool designed
+> not substitute sound pilot judgement, confirm all calculations with your
+> aircraft POH.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> [!WARNING]
+> This is in early development, it is not guaranteed if any that configuration
+> files will work in future versions.
 
-## React Compiler
+Balancr is a tool to help pilots calculate their aircraft's weight and balance.
+This is designed to allow users or organizations to create configuration files
+for their aircraft and share that with anyone flying their aircraft.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Use/Install
 
-## Expanding the ESLint configuration
+I am planning to host this as a static website but at the moment it can only be
+used by building the project locally and hosting it on a python server.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Building
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+> [!NOTE]
+> `npm` is a prerequisite for building the project.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Download the code to your computer and navigate to that folder. Install the npm
+packages and build.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+``` bash
+$ npm i
+$ npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+This will create a `dist` directory where the build will be. This can be copied
+to be used in a webserver or a python http server can be run for local access.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+To run the python http server:
+``` bash
+$ python -m http.server 8000
 ```
+
+In your browser navigate to localhost:8000.
+
+## Development
+
+This is early development and there will be lots of changes coming. Open an Issue
+if you have any ideas how to improve the UI, usability, accessibility, or function.
+Code cleanup will also be welcomed.
+
+### Priority Tasks
+
+[ ] - Mobile device accessibility
+[ ] - Interactive Diagram and Graph
+[ ] - Ability to export using a user defined template
+
