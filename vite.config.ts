@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import { VitePWA } from 'vite-plugin-pwa'
 
 const root = resolve(__dirname, 'src');
 
@@ -23,7 +24,46 @@ export default defineConfig({
           outputItem.fileName = fileName.replace('src/pages/', '');
       }
     }
-  }],
+  },
+  VitePWA({
+    registerType: 'autoUpdate',
+    includeAssets: ['favicon.ico'],
+    manifest: {
+      name: "Balancr",
+      short_name: "Balancr",
+      icons: [
+        {
+          "src": "/pwa-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/pwa-512x512.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/pwa-maskable-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "maskable"
+        },
+        {
+          "src": "/pwa-maskable-512x512.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "maskable"
+        }
+      ],
+      start_url: "/",
+      display: "standalone",
+      background_color: "#FFFFFF",
+      theme_color: "#FFFFFF"
+    }
+  })
+  ],
   build: {
     emptyOutDir: true,
     rollupOptions: {
