@@ -9,6 +9,14 @@
   h1 {
     font-size: 36px;
     margin: 0;
+    display: flex;
+    align-items: center;
+
+    img {
+      height: 44px;
+      width: 44px;
+      margin-right: 10px;
+    }
   }
 
   nav {
@@ -43,6 +51,10 @@
     h1 {
       font-size: 2rem;
       margin: auto .5rem;
+
+      img {
+        display: none;
+      }
     }
 
     nav {
