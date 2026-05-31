@@ -43,7 +43,6 @@ function modifyHeader(table: HTMLTableElement) {
   if (!header) return;
   const columns = header.querySelectorAll("th");
   columns.forEach((column, index) => {
-    console.log(column.classList);
     if (column.classList.contains("noSort")) return;
     column.classList.add("sortable");
     column.onclick = () => sortOnColumn(table, index)
@@ -52,7 +51,6 @@ function modifyHeader(table: HTMLTableElement) {
 
 export function tableSort() {
   const sortedTables = document.querySelectorAll(".sortedTable");
-  console.log(sortedTables);
   for (const table of sortedTables) {
     modifyHeader(table as HTMLTableElement);
   }
