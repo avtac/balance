@@ -50,13 +50,11 @@
 
   .multiPane-topBar {
     display: flex;
-
-    @media (max-width: 1200px) {
-      flex-wrap: wrap;
-    }
+    overflow-x: auto;
+    -ms-overflow-style: none;
 
     .topButton {
-      padding: 3px;
+      padding: 3px 8px;
       flex: 1;
       border-radius: 0px;
       background: none;
@@ -75,6 +73,10 @@
     .selected {
       border-bottom: 2px solid var(--accent);
     }
+  }
+
+  .multiPane-topBar::-webkit-scrollbar {
+    display: none;
   }
 
   .multiPane-body {
