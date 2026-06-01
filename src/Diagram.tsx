@@ -222,7 +222,7 @@ function Diagram({ aircraft, loading, diagramMode, selectedConfig, selectedOpsCo
       loadedCount={loadedPax}
       offX={-getPixelFromArm(seat.arm)}
       offY={getPixelFromArm(-seat.lateralDist)}
-      count={Number(seat.seatCount)} />
+      count={Math.max(Number(seat.seatCount), 0)} />
   });
 
   const cargoItems = cargoAreas.map((cargoArea: cargoAreaT): ReactNode => {

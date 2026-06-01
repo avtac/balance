@@ -1,7 +1,7 @@
 import { Fragment, useContext, useMemo, useRef, type ReactNode } from 'react';
 import './Graph.css'
 import { type aircraftLimitsT, type cargoAreaT, type aircraftT, type momentObjectT, type regionPointT, type regionT, type seatT, type weightLimitT, type setupT, baseLengthUnit, baseWeightUnit, type loadingT } from './Types';
-import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, calculateMAC, calculateMaxBalanceForConfig, truncateNumber } from './utility';
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, calculateMAC, truncateNumber } from './utility';
 import { convertLengthUnit, convertWeightUnit, UnitContext } from './UnitsContext';
 
 let width = 140;
@@ -440,7 +440,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
 
   if (selectedConfig) {
     const [weight, arm] = calculateEmptyBalanceForConfig(aircraft, selectedConfig);
-    const [weightFull, armFull] = calculateMaxBalanceForConfig(aircraft, selectedConfig);
+    // const [weightFull, armFull] = calculateMaxBalanceForConfig(aircraft, selectedConfig);
     if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
       points.push({
         weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
@@ -449,14 +449,14 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
         size: 1,
         label: "Empty Config"
       });
-    if (weightFull != aircraft.config.emptyWeight || armFull != aircraft.config.emptyArm)
-      points.push({
-        weight: convertWeightUnit(weightFull, baseWeightUnit, units.weightUnits),
-        arm: units.useMAC ? calculateMAC(armFull, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(armFull, baseLengthUnit, units.lengthUnits),
-        style: 'circle',
-        size: 1,
-        label: "Max Config"
-      });
+    // if (weightFull != aircraft.config.emptyWeight || armFull != aircraft.config.emptyArm)
+    //   points.push({
+    //     weight: convertWeightUnit(weightFull, baseWeightUnit, units.weightUnits),
+    //     arm: units.useMAC ? calculateMAC(armFull, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(armFull, baseLengthUnit, units.lengthUnits),
+    //     style: 'circle',
+    //     size: 1,
+    //     label: "Max Config"
+    //   });
 
   }
 
@@ -588,7 +588,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
       {title}
       {dataAvailable && horizontalBars}
       {dataAvailable && verticalBars}
-      {dataAvailable && selectedConfig && <polyline className="configArea" points={configAreaPoints.current} />}
+      {/* {dataAvailable && selectedConfig && <polyline className="configArea" points={configAreaPoints.current} />} */}
       {dataAvailable && <PlotRegions aircraft={data} limits={limits} />}
       {dataAvailable && lineComponents}
       {dataAvailable && pointComponents}

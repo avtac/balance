@@ -19,7 +19,7 @@ export function getSortedByArmClosest<T extends (maxMomentObjectT | momentObject
 }
 
 export function calculateMAC(arm: number, mac: (number | undefined), leadingMac: (number | undefined), useMAC: boolean = false): number {
-  if (!useMAC || !leadingMac || !mac) return arm;
+  if (!useMAC || leadingMac == undefined || mac == undefined || mac == 0) return arm;
   return (arm - leadingMac) / mac * 100;
 }
 
@@ -34,8 +34,8 @@ export function calculateEmptyBalanceForConfig(config: aircraftT, selectedConfig
     (fuelTank) => {
       const usedTank = !fuelTank.removable || config.aircraftConfigs[selectedConfigIndex].fuelTanks.includes(fuelTank.id);
       if (!usedTank) return;
-      weight += fuelTank.unusable;
-      moment += fuelTank.unusable * fuelTank.arm;
+      weight += Math.max(Number(fuelTank.unusable), 0);
+      moment += Math.max(Number(fuelTank.unusable), 0) * fuelTank.arm;
     });
 
   // Equipment
@@ -44,8 +44,8 @@ export function calculateEmptyBalanceForConfig(config: aircraftT, selectedConfig
     (equipment) => {
       const equipIndex = config.equipment.findIndex(e => e.id === equipment.id);
       if (equipIndex < 0) return;
-      weight += equipment.count * config.equipment[equipIndex].weight;
-      moment += equipment.count * config.equipment[equipIndex].weight * config.equipment[equipIndex].arm;
+      weight += Math.max(Number(equipment.count), 0) * Math.max(Number(config.equipment[equipIndex].weight), 0);
+      moment += Math.max(Number(equipment.count), 0) * Math.max(Number(config.equipment[equipIndex].weight), 0) * config.equipment[equipIndex].arm;
     });
   return [weight, moment / weight]
 }
@@ -63,8 +63,8 @@ export function calculateMaxBalanceForConfig(config: aircraftT, selectedConfig: 
       const seatIndex = config.seats.findIndex(s => s.id === seat);
       if (seatIndex < 0) return;
       const seatData = config.seats[seatIndex];
-      weight += seatData.maxWeight * seatData.seatCount;
-      moment += seatData.maxWeight * seatData.seatCount * seatData.arm;
+      weight += Math.max(Number(seatData.maxWeight), 0) * Math.max(Number(seatData.seatCount), 0);
+      moment += Math.max(Number(seatData.maxWeight), 0) * Math.max(Number(seatData.seatCount), 0) * seatData.arm;
     });
 
   // Cargo
@@ -73,8 +73,8 @@ export function calculateMaxBalanceForConfig(config: aircraftT, selectedConfig: 
       const cargoAreaIndex = config.cargoAreas.findIndex(c => c.id === cargoArea);
       if (cargoAreaIndex < 0) return;
       const cargoAreaData = config.cargoAreas[cargoAreaIndex];
-      weight += cargoAreaData.maxWeight;
-      moment += cargoAreaData.maxWeight * cargoAreaData.arm;
+      weight += Math.max(Number(cargoAreaData.maxWeight), 0);
+      moment += Math.max(Number(cargoAreaData.maxWeight), 0) * cargoAreaData.arm;
     });
 
   // Fuel
@@ -82,8 +82,8 @@ export function calculateMaxBalanceForConfig(config: aircraftT, selectedConfig: 
     (fuelTank) => {
       const usedTank = !fuelTank.removable || config.aircraftConfigs[selectedConfigIndex].fuelTanks.includes(fuelTank.id);
       if (!usedTank) return;
-      weight += fuelTank.maxWeight;
-      moment += fuelTank.maxWeight * fuelTank.arm;
+      weight += Math.max(Number(fuelTank.maxWeight), 0);
+      moment += Math.max(Number(fuelTank.maxWeight), 0) * fuelTank.arm;
     });
 
   // Equipment
@@ -92,8 +92,8 @@ export function calculateMaxBalanceForConfig(config: aircraftT, selectedConfig: 
       const equipIndex = config.equipment.findIndex(e => e.id === equipment.id);
       if (equipIndex < 0) return;
       const equipmentData = config.equipment[equipIndex];
-      weight += equipment.count * equipmentData.weight;
-      moment += equipment.count * equipmentData.weight * equipmentData.arm;
+      weight += Math.max(Number(equipment.count), 0) * Math.max(Number(equipmentData.weight), 0);
+      moment += Math.max(Number(equipment.count), 0) * Math.max(Number(equipmentData.weight), 0) * equipmentData.arm;
     });
   return [weight, moment / weight]
 }
@@ -111,8 +111,8 @@ export function calculateBalanceForOperationConfig(config: aircraftT, selectedOp
       const seatIndex = config.seats.findIndex(s => s.id === seat.id);
       if (seatIndex < 0) return;
       const seatData = config.seats[seatIndex];
-      weight += seat.weight;
-      moment += seat.weight * seatData.arm;
+      weight += Math.max(Number(seat.weight), 0);
+      moment += Math.max(Number(seat.weight), 0) * seatData.arm;
     });
 
   // Cargo
@@ -121,8 +121,8 @@ export function calculateBalanceForOperationConfig(config: aircraftT, selectedOp
       const cargoAreaIndex = config.cargoAreas.findIndex(c => c.id === cargoArea.id);
       if (cargoAreaIndex < 0) return;
       const cargoAreaData = config.cargoAreas[cargoAreaIndex];
-      weight += cargoArea.weight;
-      moment += cargoArea.weight * cargoAreaData.arm;
+      weight += Math.max(Number(cargoArea.weight), 0);
+      moment += Math.max(Number(cargoArea.weight), 0) * cargoAreaData.arm;
     });
 
   return [weight, moment / weight]
@@ -138,8 +138,8 @@ export function calculateBalanceForLanding(aircraft: aircraftT, selectedOpsConfi
       const seatIndex = aircraft.seats.findIndex(s => s.id === seat.location);
       if (seatIndex < 0) return;
       const seatData = aircraft.seats[seatIndex];
-      weight += seat.count * seat.avgWeight;
-      moment += seat.count * seat.avgWeight * seatData.arm;
+      weight += Math.max(Number(seat.count), 0) * Math.max(Number(seat.avgWeight), 0);
+      moment += Math.max(Number(seat.count), 0) * Math.max(Number(seat.avgWeight), 0) * seatData.arm;
     }
   )
 
@@ -149,8 +149,8 @@ export function calculateBalanceForLanding(aircraft: aircraftT, selectedOpsConfi
       const cargoIndex = aircraft.cargoAreas.findIndex(c => c.id === cargo.location);
       if (cargoIndex < 0) return;
       const cargoData = aircraft.cargoAreas[cargoIndex];
-      weight += cargo.weight;
-      moment += cargo.weight * cargoData.arm;
+      weight += Math.max(Number(cargo.weight), 0);
+      moment += Math.max(Number(cargo.weight), 0) * cargoData.arm;
     }
   )
 
@@ -160,8 +160,8 @@ export function calculateBalanceForLanding(aircraft: aircraftT, selectedOpsConfi
       const fuelIndex = aircraft.fuelTanks.findIndex(f => f.id === fuel.tank);
       if (fuelIndex < 0) return;
       const fuelData = aircraft.fuelTanks[fuelIndex];
-      weight += fuel.loadedFuel - fuel.tripFuel;
-      moment += (fuel.loadedFuel - fuel.tripFuel) * fuelData.arm;
+      weight += Math.max(Number(fuel.loadedFuel) - Number(fuel.tripFuel), 0);
+      moment += (Math.max(Number(fuel.loadedFuel) - Number(fuel.tripFuel), 0)) * fuelData.arm;
     }
   )
 
@@ -178,8 +178,8 @@ export function calculateBalanceForTakeoff(aircraft: aircraftT, selectedOpsConfi
       const fuelIndex = aircraft.fuelTanks.findIndex(f => f.id === fuel.tank);
       if (fuelIndex < 0) return;
       const fuelData = aircraft.fuelTanks[fuelIndex];
-      weight += fuel.tripFuel;
-      moment += fuel.tripFuel * fuelData.arm;
+      weight += Math.max(Number(fuel.tripFuel), 0);
+      moment += Math.max(Number(fuel.tripFuel), 0) * fuelData.arm;
     }
   )
 
@@ -188,6 +188,7 @@ export function calculateBalanceForTakeoff(aircraft: aircraftT, selectedOpsConfi
 
 
 export function truncateNumber(n: number, precision: number): number {
+  if (n < 0) return Math.ceil(n * precision) / precision;
   return Math.floor(n * precision) / precision;
 }
 
