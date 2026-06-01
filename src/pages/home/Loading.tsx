@@ -128,14 +128,14 @@ function CargoLoading({ loading, setLoading, aircraft, opsConfigIndex, cargoArea
             id={'cargoLoad' + cargoArea.id}
             type='number'
             min={0}
-            max={roundNumber(convertWeightUnit(cargoArea.maxWeight - opsWeight, baseWeightUnit, units.weightUnits), unitPrecision)}
+            max={roundNumber(convertWeightUnit(cargoArea.maxWeight - opsWeight, baseWeightUnit, units.weightUnits), unitPrecision) + 5}
             step={5}
-            value={loadedWeight ? loadedWeight : ""}
+            value={loadedWeight ? roundNumber(convertWeightUnit(loadedWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
             onChange={e => setWeight(Number(e.target.value))}
             placeholder={units.weightUnits}
           />}
       </td>
-      <td>{totalWeight} {units.weightUnits}</td>
+      <td>{roundNumber(convertWeightUnit(totalWeight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
     </tr>
   )
 }
@@ -421,9 +421,11 @@ function CargoLoader({ loading, setLoading, aircraft, selectedOpsConfig }: title
           max={aircraft.cargoAreas.reduce((sum, s) => sum + s.maxWeight, 0)}
           step={5}
           placeholder={units.weightUnits}
-          value={totalCargo ? totalCargo : ""}
-          onChange={(e) => loadCargo(convertWeightUnit(Number(e.target.value), baseWeightUnit, units.weightUnits), direction)} />
-        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} onClick={() => dialogRef.current ? dialogRef.current.show() : undefined} />
+          value={totalCargo ? roundNumber(convertWeightUnit(totalCargo, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+          onChange={(e) => loadCargo(convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit), direction)} />
+        <button className='hiddenButton' onClick={() => dialogRef.current ? dialogRef.current.show() : undefined}>
+          <FontAwesomeIcon icon={faEllipsisV} />
+        </button>
         <dialog ref={dialogRef} className='rightDialog' closedby='any'>
           <div>
             <label htmlFor='cargoLoadingDirectionSelect'>Cargo Load Mode</label>
