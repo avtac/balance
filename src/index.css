@@ -184,11 +184,18 @@ button {
   }
 }
 
-button:hover {
+.hiddenButton {
+  padding: 0px;
+  background-color: unset;
+  margin: 0px;
+  font-size: 1rem;
+}
+
+button:hover:not(.hiddenButton) {
   background-color: oklch(from var(--button-bg) calc(l * 1.25) c h);
 }
 
-button:active {
+button:active:not(.hiddenButton) {
   background-color: oklch(from var(--button-bg) calc(l * 0.85) c h);
 }
 

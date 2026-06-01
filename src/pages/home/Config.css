@@ -45,10 +45,6 @@
   background: #3002;
 }
 
-button {
-  width: 100% !important;
-}
-
 .unused .clickable {
   cursor: not-allowed !important;
 }

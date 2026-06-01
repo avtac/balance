@@ -51,7 +51,7 @@ h2 {
 
   tr {
     display: grid;
-    grid-template-columns: minmax(8rem, 16rem) minmax(4rem, 10rem) minmax(5rem, 9rem);
+    grid-template-columns: minmax(8rem, 16rem) minmax(4rem, 7rem) minmax(4rem, 7rem) minmax(5rem, 9rem);
   }
 }
 

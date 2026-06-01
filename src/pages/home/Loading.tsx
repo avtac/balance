@@ -6,7 +6,7 @@ import { MultiPane, Subregion } from "../../Layout";
 import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, getSortedByArm, getSortedByArmClosest, roundNumber } from "../../utility";
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisV, faFillDrip } from '@fortawesome/free-solid-svg-icons';
 
 interface seatLoadingProps extends loadingProps {
   aircraft: aircraftT;
@@ -28,11 +28,28 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
 
   function setCount(count: number): void {
     const tmp: loadingT = JSON.parse(JSON.stringify(loading));
+    if (count === 0) {
+      const index = tmp.passengers.findIndex(s => s.location === seat.id);
+      if (index >= 0)
+        tmp.passengers.splice(index, 1);
+    } else if (!tmp.passengers.some(s => s.location === seat.id)) {
+      const averageWeightInput = document.querySelector("#seatLoadingAverageWeight") as HTMLInputElement;
+      const averageWeight = convertWeightUnit(Number(averageWeightInput.value), units.weightUnits, baseWeightUnit);
+      tmp.passengers.push({ location: seat.id, avgWeight: averageWeight ? averageWeight : seat.maxWeight, count: Math.max(Math.min(count, seat.seatCount - opsUsedSeats), 0) });
+    } else {
+      const index = tmp.passengers.findIndex(s => s.location === seat.id);
+      tmp.passengers[index].count = Math.max(Math.min(count, seat.seatCount - opsUsedSeats), 0);
+    }
+    setLoading(tmp);
+  }
+
+  function setWeight(weight: number): void {
+    const tmp: loadingT = JSON.parse(JSON.stringify(loading));
     if (!tmp.passengers.some(s => s.location === seat.id))
-      tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: Math.min(count, seat.seatCount - opsUsedSeats) });
+      return;
     else {
       const index = tmp.passengers.findIndex(s => s.location === seat.id);
-      tmp.passengers[index].count = Math.min(count, seat.seatCount - opsUsedSeats);
+      tmp.passengers[index].avgWeight = Math.min(weight, seat.maxWeight);
     }
     setLoading(tmp);
   }
@@ -54,7 +71,21 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
             placeholder='Count'
           />}
       </td>
-      <td>{totalWeight} {units.weightUnits}</td>
+      <td>
+        {opsUsedSeats === seat.seatCount ?
+          <p>Seats Filled</p>
+          :
+          <input
+            type='number'
+            min={0}
+            max={roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}
+            value={s && s.avgWeight > 0 ? roundNumber(convertWeightUnit(s.avgWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+            onChange={(e) => setWeight(convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))}
+            placeholder={units.weightUnits}
+          />
+        }
+      </td>
+      <td>{roundNumber(convertWeightUnit(totalWeight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
     </tr>
   )
 }
@@ -187,6 +218,8 @@ function PassengerLoader({ loading, setLoading, aircraft, selectedOpsConfig }: t
   const units = useContext(UnitContext);
   const [fillCenter, setFillCenter] = useState(0);
   const [direction, setDirection] = useState('frontToBack' as loadingDirectionsT)
+  // Default average weight is 200lbs
+  const [averageWeight, setAverageWeight] = useState(200)
   const dialogRef: RefObject<(null | HTMLDialogElement)> = useRef(null);
 
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
@@ -238,15 +271,22 @@ function PassengerLoader({ loading, setLoading, aircraft, selectedOpsConfig }: t
         alreadyTaken = originalFill[takenSeatIndex].count;
       if (opsUsedSeats + alreadyTaken === seat.seatCount) continue;
 
-      const numToLoad = Math.min(remainingToLoad, seat.seatCount - opsUsedSeats - alreadyTaken);
+      const numToLoad = Math.min(remainingToLoad, Math.max(seat.seatCount - opsUsedSeats - alreadyTaken, 0));
       remainingToLoad -= numToLoad;
       let newSeatIndex = tmp.passengers.findIndex(c => c.location === seat.id);
       if (newSeatIndex < 0)
-        tmp.passengers.push({ location: seat.id, avgWeight: seat.maxWeight, count: numToLoad + alreadyTaken });
+        tmp.passengers.push({ location: seat.id, avgWeight: averageWeight, count: numToLoad + alreadyTaken });
       else {
         tmp.passengers[newSeatIndex].count = numToLoad + alreadyTaken;
       }
     }
+    setLoading(tmp);
+  }
+
+  function setAverageWeights(): void {
+    const tmp: loadingT = JSON.parse(JSON.stringify(loading));
+    tmp.passengers = tmp.passengers.map(s => ({ ...s, avgWeight: Math.max(averageWeight, 0) }));
+    setAverageWeight(averageWeight);
     setLoading(tmp);
   }
 
@@ -262,7 +302,9 @@ function PassengerLoader({ loading, setLoading, aircraft, selectedOpsConfig }: t
           placeholder='Count'
           value={totalSeats ? totalSeats : ""}
           onChange={(e) => loadSeats(Number(e.target.value), direction)} />
-        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} onClick={() => dialogRef.current ? dialogRef.current.show() : undefined} />
+        <button className='hiddenButton' onClick={() => dialogRef.current ? dialogRef.current.show() : undefined}>
+          <FontAwesomeIcon icon={faEllipsisV} />
+        </button>
         <dialog ref={dialogRef} className='rightDialog' closedby='any'>
           <div>
             <label htmlFor='seatLoadingDirectionSelect'>Seat Load Mode</label>
@@ -280,6 +322,19 @@ function PassengerLoader({ loading, setLoading, aircraft, selectedOpsConfig }: t
                   onChange={(e) => setFillCenter(convertLengthUnit(Number(e.target.value), units.lengthUnits, baseLengthUnit))} />
               </>
             }
+            <label htmlFor='seatLoadingAverageWeight'>Pax Avg Weight</label>
+            <div>
+              <input
+                id='seatLoadingAverageWeight'
+                type='number'
+                min='0'
+                placeholder={units.weightUnits}
+                value={averageWeight ? roundNumber(convertWeightUnit(averageWeight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+                onChange={e => setAverageWeight(convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
+              <button className='hiddenButton' onClick={setAverageWeights}>
+                <FontAwesomeIcon icon={faFillDrip} />
+              </button>
+            </div>
           </div>
         </dialog>
       </div>
@@ -500,6 +555,7 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
               <tr>
                 <th>Name</th>
                 <th>Passenger Count</th>
+                <th>Avg Weight ({units.weightUnits})</th>
                 <th>Total Weight ({units.weightUnits})</th>
               </tr>
             </thead>
