@@ -53,6 +53,32 @@ h2 {
     display: grid;
     grid-template-columns: minmax(8rem, 16rem) minmax(4rem, 7rem) minmax(4rem, 7rem) minmax(5rem, 9rem);
   }
+
+  .passengerLoadingWeight,
+  .passengerLoadingSeats {
+    display: flex;
+    align-items: center;
+    margin: 0px auto;
+
+    input {
+      width: 1.3rem;
+      text-align: center;
+      margin-right: 3px;
+    }
+
+    /* WebKit browsers (Chrome, Safari, Edge, Opera) */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Firefox */
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+  }
 }
 
 #fuel {

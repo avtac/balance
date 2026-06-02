@@ -57,19 +57,18 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
   return (
     <tr>
       <td>{seat.name}</td>
-      <td>
+      <td className='passengerLoadingSeats'>
         {opsUsedSeats === seat.seatCount ?
-          <p>Seats Filled</p>
+          0
           :
           <input
             id={'seatCount' + seat.id}
             type='number'
             min={0}
             max={seat.seatCount - opsUsedSeats}
-            value={s && s.count > 0 ? s.count : ""}
+            value={s ? s.count : 0}
             onChange={e => setCount(Number(e.target.value))}
-            placeholder='Count'
-          />}
+          />}{" / " + (seat.seatCount - opsUsedSeats)}
       </td>
       <td>
         {opsUsedSeats === seat.seatCount ?
@@ -85,7 +84,7 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
           />
         }
       </td>
-      <td>{roundNumber(convertWeightUnit(totalWeight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
+      <td>{roundNumber(convertWeightUnit(totalWeight, baseWeightUnit, units.weightUnits), unitPrecision)} / {roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision) * seat.seatCount} {units.weightUnits}</td>
     </tr>
   )
 }
@@ -135,7 +134,7 @@ function CargoLoading({ loading, setLoading, aircraft, opsConfigIndex, cargoArea
             placeholder={units.weightUnits}
           />}
       </td>
-      <td>{roundNumber(convertWeightUnit(totalWeight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
+      <td>{roundNumber(convertWeightUnit(totalWeight, baseWeightUnit, units.weightUnits), unitPrecision)} / {roundNumber(convertWeightUnit(cargoArea.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)} {units.weightUnits}</td>
     </tr>
   )
 }
@@ -601,3 +600,7 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
 }
 
 export default Loading;
+
+
+// TODO: There is an issue with units and the cargo loader.
+// TODO: Change passengers count column to show "[input (no arrows)]/seatCount"
