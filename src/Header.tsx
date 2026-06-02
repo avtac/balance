@@ -10,7 +10,7 @@ function Header(): ReactNode {
         <button onClick={() => window.location.href = '/config'}>Config</button>
       </nav>
       <h1>
-        <img src="favicon.svg" alt={title + ' Icon'} />
+        <img src="/favicon.svg" alt={title + ' Icon'} />
         <span>{title}</span>
       </h1>
     </header>

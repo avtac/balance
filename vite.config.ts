@@ -28,6 +28,7 @@ export default defineConfig({
   VitePWA({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.ico'],
+    strategies: 'generateSW',
     manifest: {
       name: "Balancr",
       short_name: "Balancr",
@@ -55,6 +56,12 @@ export default defineConfig({
           "sizes": "512x512",
           "type": "image/png",
           "purpose": "maskable"
+        },
+        {
+          "src": "/favicon.svg",
+          "sizes": "192x192 512x512",
+          "type": "image/svg+xml",
+          "purpose": "any"
         }
       ],
       start_url: "/",
