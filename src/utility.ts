@@ -1,4 +1,4 @@
-import { type aircraftT, type loadingT, type maxMomentObjectT, type momentObjectT } from './Types';
+import { type aircraftT, type fuelLoadT, type fuelTankT, type loadingT, type maxMomentObjectT, type momentObjectT } from './Types';
 
 export const activeConfigBuilder = "activeConfigBuilder"
 export const savedBuilderConfigs = "savedBuilderConfigs"
@@ -186,40 +186,60 @@ export function calculateBalanceForTakeoff(aircraft: aircraftT, selectedOpsConfi
   return [weight, moment / weight];
 }
 
+// Priority is assumed that higher number fills last and consumes first
 export function calculateBalancePointsForTanks(aircraft: aircraftT, selectedOpsConfig: string, loading: loadingT): momentObjectT[] {
+  var groupBy = (xs: { tank: fuelTankT, load: fuelLoadT }[]) => {
+    return xs.reduce((rv: { [key: number]: { tank: fuelTankT, load: fuelLoadT }[] }, x) => {
+      (rv[x.tank.priority] ??= []).push(x);
+      return rv;
+    }, {});
+  };
+
   // Get tanks sorted on priority
-  const sortedTanks = loading.fuel.map(t => {
+  const tankData = loading.fuel.map(t => {
     let tank = aircraft.fuelTanks.find(T => t.tank === T.id);
     if (tank === undefined) return;
     return { tank: tank, load: t };
   })
     .filter(t => t != undefined)
-    .sort((a, b) => a.tank.priority - b.tank.priority);
+  const grouped = groupBy(tankData);
 
   // Get landing balance
-  let [weight, arm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
+  let [weight, arm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
   let moment = arm * weight;
   const points: momentObjectT[] = [{ weight: weight, arm: arm }];
 
-  // Loop over each tank
-  let currentPriority = 0;
-  for (const fuelTank of sortedTanks) {
-    // TODO: This needs to handle different tank sizes,
+  // Loop over each tank group
+  for (const [p, group] of Object.entries(grouped).reverse()) {
+    // This needs to handle different tank sizes,
     // if a 50Gal tank and 100Gal tank have the same priority
     // the 50Gal will drain while the 100Gal will still have 
     // 50Gal remaining. This should thus find the smallest tank
     // per priority level and add a point when each one drains.
     // But not if multiple tanks drain at the same time.
 
-    // if the priority changes add point to return object
-    if (fuelTank.tank.priority != currentPriority) {
+    console.log("This should go from high to low", p);
+
+    // Sort the tank group data by consumed fuel
+    const sortedGroup = group.sort((a, b) => a.load.tripFuel - b.load.tripFuel);
+
+    // Loop over each tank in group and add a point as each tank empties
+    let totalConsumedFuel = 0;
+    for (const { tank: _, load: load } of Object.values(sortedGroup)) {
+      // Get the segment of consumed fuel by all tanks in group
+      let segmentConsumedFuel = Math.max(load.tripFuel - totalConsumedFuel, 0);
+      // console.log("This should go low to high", load.tripFuel);
+      // Remove the segment fuel amount from each tank in group if they more to give
+      for (const { tank: fuelTankI, load: loadI } of Object.values(sortedGroup)) {
+        if (totalConsumedFuel >= loadI.tripFuel) continue;
+        // console.log("Draining", segmentConsumedFuel, "from tank", fuelTankI.name);
+        weight -= (Math.min(segmentConsumedFuel, loadI.tripFuel))
+        moment -= (Math.min(segmentConsumedFuel, loadI.tripFuel)) * fuelTankI.arm;
+      }
+      totalConsumedFuel += segmentConsumedFuel;
+      // Add point for each tank in group (TODO: This may result in duplicates)
       points.push({ weight: weight, arm: moment / weight });
-      console.log("ADDED POINT FOR Priority", currentPriority);
-      currentPriority = fuelTank.tank.priority;
     }
-    console.log("This should go low to high", fuelTank.tank.priority);
-    weight += fuelTank.load.tripFuel
-    moment += fuelTank.load.tripFuel * fuelTank.tank.arm;
   }
 
   // Last Point (should be unnecessary as this should match takeoff load);
