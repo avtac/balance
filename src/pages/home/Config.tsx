@@ -1,4 +1,3 @@
-// TODO: 5. Add loading page
 // TODO: 6. Add Overview/Printout page
 
 import './Config.css'
@@ -279,6 +278,7 @@ function FuelSelection({ aircraft, setAircraft, loading, setLoading, fuelTank, a
       <td className='narrowFilter'>{roundNumber(convertLengthUnit(fuelTank.arm, baseLengthUnit, units.lengthUnits), unitPrecision)} {units.lengthUnits}</td>
       <td>{roundNumber(convertFuelUnits(fuelTank.maxWeight, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)} {units.fuelUnits}</td>
       <td>{roundNumber(convertFuelUnits(fuelTank.unusable, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision)} {units.fuelUnits}</td>
+      <td>{fuelTank.priority}</td>
       {fuelTank.removable ?
         <td onClick={() => { if (dialogRef.current) dialogRef.current.show() }}>
           <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faEllipsisV} />
@@ -590,6 +590,7 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
                 <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
                 <th>{`Max Fuel (${units.fuelUnits})`}</th>
                 <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
+                <th>Priority</th>
                 <th className="noSort"></th>
               </tr>
             </thead>

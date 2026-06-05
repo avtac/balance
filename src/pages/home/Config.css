@@ -182,7 +182,7 @@ dialog:has(.equipmentEdit) {
 
 #fuelConfigTable {
   tr {
-    grid-template-columns: minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 10rem) minmax(4rem, 10rem);
+    grid-template-columns: minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(3rem, 6rem) minmax(3rem, 4rem) minmax(4rem, 10rem);
 
     @media (max-width: 450px) {
       grid-template-columns: minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 10rem);

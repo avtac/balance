@@ -186,6 +186,48 @@ export function calculateBalanceForTakeoff(aircraft: aircraftT, selectedOpsConfi
   return [weight, moment / weight];
 }
 
+export function calculateBalancePointsForTanks(aircraft: aircraftT, selectedOpsConfig: string, loading: loadingT): momentObjectT[] {
+  // Get tanks sorted on priority
+  const sortedTanks = loading.fuel.map(t => {
+    let tank = aircraft.fuelTanks.find(T => t.tank === T.id);
+    if (tank === undefined) return;
+    return { tank: tank, load: t };
+  })
+    .filter(t => t != undefined)
+    .sort((a, b) => a.tank.priority - b.tank.priority);
+
+  // Get landing balance
+  let [weight, arm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
+  let moment = arm * weight;
+  const points: momentObjectT[] = [{ weight: weight, arm: arm }];
+
+  // Loop over each tank
+  let currentPriority = 0;
+  for (const fuelTank of sortedTanks) {
+    // TODO: This needs to handle different tank sizes,
+    // if a 50Gal tank and 100Gal tank have the same priority
+    // the 50Gal will drain while the 100Gal will still have 
+    // 50Gal remaining. This should thus find the smallest tank
+    // per priority level and add a point when each one drains.
+    // But not if multiple tanks drain at the same time.
+
+    // if the priority changes add point to return object
+    if (fuelTank.tank.priority != currentPriority) {
+      points.push({ weight: weight, arm: moment / weight });
+      console.log("ADDED POINT FOR Priority", currentPriority);
+      currentPriority = fuelTank.tank.priority;
+    }
+    console.log("This should go low to high", fuelTank.tank.priority);
+    weight += fuelTank.load.tripFuel
+    moment += fuelTank.load.tripFuel * fuelTank.tank.arm;
+  }
+
+  // Last Point (should be unnecessary as this should match takeoff load);
+  points.push({ weight: weight, arm: moment / weight });
+
+  return points;
+}
+
 
 export function truncateNumber(n: number, precision: number): number {
   if (n < 0) return Math.ceil(n * precision) / precision;

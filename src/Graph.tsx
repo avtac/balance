@@ -1,7 +1,7 @@
 import { Fragment, useContext, useMemo, useRef, type ReactNode } from 'react';
 import './Graph.css'
 import { type aircraftLimitsT, type cargoAreaT, type aircraftT, type momentObjectT, type regionPointT, type regionT, type seatT, type weightLimitT, type setupT, baseLengthUnit, baseWeightUnit, type loadingT } from './Types';
-import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, calculateMAC, truncateNumber } from './utility';
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalancePointsForTanks, calculateEmptyBalanceForConfig, calculateMAC, truncateNumber } from './utility';
 import { convertLengthUnit, convertWeightUnit, UnitContext } from './UnitsContext';
 
 let width = 140;
@@ -470,6 +470,26 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
         size: 2,
         label: "Ops Config"
       });
+    if (loading) {
+      const fuelTankPoints = calculateBalancePointsForTanks(aircraft, selectedOpsConfig, loading);
+      let lastWeight, lastArm;
+      ({ weight: lastWeight, arm: lastArm } = fuelTankPoints[0]);
+      for (let i = 1; i < fuelTankPoints.length; i++) {
+        let currentWeight, currentArm;
+        ({ weight: currentWeight, arm: currentArm } = fuelTankPoints[i]);
+        currentWeight = convertWeightUnit(currentWeight, baseWeightUnit, units.weightUnits);
+        currentArm = units.useMAC ? calculateMAC(currentArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(currentArm, baseLengthUnit, units.lengthUnits);
+        lines.push({
+          weight1: lastWeight,
+          arm1: lastArm,
+          weight2: currentWeight,
+          arm2: currentArm,
+          color: 'red'
+        })
+        lastWeight = currentWeight;
+        lastArm = currentArm;
+      }
+    }
   }
 
   if (loading) {

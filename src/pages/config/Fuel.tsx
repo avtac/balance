@@ -64,6 +64,15 @@ function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
       </td>
       <td>
         <input
+          name={"priority" + index}
+          placeholder="0"
+          min={0}
+          type="number"
+          value={tank.priority ? tank.priority : ""}
+          onChange={e => setValue('priority', Number(e.target.value))} />
+      </td>
+      <td>
+        <input
           type="checkbox"
           checked={aircraft.fuelTanks[index].removable}
           onChange={e => setValue('removable', e.target.checked)} />
@@ -86,7 +95,8 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
       arm: 0,
       maxWeight: 300,
       unusable: 0,
-      removable: false
+      removable: false,
+      priority: 0
     });
     setAircraft(tmp);
   }
@@ -103,6 +113,7 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
               <th>{`Arm (${units.lengthUnits})`}</th>
               <th>{`Max Fuel (${units.fuelUnits})`}</th>
               <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
+              <th>Priority</th>
               <th>Removable</th>
               <th className='noSort'></th>
             </tr>
