@@ -210,15 +210,7 @@ export function calculateBalancePointsForTanks(aircraft: aircraftT, selectedOpsC
   const points: momentObjectT[] = [{ weight: weight, arm: arm }];
 
   // Loop over each tank group
-  for (const [p, group] of Object.entries(grouped).reverse()) {
-    // This needs to handle different tank sizes,
-    // if a 50Gal tank and 100Gal tank have the same priority
-    // the 50Gal will drain while the 100Gal will still have 
-    // 50Gal remaining. This should thus find the smallest tank
-    // per priority level and add a point when each one drains.
-    // But not if multiple tanks drain at the same time.
-
-    console.log("This should go from high to low", p);
+  for (const [_, group] of Object.entries(grouped).reverse()) {
 
     // Sort the tank group data by consumed fuel
     const sortedGroup = group.sort((a, b) => a.load.tripFuel - b.load.tripFuel);
@@ -244,7 +236,6 @@ export function calculateBalancePointsForTanks(aircraft: aircraftT, selectedOpsC
 
   // Last Point (should be unnecessary as this should match takeoff load);
   points.push({ weight: weight, arm: moment / weight });
-
   return points;
 }
 

@@ -472,8 +472,12 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
       });
     if (loading) {
       const fuelTankPoints = calculateBalancePointsForTanks(aircraft, selectedOpsConfig, loading);
+
       let lastWeight, lastArm;
       ({ weight: lastWeight, arm: lastArm } = fuelTankPoints[0]);
+      lastWeight = convertWeightUnit(lastWeight, baseWeightUnit, units.weightUnits);
+      lastArm = units.useMAC ? calculateMAC(lastArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(lastArm, baseLengthUnit, units.lengthUnits);
+
       for (let i = 1; i < fuelTankPoints.length; i++) {
         let currentWeight, currentArm;
         ({ weight: currentWeight, arm: currentArm } = fuelTankPoints[i]);
