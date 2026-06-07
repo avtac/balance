@@ -33,6 +33,17 @@ svg#graph {
     fill: var(--text);
   }
 
+  circle.point,
+  rect.point {
+    stroke: var(--bg);
+    stroke-width: 0.25;
+  }
+
+  circle.point.highlight,
+  rect.point.highlight {
+    stroke: var(--text);
+  }
+
   .configArea {
     stroke: none;
     fill: #9994;

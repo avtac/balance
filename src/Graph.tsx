@@ -1,4 +1,4 @@
-import { Fragment, useContext, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { Fragment, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import './Graph.css'
 import { type aircraftLimitsT, type cargoAreaT, type aircraftT, type momentObjectT, type regionPointT, type regionT, type seatT, type weightLimitT, type setupT, baseLengthUnit, baseWeightUnit, type loadingT } from './Types';
 import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalancePointsForTanks, calculateEmptyBalanceForConfig, calculateMAC, roundNumber, truncateNumber } from './utility';
@@ -30,7 +30,7 @@ function calculatePointY(limits: limitsT, weight: number): number {
   return height - (weight - limits.minY) * limits.yRatio - padding - graphInsetPadding;
 }
 function reverseCalculateY(limits: limitsT, y: number): number {
-  return (y + padding + graphInsetPadding - height) / limits.yRatio + limits.minY;
+  return -(y + padding + graphInsetPadding - height) / limits.yRatio + limits.minY;
 }
 
 function calculateArm(weight1: number, arm1: number, weight2: number, arm2: number): number {
@@ -356,41 +356,39 @@ interface plotPointT {
 }
 
 interface plotPointProps {
-  point: plotPointT,
+  aircraft: aircraftT;
+  pointFunction: (arg0: aircraftT) => plotPointT;
   limits: limitsT
 }
 
-function PlotPoint({ point, limits }: plotPointProps): ReactNode {
+function PlotPoint({ aircraft, pointFunction, limits }: plotPointProps): ReactNode {
   const units = useContext(UnitContext);
   const [highlight, setHighlight] = useState(false);
+  const point = pointFunction(aircraft);
   const x = calculatePointX(limits, point.arm)
   const y = calculatePointY(limits, point.weight)
 
-  function onClick(e: React.MouseEvent<(SVGCircleElement | SVGRectElement), globalThis.MouseEvent>) {
+  function onClick() {
     setHighlight(!highlight);
   }
 
   let shape = <circle
-    onClick={e => onClick(e)}
-    className='point'
+    onClick={onClick}
+    className={'point' + (highlight ? ' highlight' : "")}
     cx={x}
     cy={y}
     r={point.size}
-    fill='#59C'
-    stroke='black'
-    strokeWidth={.3} />;
+    fill='#59C' />
 
   if (point.style == 'square') {
     shape = <rect
-      onClick={e => onClick(e)}
-      className='point'
+      onClick={onClick}
+      className={'point' + (highlight ? ' highlight' : "")}
       x={x - point.size / 2}
       y={y - point.size / 2}
       width={point.size}
       height={point.size}
-      fill='#59C'
-      stroke='black'
-      strokeWidth={.2} />;
+      fill='#59C' />;
   }
 
   return (
@@ -399,17 +397,20 @@ function PlotPoint({ point, limits }: plotPointProps): ReactNode {
       {highlight && point.label != undefined &&
         <>
           <text
+            onClick={onClick}
             className='point'
             x={x}
-            y={y - point.size / 2 - 1.2}
+            y={y + point.size / 2 + 1.2}
+            dominantBaseline='hanging'
             textAnchor='middle'>
             {point.label}
           </text>
           <text
+            onClick={onClick}
             className='point'
             x={x}
-            y={y + point.size / 2 + 2.2}
-            dominantBaseline='central'
+            y={y + point.size / 2 + 4.2}
+            dominantBaseline='hanging'
             textAnchor='middle'>
             {roundNumber(reverseCalculateX(limits, x), 100)}{units.useMAC ? "%" : units.lengthUnits}, {Math.round(reverseCalculateY(limits, y))}{units.weightUnits}
           </text>
@@ -452,50 +453,58 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
   const configAreaPoints = useRef("");
 
   // Add any desired points to graph
-  const points: plotPointT[] = []
+  const points: { name: string, func: (arg0: aircraftT) => plotPointT }[] = []
   // Add any desired lines to graph
   const lines: lineProps[] = []
 
   points.push({
-    weight: convertWeightUnit(aircraft.config.emptyWeight, baseWeightUnit, units.weightUnits),
-    arm: units.useMAC ? calculateMAC(aircraft.config.emptyArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(aircraft.config.emptyArm, baseLengthUnit, units.lengthUnits),
-    style: 'square',
-    size: 2,
-    label: "Empty Aircraft"
+    name: "emptyWeight", func: (aircraft: aircraftT): plotPointT => ({
+      weight: convertWeightUnit(aircraft.config.emptyWeight, baseWeightUnit, units.weightUnits),
+      arm: units.useMAC ? calculateMAC(aircraft.config.emptyArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(aircraft.config.emptyArm, baseLengthUnit, units.lengthUnits),
+      style: 'circle',
+      size: 1,
+      label: "Empty Aircraft"
+    })
   });
 
   if (selectedConfig) {
-    const [weight, arm] = calculateEmptyBalanceForConfig(aircraft, selectedConfig);
-    // const [weightFull, armFull] = calculateMaxBalanceForConfig(aircraft, selectedConfig);
-    if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
-      points.push({
-        weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
-        arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
-        style: 'circle',
-        size: 1,
-        label: "Empty Config"
-      });
-    // if (weightFull != aircraft.config.emptyWeight || armFull != aircraft.config.emptyArm)
-    //   points.push({
+    points.push({
+      name: "emptyConfig", func: (aircraft: aircraftT): plotPointT => {
+        const [weight, arm] = calculateEmptyBalanceForConfig(aircraft, selectedConfig);
+        return {
+          weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
+          arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+          style: 'circle',
+          size: 1,
+          label: "Empty Config"
+        }
+      }
+    });
+    // points.push((aircraft: aircraftT): plotPointT => {
+    //   const [weightFull, armFull] = calculateMaxBalanceForConfig(aircraft, selectedConfig);
+    //   return {
     //     weight: convertWeightUnit(weightFull, baseWeightUnit, units.weightUnits),
     //     arm: units.useMAC ? calculateMAC(armFull, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(armFull, baseLengthUnit, units.lengthUnits),
     //     style: 'circle',
     //     size: 1,
     //     label: "Max Config"
-    //   });
-
+    //   }
+    // });
   }
 
   if (selectedOpsConfig) {
-    const [weight, arm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
-    if (weight != aircraft.config.emptyWeight || arm != aircraft.config.emptyArm)
-      points.push({
-        weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
-        arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
-        style: 'square',
-        size: 2,
-        label: "Ops Config"
-      });
+    points.push({
+      name: "opsConfig", func: (aircraft: aircraftT): plotPointT => {
+        const [weight, arm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
+        return {
+          weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
+          arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+          style: 'circle',
+          size: 1,
+          label: "Ops Config"
+        }
+      }
+    });
     if (loading) {
       const fuelTankPoints = calculateBalancePointsForTanks(aircraft, selectedOpsConfig, loading);
 
@@ -523,21 +532,30 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
   }
 
   if (loading) {
-    let [weight, arm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
     points.push({
-      weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
-      arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
-      style: 'square',
-      size: 2,
-      label: "Land"
+      name: "land", func: (aircraft: aircraftT): plotPointT => {
+        let [weight, arm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
+        return {
+          weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
+          arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+          style: 'square',
+          size: 2,
+          label: "Land"
+        }
+      }
     });
-    [weight, arm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
+
     points.push({
-      weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
-      arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
-      style: 'square',
-      size: 2,
-      label: "Takeoff"
+      name: "takeoff", func: (aircraft: aircraftT): plotPointT => {
+        let [weight, arm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
+        return {
+          weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
+          arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+          style: 'square',
+          size: 2,
+          label: "Takeoff"
+        }
+      }
     });
   }
 
@@ -561,10 +579,13 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
   }
 
   if (points.length > 0) {
-    maxX = Math.max(...points.filter((v) => v.arm !== null).map((lim) => lim.arm), maxX) ?? maxX;
-    minX = Math.min(...points.filter((v) => v.arm !== null).map((lim) => lim.arm), minX) ?? minX;
-    maxY = Math.max(...points.filter((v) => v.weight !== null).map((lim) => lim.weight), maxY) ?? maxY;
-    minY = Math.min(...points.filter((v) => v.weight !== null).map((lim) => lim.weight), minY) ?? minY;
+    const tmpPoints = points
+      .map((lim) => lim.func(aircraft))
+      .filter((v) => v.arm !== null && v.weight !== null);
+    maxX = Math.max(...tmpPoints.map(p => p.arm), maxX) ?? maxX;
+    minX = Math.min(...tmpPoints.map(p => p.arm), minX) ?? minX;
+    maxY = Math.max(...tmpPoints.map(p => p.weight), maxY) ?? maxY;
+    minY = Math.min(...tmpPoints.map(p => p.weight), minY) ?? minY;
   }
 
   const limits: limitsT = {
@@ -623,10 +644,11 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
   })
 
   // points
-  const pointComponents = points.map((p, i) => {
+  const pointComponents = points.map(p => {
     return <PlotPoint
-      key={[p.weight, p.arm, i].join(' ')}
-      point={p}
+      key={p.name}
+      aircraft={aircraft}
+      pointFunction={p.func}
       limits={limits}
     />
   })
