@@ -1,7 +1,7 @@
-import { Fragment, useContext, useMemo, useRef, type ReactNode } from 'react';
+import { Fragment, useContext, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import './Graph.css'
 import { type aircraftLimitsT, type cargoAreaT, type aircraftT, type momentObjectT, type regionPointT, type regionT, type seatT, type weightLimitT, type setupT, baseLengthUnit, baseWeightUnit, type loadingT } from './Types';
-import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalancePointsForTanks, calculateEmptyBalanceForConfig, calculateMAC, truncateNumber } from './utility';
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalancePointsForTanks, calculateEmptyBalanceForConfig, calculateMAC, roundNumber, truncateNumber } from './utility';
 import { convertLengthUnit, convertWeightUnit, UnitContext } from './UnitsContext';
 
 let width = 140;
@@ -22,8 +22,15 @@ function calculatePointX(limits: limitsT, arm: number): number {
   return (arm - limits.minX) * limits.xRatio + padding + graphInsetPadding;
 }
 
+function reverseCalculateX(limits: limitsT, x: number): number {
+  return (x - padding - graphInsetPadding) / limits.xRatio + limits.minX;
+}
+
 function calculatePointY(limits: limitsT, weight: number): number {
   return height - (weight - limits.minY) * limits.yRatio - padding - graphInsetPadding;
+}
+function reverseCalculateY(limits: limitsT, y: number): number {
+  return (y + padding + graphInsetPadding - height) / limits.yRatio + limits.minY;
 }
 
 function calculateArm(weight1: number, arm1: number, weight2: number, arm2: number): number {
@@ -354,9 +361,17 @@ interface plotPointProps {
 }
 
 function PlotPoint({ point, limits }: plotPointProps): ReactNode {
+  const units = useContext(UnitContext);
+  const [highlight, setHighlight] = useState(false);
   const x = calculatePointX(limits, point.arm)
   const y = calculatePointY(limits, point.weight)
+
+  function onClick(e: React.MouseEvent<(SVGCircleElement | SVGRectElement), globalThis.MouseEvent>) {
+    setHighlight(!highlight);
+  }
+
   let shape = <circle
+    onClick={e => onClick(e)}
     className='point'
     cx={x}
     cy={y}
@@ -367,6 +382,7 @@ function PlotPoint({ point, limits }: plotPointProps): ReactNode {
 
   if (point.style == 'square') {
     shape = <rect
+      onClick={e => onClick(e)}
       className='point'
       x={x - point.size / 2}
       y={y - point.size / 2}
@@ -380,14 +396,24 @@ function PlotPoint({ point, limits }: plotPointProps): ReactNode {
   return (
     <>
       {shape}
-      {point.label != undefined &&
-        <text
-          className='point'
-          x={x + point.size / 2}
-          y={y - point.size / 2 - 1.2}
-          textAnchor='middle'>
-          {point.label}
-        </text>
+      {highlight && point.label != undefined &&
+        <>
+          <text
+            className='point'
+            x={x}
+            y={y - point.size / 2 - 1.2}
+            textAnchor='middle'>
+            {point.label}
+          </text>
+          <text
+            className='point'
+            x={x}
+            y={y + point.size / 2 + 2.2}
+            dominantBaseline='central'
+            textAnchor='middle'>
+            {roundNumber(reverseCalculateX(limits, x), 100)}{units.useMAC ? "%" : units.lengthUnits}, {Math.round(reverseCalculateY(limits, y))}{units.weightUnits}
+          </text>
+        </>
       }
     </>
   );
@@ -606,8 +632,49 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
   })
 
   data.limits = cleanLimits(data.limits);
+
+  const [mousePos, setMousePos] = useState({ x: -1, y: -1 });
+  const [mouseIn, setMouseIn] = useState(false);
+  const [showCoords, setShowCoords] = useState(false);
+  function setMouse(e: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) {
+    const graph = document.getElementById("graph");
+    if (!graph) return;
+    const box = graph.getBoundingClientRect();
+    const mousePos = { x: (e.pageX + e.movementX - box.x) * width / box.width, y: (e.pageY + e.movementY - box.y) * height / box.height }
+    setMouseIn(mousePos.x > padding && mousePos.x < width - padding && mousePos.y > padding && mousePos.y < height - padding);
+    setMousePos(mousePos);
+  }
+
+  const mouseText = (
+    <>
+      <rect
+        x={mousePos.x + 1}
+        y={mousePos.y - 2 - 2}
+        fill='grey'
+        stroke='white'
+        rx={.3}
+        strokeWidth={.2}
+        width={26}
+        height={4} />
+      <text
+        x={mousePos.x + 2}
+        y={mousePos.y - 2}
+        dominantBaseline='central'
+        fill='white'>
+        {roundNumber(reverseCalculateX(limits, mousePos.x), 100)}{units.useMAC ? "%" : units.lengthUnits},
+        {} {Math.round(reverseCalculateY(limits, mousePos.y))}{units.weightUnits}
+      </text>
+    </>
+  )
+
+  function handleMouse(e: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) {
+    if (e.button === 2) {
+      setShowCoords(!showCoords);
+    }
+  }
+
   return (
-    <svg className='graph' viewBox={'0 0 ' + width + ' ' + height}>
+    <svg onContextMenu={(e) => e.preventDefault()} onPointerUp={e => handleMouse(e)} onMouseMove={e => setMouse(e)} id='graph' viewBox={'0 0 ' + width + ' ' + height}>
       <PlotArea width={width} height={height} />
       {title}
       {dataAvailable && horizontalBars}
@@ -616,6 +683,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
       {dataAvailable && <PlotRegions aircraft={data} limits={limits} />}
       {dataAvailable && lineComponents}
       {dataAvailable && pointComponents}
+      {mouseIn && showCoords && mouseText}
     </svg>
   );
 }

@@ -3,7 +3,7 @@
   display: grid;
 }
 
-svg.graph {
+svg#graph {
   margin: auto;
   user-select: none;
   max-height: 100%;
