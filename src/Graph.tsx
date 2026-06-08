@@ -667,27 +667,29 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
     setMousePos(mousePos);
   }
 
-  const mouseText = (
-    <>
-      <rect
-        x={mousePos.x + 1}
-        y={mousePos.y - 2 - 2}
-        fill='grey'
-        stroke='white'
-        rx={.3}
-        strokeWidth={.2}
-        width={26}
-        height={4} />
-      <text
-        x={mousePos.x + 2}
-        y={mousePos.y - 2}
-        dominantBaseline='central'
-        fill='white'>
-        {roundNumber(reverseCalculateX(limits, mousePos.x), 100)}{units.useMAC ? "%" : units.lengthUnits},
-        {} {Math.round(reverseCalculateY(limits, mousePos.y))}{units.weightUnits}
-      </text>
-    </>
-  )
+  const mouseText = () => {
+    const string = roundNumber(reverseCalculateX(limits, mousePos.x), 100) + (units.useMAC ? "%" : units.lengthUnits) + ", " + Math.round(reverseCalculateY(limits, mousePos.y)) + units.weightUnits;
+    return (
+      <>
+        <rect
+          x={mousePos.x + 1}
+          y={mousePos.y - 2 - 2}
+          fill='grey'
+          stroke='white'
+          rx={.3}
+          strokeWidth={.2}
+          width={string.length * .1 + 0.08 + "rem"}
+          height={4} />
+        <text
+          x={mousePos.x + 2}
+          y={mousePos.y - 2}
+          dominantBaseline='central'
+          fill='white'>
+          {string}
+        </text>
+      </>
+    )
+  }
 
   function handleMouse(e: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) {
     if (e.button === 2) {
@@ -705,7 +707,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
       {dataAvailable && <PlotRegions aircraft={data} limits={limits} />}
       {dataAvailable && lineComponents}
       {dataAvailable && pointComponents}
-      {mouseIn && showCoords && mouseText}
+      {mouseIn && showCoords && mouseText()}
     </svg>
   );
 }
