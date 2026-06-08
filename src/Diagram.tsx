@@ -65,12 +65,13 @@ interface seatIconProps {
   offX: number,
   offY: number,
   count: number,
+  onClick: () => void,
   opsCount?: number,
   loadedCount?: number,
 }
 
 // offX, offY are in canvas units
-function SeatIcon({ count, name, offX = 0, offY = 0, opsCount = 0, loadedCount = 0 }: seatIconProps): ReactNode {
+function SeatIcon({ count, name, onClick, offX = 0, offY = 0, opsCount = 0, loadedCount = 0 }: seatIconProps): ReactNode {
   const left = offX - seatSize / 2;
   return (
     <>
@@ -83,6 +84,7 @@ function SeatIcon({ count, name, offX = 0, offY = 0, opsCount = 0, loadedCount =
         return (
           <>
             <rect
+              onClick={onClick}
               className={"seat" + fillClass}
               stroke={"#000000"}
               strokeWidth={0.5}
@@ -92,6 +94,7 @@ function SeatIcon({ count, name, offX = 0, offY = 0, opsCount = 0, loadedCount =
               y={-top}
               ry={2} />
             <rect
+              onClick={onClick}
               className={"seat" + fillClass}
               stroke={"#000000"}
               strokeWidth={0.5}
@@ -102,6 +105,7 @@ function SeatIcon({ count, name, offX = 0, offY = 0, opsCount = 0, loadedCount =
               ry={0.29849526}
               transform={"scale(1,-1)"} />
             <rect
+              onClick={onClick}
               className={"seat" + fillClass}
               stroke={"#000000"}
               strokeWidth={0.5}
@@ -112,6 +116,7 @@ function SeatIcon({ count, name, offX = 0, offY = 0, opsCount = 0, loadedCount =
               ry={0.29849526}
               transform={"scale(1,-1)"} />
             <rect
+              onClick={onClick}
               className={"seat" + fillClass}
               stroke={"#000000"}
               strokeWidth={0.5}
@@ -144,12 +149,13 @@ function getPixelFromArm(arm: number): number {
 interface diagramProps {
   aircraft: aircraftT;
   loading?: loadingT;
+  setLoading?: (arg0: loadingT) => void;
   diagramMode: DiagramModes;
   selectedConfig: string;
   selectedOpsConfig: string;
 }
 
-function Diagram({ aircraft, loading, diagramMode, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
+function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
   if (!aircraft) return (<></>);
   let seats = [...aircraft.seats]
   let cargoAreas = [...aircraft.cargoAreas]
@@ -215,9 +221,26 @@ function Diagram({ aircraft, loading, diagramMode, selectedConfig, selectedOpsCo
       const pax = loading.passengers.find(s => s.location === seat.id);
       loadedPax = pax ? pax.count : 0;
     }
+
+    const onClick = () => {
+      if (!loading || !setLoading) return;
+      const tmp = JSON.parse(JSON.stringify(loading));
+      const index = loading.passengers.findIndex(p => p.location === seat.id);
+      if (index < 0) {
+        console.log("ADD NEW SEAT NEW");
+        tmp.passengers.push({ location: seat.id, count: 1, avgWeight: 200 })
+      } else {
+        const newCount = (loading.passengers[index].count + 1) % (seat.seatCount - opsUsed + 1);
+        console.log("ADD NEW SEAT SET", newCount);
+        if (newCount === 0) tmp.passengers.splice(index, 1);
+        else tmp.passengers[index].count = newCount;
+      }
+      setLoading(tmp);
+    }
     return <SeatIcon
       key={seat.id}
       name={seat.name}
+      onClick={onClick}
       opsCount={opsUsed}
       loadedCount={loadedPax}
       offX={-getPixelFromArm(seat.arm)}

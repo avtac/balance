@@ -183,6 +183,7 @@ function Balancr() {
               <Diagram
                 aircraft={config.aircraft && config.aircraft[aircraftIndex]}
                 loading={loadingData}
+                setLoading={setLoadingData}
                 diagramMode={selectedPanel >= 0 ? DiagramModes.Ops : DiagramModes.All}
                 selectedConfig={selectedConfig}
                 selectedOpsConfig={selectedOpsConfig} />
