@@ -1,6 +1,8 @@
-import type { ReactNode } from "react";
+import { useContext, useState, type ReactNode } from "react";
 import "./Diagram.css"
 import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftT, type loadingT } from "./Types";
+import { calculateMAC, roundNumber } from "./utility";
+import { UnitContext } from "./UnitsContext";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
@@ -19,7 +21,7 @@ interface cargoIconProps {
 
 function CargoIcon({ name, offX = 0, offY = 0, width = cargoSize, opsPercent = 0, loadedPercent = 0 }: cargoIconProps): ReactNode {
   const left = offX - cargoSize / 2;
-  const top = -offY - width / 2;
+  const top = offY - width / 2;
   return (
     <>
       <rect
@@ -141,11 +143,6 @@ function SeatIcon({ count, name, onClick, offX = 0, offY = 0, opsCount = 0, load
   );
 }
 
-function getPixelFromArm(arm: number): number {
-  const pixPerUnit = seatSize / seatSize;
-  return arm * pixPerUnit;
-}
-
 interface diagramProps {
   aircraft: aircraftT;
   loading?: loadingT;
@@ -175,35 +172,39 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
     }).filter(v => v != undefined);
   }
 
-  // TODO: Find a way to not need this so no seats can exist
-  if (seats.length === 0) return;
-
   const planePadding = 6;
-  let minArm = -seats.reduce((min, item) => Math.min(min, item.arm), seats[0].arm) + planePadding + seatSize / 2;
-  let maxArm = -seats.reduce((max, item) => Math.max(max, item.arm), seats[0].arm) - planePadding - seatSize / 2;
-
-  if (cargoAreas.length !== 0) {
-    minArm = Math.max(minArm, -cargoAreas.reduce((min, item) => Math.min(min, item.arm), cargoAreas[0].arm) + planePadding + cargoSize / 2);
-    maxArm = Math.min(maxArm, -cargoAreas.reduce((max, item) => Math.max(max, item.arm), cargoAreas[0].arm) - planePadding - cargoSize / 2);
+  let minArm = 0;
+  let maxArm = 0;
+  if (seats.length !== 0) {
+    minArm = seats.reduce((min, item) => Math.min(min, item.arm), seats[0].arm);
+    maxArm = seats.reduce((max, item) => Math.max(max, item.arm), seats[0].arm);
   }
 
-  let minDisplacement = seats.reduce((min, item) => Math.min(min, item.lateralDist - item.seatCount * seatSize / 2), seats[0].lateralDist - seats[0].seatCount * seatSize / 2) - planePadding;
-  let maxDisplacement = seats.reduce((max, item) => Math.max(max, item.lateralDist + item.seatCount * seatSize / 2), seats[0].lateralDist + seats[0].seatCount * seatSize / 2) + planePadding;
+  if (cargoAreas.length !== 0) {
+    minArm = Math.min(minArm, cargoAreas.reduce((min, item) => Math.min(min, item.arm), cargoAreas[0].arm));
+    maxArm = Math.max(maxArm, cargoAreas.reduce((max, item) => Math.max(max, item.arm), cargoAreas[0].arm));
+  }
+
+  let minDisplacement = seats.reduce((min, item) => Math.min(min, item.lateralDist - item.seatCount * seatSize / 2), seats[0].lateralDist - seats[0].seatCount * seatSize / 2);
+  let maxDisplacement = seats.reduce((max, item) => Math.max(max, item.lateralDist + item.seatCount * seatSize / 2), seats[0].lateralDist + seats[0].seatCount * seatSize / 2);
 
   const canvasPadding = 4;
-  const planeTop = minDisplacement;
-  const top = planeTop - canvasPadding;
-  const planeBottom = maxDisplacement;
-  const bottom = planeBottom + canvasPadding;
-  const height = bottom - top;
-  const planeHeight = planeBottom - planeTop;
-  const planeLeft = minArm;
-  const left = planeLeft + canvasPadding + planeHeight / 3;
-  const planeRight = maxArm;
-  const right = planeRight - canvasPadding;
-  const width = left - right;
-  const planeWidth = planeLeft - planeRight;
+  // Dimensions in inches of displayed aircraft
+  const planeRight = maxDisplacement + planePadding;
+  const planeLeft = minDisplacement - planePadding;
+  const planeFront = minArm - planePadding - seatSize / 2;
+  const planeBack = maxArm + planePadding + seatSize / 2;
+  const planeLength = planeBack - planeFront;
+  const planeWidth = planeRight - planeLeft;
 
+  // const svgWidth = 20;
+  // const svgHeight = svgWidth * planeWidth / planeLength;
+  const left = -planeBack - canvasPadding;
+  const right = -planeFront + canvasPadding + 30;
+  const width = right - left;
+  const bottom = planeRight + canvasPadding + width * .025;
+  const top = planeLeft - canvasPadding;
+  const height = bottom - top;
 
   const opsIndex: number = aircraft.operationConfigs.findIndex((o: operationConfigT) => selectedOpsConfig == o.id);
   const seatItems = seats.map((seat: seatT): ReactNode => {
@@ -227,11 +228,9 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
       const tmp = JSON.parse(JSON.stringify(loading));
       const index = loading.passengers.findIndex(p => p.location === seat.id);
       if (index < 0) {
-        console.log("ADD NEW SEAT NEW");
         tmp.passengers.push({ location: seat.id, count: 1, avgWeight: 200 })
       } else {
         const newCount = (loading.passengers[index].count + 1) % (seat.seatCount - opsUsed + 1);
-        console.log("ADD NEW SEAT SET", newCount);
         if (newCount === 0) tmp.passengers.splice(index, 1);
         else tmp.passengers[index].count = newCount;
       }
@@ -243,8 +242,8 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
       onClick={onClick}
       opsCount={opsUsed}
       loadedCount={loadedPax}
-      offX={-getPixelFromArm(seat.arm)}
-      offY={getPixelFromArm(-seat.lateralDist)}
+      offX={-seat.arm}
+      offY={-seat.lateralDist}
       count={Math.max(Number(seat.seatCount), 0)} />
   });
 
@@ -266,19 +265,77 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
       name={cargoArea.name}
       opsPercent={opsPercentUsed}
       loadedPercent={loadedPercent}
-      offX={-getPixelFromArm(cargoArea.arm)}
-      offY={-planeTop - planeHeight / 2}
-      width={planeHeight - planePadding * 2} />
+      offX={-cargoArea.arm}
+      offY={(planeRight - planeLeft) / 2 + planeLeft}
+      width={planeWidth - planePadding * 2} />
   });
+
+  const units = useContext(UnitContext);
+  const [mousePos, setMousePos] = useState({ x: -1, y: -1 });
+  const [mouseIn, setMouseIn] = useState(false);
+  const [showCoords, setShowCoords] = useState(false);
+  function setMouse(e: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) {
+    const diagram = document.getElementById("aircraft");
+    if (!diagram) return;
+    const box = diagram.getBoundingClientRect();
+    const mousePos = { x: planeLength - (e.pageX + e.movementX - box.x) * planeLength / box.width + planeFront, y: (e.pageY + e.movementY - box.y) * planeWidth / box.height + planeLeft }
+    setMouseIn(mousePos.x > planeFront && mousePos.x < planeBack && mousePos.y < planeRight && mousePos.y > planeLeft);
+    setMousePos(mousePos);
+  }
+
+  const mouseText = () => {
+    const string = roundNumber(calculateMAC(mousePos.x, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC), 100) + (units.useMAC ? "%" : units.lengthUnits);
+    return (
+      <>
+        <line
+          x1={-mousePos.x}
+          x2={-mousePos.x}
+          y1={planeLeft}
+          y2={planeRight}
+          fill='grey'
+          stroke='white'
+          rx={.3}
+          strokeWidth={width * .001} />
+        <text
+          x={-mousePos.x}
+          y={planeRight}
+          textAnchor="middle"
+          dominantBaseline='hanging'
+          fontSize={width * .025}
+          fill='white'>
+          {string}
+        </text>
+      </>
+    )
+  }
+
+  function handleMouse(e: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) {
+    if (e.button === 2) {
+      setShowCoords(!showCoords);
+    }
+  }
 
   return (
     <svg
-      viewBox={`${right} ${top} ${width} ${height}`}
+      onContextMenu={(e) => e.preventDefault()}
+      onPointerUp={e => handleMouse(e)}
+      onMouseMove={e => setMouse(e)}
+      viewBox={`${left} ${top} ${width} ${height}`}
       id="diagram">
-      <path className="aircraft" d={`M ${planeLeft} ${planeTop} C ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop}, ${planeLeft + planeHeight / 2} ${planeHeight / 2 + planeTop} ${planeLeft} ${planeBottom}`} fill={'white'} stroke={'none'} />
-      <rect className="aircraft" x={planeRight} y={planeTop} width={planeWidth} height={planeHeight} fill={'white'} stroke={'none'} />
+      <path
+        id="aircraftNose"
+        d={`M ${-planeFront} ${planeLeft} C ${-planeFront + planeWidth / 2} ${planeWidth / 2 + planeLeft}, ${-planeFront + planeWidth / 2} ${planeWidth / 2 + planeLeft} ${-planeFront} ${planeRight}`}
+        stroke={'none'} />
+      <rect
+        id="aircraft"
+        x={-planeBack}
+        y={planeLeft}
+        width={planeLength}
+        height={planeWidth}
+        stroke={'none'} />
       {seatItems}
       {cargoItems}
+      {showCoords && mouseIn && mouseText()}
     </svg>
   );
 }
