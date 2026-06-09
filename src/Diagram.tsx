@@ -278,7 +278,7 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
     const diagram = document.getElementById("aircraft");
     if (!diagram) return;
     const box = diagram.getBoundingClientRect();
-    const mousePos = { x: planeLength - (e.pageX + e.movementX - box.x) * planeLength / box.width + planeFront, y: (e.pageY + e.movementY - box.y) * planeWidth / box.height + planeLeft }
+    const mousePos = { x: planeLength - (e.pageX - box.x) * planeLength / box.width + planeFront, y: (e.pageY - box.y) * planeWidth / box.height + planeLeft }
     setMouseIn(mousePos.x > planeFront && mousePos.x < planeBack && mousePos.y < planeRight && mousePos.y > planeLeft);
     setMousePos(mousePos);
   }

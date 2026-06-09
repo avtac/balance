@@ -662,7 +662,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
     const graph = document.getElementById("graph");
     if (!graph) return;
     const box = graph.getBoundingClientRect();
-    const mousePos = { x: (e.pageX + e.movementX - box.x) * width / box.width, y: (e.pageY + e.movementY - box.y) * height / box.height }
+    const mousePos = { x: (e.pageX - box.x) * width / box.width, y: (e.pageY - box.y) * height / box.height }
     setMouseIn(mousePos.x > padding && mousePos.x < width - padding && mousePos.y > padding && mousePos.y < height - padding);
     setMousePos(mousePos);
   }
