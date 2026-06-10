@@ -37,6 +37,7 @@ svg#graph {
   rect.point {
     stroke: var(--bg);
     stroke-width: 0.25;
+    cursor: pointer;
   }
 
   circle.point.highlight,
