@@ -72,6 +72,16 @@ function Balancr() {
   const local = localStorage.getItem(activeConfigData);
   if (local != null)
     storageConfig = JSON.parse(local);
+  else {
+    const saved = localStorage.getItem(uploadedConfigs);
+    if (saved) {
+      let data: configT[] = Object.values(JSON.parse(saved));
+      console.log(data);
+      if (data.length > 0)
+        storageConfig = data[0];
+      localStorage.setItem(activeConfigData, JSON.stringify(storageConfig));
+    }
+  }
 
   const [config, setConfig] = useState(storageConfig);
   const [selectedAircraft, setSelectedAircraft] = useState(config.aircraft && config.aircraft.length > 0 ? config.aircraft[0].id : "")
