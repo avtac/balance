@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import "./Diagram.css"
-import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftT, type loadingT } from "./Types";
+import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftT, type loadingT, baseLengthUnit } from "./Types";
 import { calculateMAC, roundNumber } from "./utility";
-import { UnitContext } from "./UnitsContext";
+import { convertLengthUnit, UnitContext } from "./UnitsContext";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
 // at the center of the seat
@@ -285,7 +285,7 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
   }
 
   const mouseText = () => {
-    const string = roundNumber(calculateMAC(mousePos.x, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC), 100) + (units.useMAC ? "%" : units.lengthUnits);
+    const string = roundNumber(units.useMAC ? calculateMAC(mousePos.x, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(mousePos.x, baseLengthUnit, units.lengthUnits), 100) + (units.useMAC ? "%" : units.lengthUnits);
     return (
       <>
         <line
