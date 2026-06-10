@@ -1,4 +1,4 @@
-import { useContext, useState, type ReactNode } from "react";
+import { useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import "./Diagram.css"
 import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftT, type loadingT } from "./Types";
 import { calculateMAC, roundNumber } from "./utility";
@@ -67,7 +67,7 @@ interface seatIconProps {
   offX: number,
   offY: number,
   count: number,
-  onClick: () => void,
+  onClick: (arg0: React.MouseEvent) => void,
   opsCount?: number,
   loadedCount?: number,
 }
@@ -223,23 +223,26 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
       loadedPax = pax ? pax.count : 0;
     }
 
-    const onClick = () => {
+    const onClick = (e: React.MouseEvent) => {
       if (!loading || !setLoading) return;
       const tmp = JSON.parse(JSON.stringify(loading));
       const index = loading.passengers.findIndex(p => p.location === seat.id);
       if (index < 0) {
-        tmp.passengers.push({ location: seat.id, count: 1, avgWeight: 200 })
+        tmp.passengers.push({ location: seat.id, count: e.shiftKey ? seat.seatCount : 1, avgWeight: 200 })
       } else {
-        const newCount = (loading.passengers[index].count + 1) % (seat.seatCount - opsUsed + 1);
+        const incCount = (loading.passengers[index].count + 1) % (seat.seatCount - opsUsed + 1);
+        const absCount = loading.passengers[index].count === seat.seatCount ? 0 : seat.seatCount;
+        const newCount = e.shiftKey ? absCount : incCount;
         if (newCount === 0) tmp.passengers.splice(index, 1);
         else tmp.passengers[index].count = newCount;
       }
       setLoading(tmp);
     }
+
     return <SeatIcon
       key={seat.id}
       name={seat.name}
-      onClick={onClick}
+      onClick={e => onClick(e)}
       opsCount={opsUsed}
       loadedCount={loadedPax}
       offX={-seat.arm}
@@ -310,13 +313,33 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
   }
 
   function handleMouse(e: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) {
-    if (e.button === 2) {
+    if (e.button === 2)
       setShowCoords(!showCoords);
-    }
   }
+
+  const ref: RefObject<(SVGSVGElement | null)> = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    let timerId: number;
+
+    const handleKey = () => {
+      timerId = setTimeout(() => {
+        setShowCoords(!showCoords);
+      }, 500); // 500ms threshold
+    };
+    ref.current.addEventListener('touchstart', handleKey);
+
+    const clearID = () => clearTimeout(timerId);
+    ref.current.addEventListener('touchend', clearID);
+    return () => {
+      document.removeEventListener('touchstart', handleKey);
+      document.removeEventListener('touchend', clearID);
+    }
+  }, [ref, showCoords]);
 
   return (
     <svg
+      ref={ref}
       onContextMenu={(e) => e.preventDefault()}
       onPointerUp={e => handleMouse(e)}
       onMouseMove={e => setMouse(e)}

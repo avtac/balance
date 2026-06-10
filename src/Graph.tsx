@@ -1,4 +1,4 @@
-import { Fragment, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Fragment, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import './Graph.css'
 import { type aircraftLimitsT, type cargoAreaT, type aircraftT, type momentObjectT, type regionPointT, type regionT, type seatT, type weightLimitT, type setupT, baseLengthUnit, baseWeightUnit, type loadingT } from './Types';
 import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalancePointsForTanks, calculateEmptyBalanceForConfig, calculateMAC, roundNumber, truncateNumber } from './utility';
@@ -697,8 +697,34 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
     }
   }
 
+  const ref: RefObject<(SVGSVGElement | null)> = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    let timerId: number;
+
+    const handleKey = () => {
+      timerId = setTimeout(() => {
+        setShowCoords(!showCoords);
+      }, 500); // 500ms threshold
+    };
+    ref.current.addEventListener('touchstart', handleKey);
+
+    const clearID = () => clearTimeout(timerId);
+    ref.current.addEventListener('touchend', clearID);
+    return () => {
+      document.removeEventListener('touchstart', handleKey);
+      document.removeEventListener('touchend', clearID);
+    }
+  }, [ref, showCoords]);
+
   return (
-    <svg onContextMenu={(e) => e.preventDefault()} onPointerUp={e => handleMouse(e)} onMouseMove={e => setMouse(e)} id='graph' viewBox={'0 0 ' + width + ' ' + height}>
+    <svg
+      ref={ref}
+      onContextMenu={(e) => e.preventDefault()}
+      onPointerUp={e => handleMouse(e)}
+      onMouseMove={e => setMouse(e)}
+      id='graph'
+      viewBox={'0 0 ' + width + ' ' + height}>
       <PlotArea width={width} height={height} />
       {title}
       {dataAvailable && horizontalBars}
