@@ -707,7 +707,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig }: graphPr
         setShowCoords(!showCoords);
       }, 500); // 500ms threshold
     };
-    ref.current.addEventListener('touchstart', handleKey);
+    ref.current.addEventListener('touchstart', handleKey, { passive: true });
 
     const clearID = () => clearTimeout(timerId);
     ref.current.addEventListener('touchend', clearID);

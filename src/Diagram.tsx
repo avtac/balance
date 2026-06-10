@@ -197,8 +197,6 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
   const planeLength = planeBack - planeFront;
   const planeWidth = planeRight - planeLeft;
 
-  // const svgWidth = 20;
-  // const svgHeight = svgWidth * planeWidth / planeLength;
   const left = -planeBack - canvasPadding;
   const right = -planeFront + canvasPadding + 30;
   const width = right - left;
@@ -228,10 +226,10 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
       const tmp = JSON.parse(JSON.stringify(loading));
       const index = loading.passengers.findIndex(p => p.location === seat.id);
       if (index < 0) {
-        tmp.passengers.push({ location: seat.id, count: e.shiftKey ? seat.seatCount : 1, avgWeight: 200 })
+        tmp.passengers.push({ location: seat.id, count: e.shiftKey ? seat.seatCount - opsUsed : Math.min(1, seat.seatCount - opsUsed), avgWeight: 200 })
       } else {
-        const incCount = (loading.passengers[index].count + 1) % (seat.seatCount - opsUsed + 1);
-        const absCount = loading.passengers[index].count === seat.seatCount ? 0 : seat.seatCount;
+        const incCount = (loadedPax + 1) % (seat.seatCount - opsUsed + 1);
+        const absCount = loadedPax === (seat.seatCount - opsUsed) ? 0 : (seat.seatCount - opsUsed);
         const newCount = e.shiftKey ? absCount : incCount;
         if (newCount === 0) tmp.passengers.splice(index, 1);
         else tmp.passengers[index].count = newCount;
@@ -295,6 +293,7 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
           x2={-mousePos.x}
           y1={planeLeft}
           y2={planeRight}
+          pointerEvents={'none'}
           fill='grey'
           stroke='white'
           rx={.3}
@@ -327,7 +326,7 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
         setShowCoords(!showCoords);
       }, 500); // 500ms threshold
     };
-    ref.current.addEventListener('touchstart', handleKey);
+    ref.current.addEventListener('touchstart', handleKey, { passive: true });
 
     const clearID = () => clearTimeout(timerId);
     ref.current.addEventListener('touchend', clearID);
