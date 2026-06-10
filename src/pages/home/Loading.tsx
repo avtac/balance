@@ -75,6 +75,7 @@ function SeatLoading({ loading, setLoading, aircraft, opsConfigIndex, seat }: se
           <p>Seats Filled</p>
           :
           <input
+            id={'seatAvgWeight' + seat.id}
             type='number'
             min={0}
             max={roundNumber(convertWeightUnit(seat.maxWeight, baseWeightUnit, units.weightUnits), unitPrecision)}
@@ -449,6 +450,287 @@ function CargoLoader({ loading, setLoading, aircraft, selectedOpsConfig }: title
   )
 }
 
+const fuelModes = ['proportional', 'even'] as const;
+const fuelModeNames = { proportional: "Proportional", even: "Even" } as const;
+type fuelModesT = typeof fuelModes[number];
+
+function fillGroup(group: fuelTankT[], loading: loadingT, fuelToAdd: number, mode: fuelModesT): number {
+  console.log("changing GROUP", fuelToAdd);
+  let fuelRemaining = fuelToAdd;
+  group.sort((a, b) => a.maxWeight - b.maxWeight);
+
+  let tanksToFill = fuelToAdd > 0 ? group : group.reduce((total: fuelTankT[], t) => {
+    const data = loading.fuel.find(l => l.tank === t.id);
+    if (data != undefined && data.loadedFuel > 0) total.push(t);
+    return total
+  }, []);
+  let tanksToFillCount = tanksToFill.length;
+
+  const maxFuel = tanksToFill.reduce((sum, t) => sum + t.maxWeight, 0);
+  const groupPreLoaded = group.reduce((sum, t) => {
+    const load = loading.fuel.find(v => v.tank === t.id);
+    if (load) return sum + load.loadedFuel;
+    return sum;
+  }, 0)
+
+  // Return if already full
+  if (groupPreLoaded === maxFuel && fuelRemaining >= 0 || groupPreLoaded === 0 && fuelRemaining <= 0) return fuelRemaining;
+
+  // Loop over each tank in the priority group
+  group.forEach(t => {
+    const tankIndex = loading.fuel.findIndex(f => f.tank === t.id);
+    const startingFuel = tankIndex >= 0 ? loading.fuel[tankIndex].loadedFuel : 0;
+
+    let fuelToSet = 0;
+    if (maxFuel <= fuelToAdd + groupPreLoaded) {
+      fuelToSet = t.maxWeight;
+    } else if (mode === 'proportional') {
+      // Fractional Mode
+      fuelToSet = (t.maxWeight / maxFuel * fuelToAdd) + startingFuel;
+    } else {
+      // Even Mode
+      fuelToSet = fuelToAdd / tanksToFillCount + startingFuel;
+    }
+    // Constrain new value
+    fuelToSet = roundNumber(Math.max(Math.min(fuelToSet, t.maxWeight), 0), 1000000);
+
+    // Set fuel load on tank
+    if (tankIndex < 0)
+      loading.fuel.push({ tank: t.id, loadedFuel: fuelToSet, tripFuel: 0 });
+    else {
+      loading.fuel[tankIndex].loadedFuel = fuelToSet;
+      loading.fuel[tankIndex].tripFuel = Math.max(Math.min(loading.fuel[tankIndex].tripFuel, fuelToSet - t.unusable), 0);
+    }
+
+    const fuelAdded = fuelToSet - startingFuel;
+    fuelRemaining -= fuelAdded;
+
+    console.log("AA", startingFuel, fuelToSet, fuelAdded, tanksToFillCount, fuelToAdd, fuelRemaining);
+    if (mode === 'even' && fuelAdded != 0 && ((fuelToSet === t.maxWeight && fuelRemaining > 0) || (fuelRemaining < 0 && fuelToSet === 0))) {
+      fuelToAdd -= fuelAdded;
+      tanksToFillCount -= 1;
+    }
+  });
+
+  return fuelRemaining;
+}
+
+function FuelLoader({ loading, setLoading, aircraft, selectedOpsConfig }: titleProps) {
+  const units = useContext(UnitContext);
+  const [mode, setMode] = useState('even' as fuelModesT);
+  const dialogRef: RefObject<(null | HTMLDialogElement)> = useRef(null);
+
+  const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
+  if (opsConfigIndex < 0) return (<></>);
+  const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
+
+  // fill tanks from low to high priority
+  function fillTanks(totalFuel: number): void {
+    totalFuel = Math.max(totalFuel, 0);
+
+    var groupByPriority = (xs: string[]) => {
+      return xs.reduce((rv: { [key: string]: fuelTankT[] }, x) => {
+        const tank = aircraft.fuelTanks.find(v => v.id === x);
+        if (tank === undefined) return rv;
+        (rv[tank.priority] ??= []).push(tank);
+        return rv;
+      }, {});
+    };
+
+    // Get tank data with load data
+    const grouped = groupByPriority([
+      ...aircraft.aircraftConfigs[configIndex].fuelTanks,
+      ...aircraft.fuelTanks.reduce((ret: string[], d) => { if (!d.removable) ret.push(d.id); return ret }, [])
+    ]);
+
+    const tmp: loadingT = JSON.parse(JSON.stringify(loading));
+
+    let fuelRemaining = totalFuel;
+
+    // Subtract fuel already in tanks
+    fuelRemaining -= loading.fuel.reduce((sum, t) => sum + t.loadedFuel, 0);
+
+    const keys = Object.keys(grouped)
+      .sort((a, b) => a.localeCompare(b));
+
+    // When removing, remove from the highest priority
+    if (fuelRemaining < 0) keys.reverse();
+
+    for (const p of keys) {
+      if (fuelRemaining === 0) break;
+      fuelRemaining = fillGroup(grouped[p], tmp, fuelRemaining, mode);
+    }
+    setLoading(tmp);
+  }
+
+  const totalFuel = loading.fuel.reduce((sum, s) => sum + s.loadedFuel, 0);
+
+  return (
+    <div className='filler'>
+      <label htmlFor='fuelLoadInput'>Loaded Fuel</label>
+      <div>
+        <input
+          id='fuelLoadInput'
+          type='number'
+          min={0}
+          placeholder={units.fuelUnits}
+          value={totalFuel ? roundNumber(convertFuelUnits(totalFuel, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) : ""}
+          onChange={e => fillTanks(convertFuelUnits(Number(e.target.value), units.fuelUnits, baseFuelUnit, units.fuelDensity))}
+        />
+        <button className='hiddenButton' onClick={() => dialogRef.current ? dialogRef.current.show() : undefined}>
+          <FontAwesomeIcon icon={faEllipsisV} />
+        </button>
+        <dialog ref={dialogRef} className='rightDialog' closedby='any'>
+          <div>
+            <label htmlFor='fuelLoadingModeSelect'>Fuel Load Mode</label>
+            <select id='fuelLoadingModeSelect' value={mode} onChange={(e) => setMode(e.target.value as fuelModesT)}>
+              {fuelModes.map(d => <option value={d} key={d + "fuelLoadingModeSelect"} >{fuelModeNames[d]}</option>)}
+            </select>
+          </div>
+        </dialog>
+      </div>
+    </div>
+  );
+}
+
+function fillUsageGroup(group: fuelTankT[], loading: loadingT, fuelToAdd: number, mode: fuelModesT): number {
+  let fuelRemaining = fuelToAdd;
+  group.sort((a, b) => a.maxWeight - b.maxWeight);
+
+  let tanksToFill = fuelToAdd > 0 ? group : group.reduce((total: fuelTankT[], t) => {
+    const data = loading.fuel.find(l => l.tank === t.id);
+    if (data != undefined && data.loadedFuel > 0) total.push(t);
+    return total
+  }, []);
+  let tanksToFillCount = tanksToFill.length;
+
+  const maxFuel = tanksToFill.reduce((sum, t) => sum + t.maxWeight, 0);
+  const groupPreLoaded = group.reduce((sum, t) => {
+    const load = loading.fuel.find(v => v.tank === t.id);
+    if (load) return sum + load.tripFuel;
+    return sum;
+  }, 0)
+
+  // Return if already full
+  if (groupPreLoaded === maxFuel && fuelRemaining >= 0) return fuelRemaining;
+
+  // Loop over each tank in the priority group
+  group.forEach(t => {
+    const tankIndex = loading.fuel.findIndex(f => f.tank === t.id);
+    const startingFuel = tankIndex >= 0 ? loading.fuel[tankIndex].tripFuel : 0;
+    const maxLoaded = loading.fuel[tankIndex].loadedFuel - t.unusable;
+
+    let fuelToSet = 0;
+    if (maxFuel <= fuelToAdd + groupPreLoaded) {
+      fuelToSet = t.maxWeight;
+    } else if (mode === 'proportional') {
+      // Fractional Mode
+      fuelToSet = (t.maxWeight / maxFuel * fuelToAdd) + startingFuel;
+    } else {
+      // Even Mode
+      fuelToSet = fuelToAdd / tanksToFillCount + startingFuel;
+    }
+    // Constrain new value
+    fuelToSet = roundNumber(Math.max(Math.min(fuelToSet, maxLoaded), 0), 1000000);
+
+    // Set fuel load on tank
+    if (tankIndex < 0)
+      loading.fuel.push({ tank: t.id, loadedFuel: fuelToSet, tripFuel: fuelToSet });
+    else {
+      loading.fuel[tankIndex].tripFuel = fuelToSet
+    }
+
+    const fuelAdded = fuelToSet - startingFuel;
+    fuelRemaining -= fuelAdded;
+
+    if (mode === 'even' && fuelAdded != 0 && ((fuelToSet === t.maxWeight && fuelRemaining > 0) || (fuelRemaining < 0 && fuelToSet === 0))) {
+      fuelToAdd -= fuelAdded;
+      tanksToFillCount -= 1;
+    }
+  });
+
+  return fuelRemaining;
+}
+
+function FuelUsageLoader({ loading, setLoading, aircraft, selectedOpsConfig }: titleProps) {
+  const units = useContext(UnitContext);
+  const [mode, setMode] = useState('even' as fuelModesT);
+  const dialogRef: RefObject<(null | HTMLDialogElement)> = useRef(null);
+
+  const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
+  if (opsConfigIndex < 0) return (<></>);
+  const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
+
+  // fill tanks from low to high priority
+  function fillTanks(totalFuel: number): void {
+    totalFuel = Math.max(totalFuel, 0);
+
+    var groupByPriority = (xs: string[]) => {
+      return xs.reduce((rv: { [key: string]: fuelTankT[] }, x) => {
+        const tank = aircraft.fuelTanks.find(v => v.id === x);
+        if (tank === undefined) return rv;
+        (rv[tank.priority] ??= []).push(tank);
+        return rv;
+      }, {});
+    };
+
+    // Get tank data with load data
+    const grouped = groupByPriority([
+      ...aircraft.aircraftConfigs[configIndex].fuelTanks,
+      ...aircraft.fuelTanks.reduce((ret: string[], d) => { if (!d.removable) ret.push(d.id); return ret }, [])
+    ]);
+
+    const tmp: loadingT = JSON.parse(JSON.stringify(loading));
+
+    let fuelRemaining = totalFuel;
+
+    // Subtract fuel already in tanks
+    fuelRemaining -= loading.fuel.reduce((sum, t) => sum + t.tripFuel, 0);
+
+    const keys = Object.keys(grouped)
+      .sort((a, b) => a.localeCompare(b));
+
+    // When removing, remove from the highest priority
+    if (fuelRemaining < 0) keys.reverse();
+
+    for (const p of keys) {
+      if (fuelRemaining === 0) break;
+      fuelRemaining = fillUsageGroup(grouped[p], tmp, fuelRemaining, mode);
+    }
+    setLoading(tmp);
+  }
+
+  const totalFuel = loading.fuel.reduce((sum, s) => sum + s.tripFuel, 0);
+
+  return (
+    <div className='filler'>
+      <label htmlFor='fuelLoadInput'>Trip Fuel</label>
+      <div>
+        <input
+          id='fuelLoadInput'
+          type='number'
+          min={0}
+          placeholder={units.fuelUnits}
+          value={totalFuel ? roundNumber(convertFuelUnits(totalFuel, baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision) : ""}
+          onChange={e => fillTanks(convertFuelUnits(Number(e.target.value), units.fuelUnits, baseFuelUnit, units.fuelDensity))}
+        />
+        <button className='hiddenButton' onClick={() => dialogRef.current ? dialogRef.current.show() : undefined}>
+          <FontAwesomeIcon icon={faEllipsisV} />
+        </button>
+        <dialog ref={dialogRef} className='rightDialog' closedby='any'>
+          <div>
+            <label htmlFor='fuelLoadingModeSelect'>Fuel Load Mode</label>
+            <select id='fuelLoadingModeSelect' value={mode} onChange={(e) => setMode(e.target.value as fuelModesT)}>
+              {fuelModes.map(d => <option value={d} key={d + "fuelLoadingModeSelect"} >{fuelModeNames[d]}</option>)}
+            </select>
+          </div>
+        </dialog>
+      </div>
+    </div>
+  );
+}
+
+
 interface titleProps extends loadingProps {
   aircraft: aircraftT;
   selectedOpsConfig: string;
@@ -468,8 +750,12 @@ function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps)
     <>
       <div id='loadingTitle'>
         <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
-        <PassengerLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
-        <CargoLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
+        <div id='loaders'>
+          <PassengerLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
+          <CargoLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
+          <FuelLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
+          <FuelUsageLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
+        </div>
       </div>
       <div id='configTitleData'>
         <h4>Empty Weight</h4>
@@ -601,6 +887,3 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
 
 export default Loading;
 
-
-// TODO: There is an issue with units and the cargo loader.
-// TODO: Change passengers count column to show "[input (no arrows)]/seatCount"

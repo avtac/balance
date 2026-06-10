@@ -6,6 +6,14 @@ h2 {
   height: fit-content;
 }
 
+#loaders {
+  @media (min-width: 680px) {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 4px;
+  }
+}
+
 .filler {
   display: grid;
   grid-auto-flow: column;

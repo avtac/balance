@@ -76,8 +76,8 @@ function Units({ config, setConfig, macAvailable }: unitsProps): ReactNode {
     <Subregion>
       <h3>Units</h3>
       {macAvailable && (<>
-        <label>Use MAC</label>
-        <input type='checkbox' checked={config.setup.useMAC} onChange={(e) => setValue('useMAC', e.target.checked)} />
+        <label htmlFor='useMACCheck'>Use MAC</label>
+        <input id='useMACCheck' type='checkbox' checked={config.setup.useMAC} onChange={(e) => setValue('useMAC', e.target.checked)} />
       </>)}
       <div id='unitsSelect'>
         <label htmlFor="weightUnitSelect">Weight</label>

@@ -12,7 +12,7 @@
   justify-content: start;
 
   @media (max-width: 580px) {
-    grid-template-columns: 6.3rem 4rem;
+    grid-template-columns: 7rem auto;
     column-gap: 4px;
 
     p,
@@ -68,6 +68,10 @@ dialog.addRemoveDialog {
   bottom: 0rem;
   left: 2rem;
   width: 8rem;
+
+  button {
+    width: 7rem;
+  }
 }
 
 @media (max-width: 625px) {
@@ -182,7 +186,7 @@ dialog:has(.equipmentEdit) {
 
 #fuelConfigTable {
   tr {
-    grid-template-columns: minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(3rem, 6rem) minmax(3rem, 4rem) minmax(4rem, 10rem);
+    grid-template-columns: minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(3rem, 6rem) minmax(4rem, 10rem) minmax(4rem, 6rem) auto;
 
     @media (max-width: 450px) {
       grid-template-columns: minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 10rem);
