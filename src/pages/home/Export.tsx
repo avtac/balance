@@ -20,6 +20,7 @@ interface templateT {
   name?: string;
   size?: ("Letter" | "A4" | "Legal");
   style?: string;
+  id?: string;
   body: (templateComponentT[])
 }
 
@@ -88,18 +89,19 @@ interface exportProps {
 export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & nameProps): ReactNode {
   const units = useContext(UnitContext);
   const ref: RefObject<(null | HTMLIFrameElement)> = useRef(null);
-  const [temp, setTemplate] = useState({} as templateT);
+  const active: string = localStorage.getItem("activeTemplate") ?? "";
+  const [activeTemplate, setTemplate] = useState(active);
   const [iframeParts, setIframeParts] = useState(null as (null | { body: ReactNode, head: ReactNode }));
+  const [inputParts, setInputParts] = useState(null as (null | ReactNode[]));
+
+  function setTemplateSpecial(tempId: string) {
+    localStorage.setItem("activeTemplate", tempId);
+    setTemplate(tempId);
+  }
 
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
-
-  const saveIframe = () => {
-    if (!ref.current || !ref.current.contentWindow) return;
-    ref.current.contentWindow.focus();
-    ref.current.contentWindow.print();
-  };
 
   const graph = (<Graph aircraft={aircraft} loading={loading} selectedOpsConfig={selectedOpsConfig} selectedConfig={aircraft.operationConfigs[opsConfigIndex].config} />);
   const diagram = (
@@ -186,7 +188,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
         }
       else if (component.action === "manual") {
         const element = document.getElementById(component.content + "-manual-input") as HTMLInputElement;
-        content = element ? element.value : "Missing Input";
+        content = element ? element.value : "";
       } else if (typeof component.content === "string")
         content = component.content;
       else // Array
@@ -201,20 +203,22 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     return ret;
   }
 
-  function buildFromTemplate(template: templateT) {
-    if (!template.body) return { body: <></>, head: <></> };
+  function buildFromTemplate(tempId: string) {
+    const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
+    const temp = templates.find(f => f.id === tempId);
+    if (!temp || !temp.body) return { body: <></>, head: <></> };
     // Handle main style and size
     const head = (
       <>
         <link rel="stylesheet" href="/src/index.css" />
         <link rel="stylesheet" href="/src/Graph.css" />
         <link rel="stylesheet" href="/src/Diagram.css" />
-        <style>{template.style}</style>
+        <style>{temp.style}</style>
       </>
     )
 
     // Recursive build components
-    const body = buildComponent(template.body);
+    const body = buildComponent(temp.body);
 
     return { body: body, head: head };
   }
@@ -234,49 +238,77 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
       fileReader.onload = () => {
         const data: string = fileReader.result as string;
         if (!data) return;
-        setTemplate(JSON.parse(data));
+        const newTemplate: templateT = JSON.parse(data);
+        newTemplate.id = crypto.randomUUID();
+        setTemplateSpecial(newTemplate.id);
+        const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
+        const index = templates.findIndex(t => t.id === newTemplate.id);
+        if (index < 0) templates.push(newTemplate);
+        else templates[index] = newTemplate;
+        localStorage.setItem("savedTemplates", JSON.stringify(templates));
       };
     };
     input.click();
   }
 
-  function buildInputs(component: (templateComponentT | templateComponentT[])) {
+  function buildInputs(component: (templateComponentT | templateComponentT[])): ReactNode[] {
     if (Array.isArray(component)) {
-      component.forEach(c => buildInputs(c));
-      return
+      let tmp: ReactNode[] = []
+      component.forEach(c => tmp = [...tmp, ...buildInputs(c)]);
+      return tmp
     }
 
     if (Array.isArray(component?.content)) {
-      component?.content.forEach(c => buildInputs(c));
-      return
+      let tmp: ReactNode[] = []
+      component?.content.forEach(c => tmp = [...tmp, ...buildInputs(c)]);
+      return tmp
     }
 
-    if (component?.action !== 'manual') return;
-    const input = document.createElement("input");
-    input.classList.add("manualInput");
-    input.id = component.content + "-manual-input";
-    input.placeholder = component.content as string;
-    input.oninput = () => setIframeParts(buildFromTemplate(temp));
-    const holder = document.getElementById("inputsHolder");
-    holder?.appendChild(input);
+    if (component?.action !== 'manual') return [];
+    return [
+      <div key={component.content + "-manual-input-holder"}>
+        <label style={{ paddingRight: "4px" }} htmlFor={component.content + "-manual-input"}>{component.content as string}</label>
+        <input className="manualInput" id={component.content + "-manual-input"} placeholder={component.content as string} onInput={() => setIframeParts(buildFromTemplate(activeTemplate))} />
+      </div>
+    ]
   }
 
   useEffect(() => {
-    const holder = document.getElementById("inputsHolder");
-    while (holder?.firstChild) holder.firstChild.remove();
-    buildInputs(temp.body)
-    setIframeParts(buildFromTemplate(temp));
-  }, [temp])
+    const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
+    const temp = templates.find(f => f.id === activeTemplate);
+    if (!temp) return;
+    setInputParts(buildInputs(temp.body));
+    setIframeParts(buildFromTemplate(activeTemplate));
+  }, [activeTemplate]);
+
+  const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
+  const options = templates.map(t => <option value={t.id}>{t.name}</option>)
 
   return (
     <>
-      <div id='inputsHolder'></div>
       <button
         id="openFile"
-        onClick={() => openFile()}>OPEN</button>
+        onClick={() => openFile()}>Upload Template</button>
       <button
-        id="exportButton"
-        onClick={() => saveIframe()}>TEST</button>
+        id="deleteButton"
+        onClick={() => {
+          const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
+          const index = templates.findIndex(t => t.id === activeTemplate);
+          if (index >= 0) {
+            templates.splice(index, 1);
+            setTemplateSpecial(templates.length > 0 ? (templates[0].id ?? "") : "");
+            localStorage.setItem("savedTemplates", JSON.stringify(templates));
+          }
+        }}>Delete Template</button>
+      <select
+        id="templateSelect"
+        value={activeTemplate}
+        onChange={(e) => {
+          setTemplateSpecial(e.target.value);
+        }}>{options}</select>
+
+      <div id='inputsHolder'>{inputParts}</div>
+
       <CustomIframe
         ref={ref}
         id="exportPreview"
@@ -298,11 +330,22 @@ function CustomIframe({ body, head, ...props }: customIframeProps) {
   const headNode = contentRef?.contentWindow?.document?.head;
   const bodyNode = contentRef?.contentWindow?.document?.body;
 
+  const saveIframe = () => {
+    if (!contentRef || !contentRef.contentWindow) return;
+    contentRef.contentWindow.focus();
+    contentRef.contentWindow.print();
+  };
+
   return (
-    <iframe {...props} ref={setContentRef}>
-      {headNode && createPortal(head, headNode)}
-      {bodyNode && createPortal(body, bodyNode)}
-    </iframe>
+    <>
+      <button
+        id="exportButton"
+        onClick={() => saveIframe()}>Save</button>
+      <iframe {...props} ref={setContentRef}>
+        {headNode && createPortal(head, headNode)}
+        {bodyNode && createPortal(body, bodyNode)}
+      </iframe>
+    </>
   )
 }
 
