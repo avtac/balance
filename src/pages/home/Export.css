@@ -2,6 +2,39 @@
   height: 11in;
   width: 8.5in;
   margin: 0px auto;
+  border: unset;
+}
+
+#exportButtonHolder {
+  display: grid;
+  grid-template-columns: 10rem 8rem 8rem;
+  gap: 6px;
+}
+
+#inputsHolder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+#inputsHolder>div {
+  display: grid;
+  grid-template-columns: max-content 10rem;
+  gap: 6px;
+  margin: 4px 0px;
+
+  label {
+    margin: auto 0px;
+  }
+}
+
+#iframeHolder {
+  overflow-y: auto;
+}
+
+#scaleHolder {
+  display: grid;
+  overflow: hidden;
 }
 
 :has(iframe) {

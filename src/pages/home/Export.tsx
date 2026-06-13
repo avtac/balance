@@ -6,6 +6,7 @@ import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, un
 import { createPortal } from 'react-dom';
 import Graph from '../../Graph';
 import Diagram from '../../Diagram';
+import { Subregion } from '../../Layout';
 
 interface templateComponentT {
   type: (keyof HTMLElementTagNameMap);
@@ -24,13 +25,6 @@ interface templateT {
   body: (templateComponentT[])
 }
 
-const styleToString = (style: object) => {
-  return Object.entries(style).map(([key, value]) => {
-    // Convert camelCase to kebab-case
-    const cssKey = key.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`);
-    return `${cssKey}:${value}`;
-  }).join(';');
-};
 
 interface exportProps {
   loading: loadingT;
@@ -179,7 +173,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     }
 
     let content: (string | ReactNode) = "";
-    if (component.content) {
+    if (component.content !== undefined) {
       if (component.action === "function")
         try {
           content = eval(component.content as string)();
@@ -199,7 +193,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     const className = component.className ? component.className : "";
     const style = component.style ? component.style : undefined;
 
-    let ret = (<component.type className={className} id={id} style={style}>{content}</ component.type >)
+    let ret = (<component.type key={crypto.randomUUID() + "-" + id + "-" + className + "-" + content} className={className} id={id} style={style}>{content}</ component.type >)
     return ret;
   }
 
@@ -214,6 +208,16 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
         <link rel="stylesheet" href="/src/Graph.css" />
         <link rel="stylesheet" href="/src/Diagram.css" />
         <style>{temp.style}</style>
+        <style>{`
+          #graph .background {
+            fill: none !important;
+          }
+          #diagram #aircraft {
+            fill: none !important;
+            stroke: black !important;
+            stroke-width: .4 !important;
+          }
+        `}</style>
       </>
     )
 
@@ -279,35 +283,37 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     if (!temp) return;
     setInputParts(buildInputs(temp.body));
     setIframeParts(buildFromTemplate(activeTemplate));
-  }, [activeTemplate]);
+  }, [activeTemplate, loading]);
 
   const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
-  const options = templates.map(t => <option value={t.id}>{t.name}</option>)
+  const options = templates.sort((a, b) => a.name?.localeCompare(b.name ?? "") ?? -1).map(t => <option key={t.id} value={t.id}>{t.name}</option>)
 
   return (
     <>
-      <button
-        id="openFile"
-        onClick={() => openFile()}>Upload Template</button>
-      <button
-        id="deleteButton"
-        onClick={() => {
-          const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
-          const index = templates.findIndex(t => t.id === activeTemplate);
-          if (index >= 0) {
-            templates.splice(index, 1);
-            setTemplateSpecial(templates.length > 0 ? (templates[0].id ?? "") : "");
-            localStorage.setItem("savedTemplates", JSON.stringify(templates));
-          }
-        }}>Delete Template</button>
-      <select
-        id="templateSelect"
-        value={activeTemplate}
-        onChange={(e) => {
-          setTemplateSpecial(e.target.value);
-        }}>{options}</select>
+      <Subregion id='exportButtonHolder'>
+        <select
+          id="templateSelect"
+          value={activeTemplate}
+          onChange={(e) => {
+            setTemplateSpecial(e.target.value);
+          }}>{options}</select>
+        <button
+          id="openFile"
+          onClick={() => openFile()}>Upload Template</button>
+        <button
+          id="deleteButton"
+          onClick={() => {
+            const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
+            const index = templates.findIndex(t => t.id === activeTemplate);
+            if (index >= 0) {
+              templates.splice(index, 1);
+              setTemplateSpecial(templates.length > 0 ? (templates[0].id ?? "") : "");
+              localStorage.setItem("savedTemplates", JSON.stringify(templates));
+            }
+          }}>Delete Template</button>
+      </Subregion>
 
-      <div id='inputsHolder'>{inputParts}</div>
+      <Subregion id='inputsHolder'>{inputParts}</Subregion>
 
       <CustomIframe
         ref={ref}
@@ -336,15 +342,46 @@ function CustomIframe({ body, head, ...props }: customIframeProps) {
     contentRef.contentWindow.print();
   };
 
+  function fitToContainer() {
+    const parent = document.getElementById("iframeHolder");
+    const container = document.getElementById("scaleHolder");
+    const content = document.getElementById("exportPreview");
+    if (!parent || !container || !content) return;
+
+    const containerWidth = container.clientWidth;
+    const contentWidth = content.clientWidth;
+
+    // Calculate scale factor based on height
+    const scale = Math.min(containerWidth / contentWidth, 1);
+
+    // Apply transform to fit height
+    content.style.transform = scale === 1 ? "" : `scale(${scale})`;
+    content.style.transformOrigin = scale === 1 ? "" : 'top left';
+
+    const size = content.getBoundingClientRect();
+    container.style.height = size.height + "px";
+  }
+
+  useEffect(() => {
+    window.addEventListener("resize", fitToContainer);
+    fitToContainer();
+  }, [])
+
   return (
     <>
-      <button
-        id="exportButton"
-        onClick={() => saveIframe()}>Save</button>
-      <iframe {...props} ref={setContentRef}>
-        {headNode && createPortal(head, headNode)}
-        {bodyNode && createPortal(body, bodyNode)}
-      </iframe>
+      <Subregion id="iframeButton">
+        <button
+          id="exportButton"
+          onClick={() => saveIframe()}>Save</button>
+      </Subregion>
+      <Subregion id="iframeHolder">
+        <div id="scaleHolder">
+          <iframe {...props} ref={setContentRef}>
+            {headNode && createPortal(head, headNode)}
+            {bodyNode && createPortal(body, bodyNode)}
+          </iframe>
+        </div>
+      </Subregion>
     </>
   )
 }
