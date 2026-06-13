@@ -1,6 +1,6 @@
 import './Export.css'
 import { useContext, useEffect, useRef, useState, type ComponentPropsWithRef, type CSSProperties, type ReactNode, type RefObject } from "react";
-import { baseFuelUnit, baseLengthUnit, baseWeightUnit, DiagramModes, type aircraftT, type loadingT, type nameProps } from "../../Types";
+import { baseFuelUnit, baseLengthUnit, baseWeightUnit, DiagramModes, type aircraftT, type loadingT, type nameProps, type setupT } from "../../Types";
 import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalanceForZeroFuel, calculateEmptyBalanceForConfig, calculateMAC, roundNumber } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { createPortal } from 'react-dom';
@@ -25,74 +25,7 @@ interface templateT {
   body: (templateComponentT[])
 }
 
-
-interface exportProps {
-  loading: loadingT;
-  aircraft: aircraftT;
-  selectedOpsConfig: string;
-}
-
-// Available
-// graph
-// diagram
-//
-// date
-//
-// aircraftType
-// aircraftTailNumber
-//
-// emptyWeight
-// emptyArm
-// configWeight
-// configArm
-// opsWeight
-// opsArm
-// takeoffWeight
-// takeoffArm
-// landingWeight
-// landingArm
-// zeroFuelWeight
-// zeroFuelArm
-//
-// numOfCrew
-// crewWeight
-// crewArm
-// crewCargoWeight
-// crewCargoArm
-//
-// numOfPassengers
-// passengerWeight
-// passengerArm
-//
-// cargoWeight
-// cargoArm
-//
-// totalEquipmentWeight
-// totalEquipmentArm
-//
-// totalFuel
-// totalFuelWeight
-// fuelBurn
-// fuelBurnWeight
-// landingFuel
-// landingFuelWeight
-//
-// getMac(arm)
-// roundNumber(number, precision)
-
-export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & nameProps): ReactNode {
-  const units = useContext(UnitContext);
-  const ref: RefObject<(null | HTMLIFrameElement)> = useRef(null);
-  const active: string = localStorage.getItem("activeTemplate") ?? "";
-  const [activeTemplate, setTemplate] = useState(active);
-  const [iframeParts, setIframeParts] = useState(null as (null | { body: ReactNode, head: ReactNode }));
-  const [inputParts, setInputParts] = useState(null as (null | ReactNode[]));
-
-  function setTemplateSpecial(tempId: string) {
-    localStorage.setItem("activeTemplate", tempId);
-    setTemplate(tempId);
-  }
-
+function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsConfig: string, units: setupT) {
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
@@ -165,6 +98,137 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
 
   const getMac = (arm: number) => roundNumber(calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC), unitPrecision);
 
+  const globalData = {
+    date: date,
+    units: units,
+    graph: graph,
+    diagram: diagram,
+
+    aircraftType: aircraftType,
+    aircraftTailNumber: aircraftTailNumber,
+
+    emptyWeight: emptyWeight,
+    emptyArm: emptyArm,
+    configWeight: configWeight,
+    configArm: configArm,
+    opsWeight: opsWeight,
+    opsArm: opsArm,
+    takeoffWeight: takeoffWeight,
+    takeoffArm: takeoffArm,
+    landingWeight: landingWeight,
+    landingArm: landingArm,
+    zeroFuelWeight: zeroFuelWeight,
+    zeroFuelArm: zeroFuelArm,
+
+    numCrew: numCrew,
+    crewWeight: crewWeight,
+    crewArm: crewArm,
+    crewCargoWeight: crewCargoWeight,
+    crewCargoArm: crewCargoArm,
+
+    numPassengers: numPassengers,
+    passengerWeight: passengerWeight,
+    passengerArm: passengerArm,
+
+    cargoWeight: cargoWeight,
+    cargoArm: cargoArm,
+
+    equipmentWeight: equipmentWeight,
+    equipmentArm: equipmentArm,
+
+    totalFuel: totalFuel,
+    totalFuelWeight: totalFuelWeight,
+    totalFuelArm: totalFuelArm,
+    fuelBurn: fuelBurn,
+    fuelBurnWeight: fuelBurnWeight,
+    landingFuel: landingFuel,
+    landingFuelWeight: landingFuelWeight,
+    landingFuelArm: landingFuelArm,
+
+    getMac: getMac,
+    roundNumber: roundNumber,
+  }
+
+  return globalData;
+}
+
+interface Window {
+  safeFunction?: (arg: object) => string;
+}
+
+interface exportProps {
+  loading: loadingT;
+  aircraft: aircraftT;
+  selectedOpsConfig: string;
+}
+
+const protectedGlobals = [
+  "document",
+  "window",
+  "navigator",
+  "fetch",
+  "print",
+
+  "localStorage",
+  "sessionStorage",
+  "indexedDB",
+  "caches",
+  "cookieStore",
+
+  "alert",
+  "confirm",
+  "prompt",
+
+  "XMLHttpRequest",
+  "eval",
+  "setTimeout",
+  "setInterval",
+  "clearTimeout",
+  "clearInterval",
+
+  "Boolean",
+  "String",
+  "Number",
+  "Object",
+  "Array",
+  "Text",
+  "Blob"
+]
+
+export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & nameProps): ReactNode {
+  const units = useContext(UnitContext);
+  const ref: RefObject<(null | HTMLIFrameElement)> = useRef(null);
+  const globalData = useRef(generateScopeData(aircraft, loading, selectedOpsConfig, units));
+  const active: string = localStorage.getItem("activeTemplate") ?? "";
+  const [activeTemplate, setTemplate] = useState(active);
+  const [iframeParts, setIframeParts] = useState(null as (null | { body: ReactNode, head: ReactNode }));
+  const [inputParts, setInputParts] = useState(null as (null | ReactNode[]));
+
+  function setTemplateSpecial(tempId: string) {
+    localStorage.setItem("activeTemplate", tempId);
+    setTemplate(tempId);
+  }
+
+  function safeExecute(func: string) {
+    const iframe = document.getElementById("exportPreview") as HTMLIFrameElement;
+    if (!iframe) return;
+    const frameDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!frameDoc) return;
+    const script = document.createElement("script");
+    script.type = 'text/javascript';
+    script.text = `function safeFunction(global) {
+            let ${protectedGlobals.join(", ")} = undefined;
+            return (${func})();
+          }`;
+    frameDoc.body.appendChild(script);
+    const iWindow = iframe.contentWindow as Window;
+    let ret = "";
+    if (iWindow && iWindow.safeFunction)
+      ret = iWindow.safeFunction(globalData.current);
+    script.remove();
+    return ret;
+  }
+
   function buildComponent(component: (templateComponentT | templateComponentT[])): ReactNode {
     if (Array.isArray(component)) {
       const ret: ReactNode[] = [];
@@ -176,8 +240,9 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     if (component.content !== undefined) {
       if (component.action === "function")
         try {
-          content = eval(component.content as string)();
+          content = safeExecute(component.content as string);
         } catch (error) {
+          console.log(error);
           content = "bad function"
         }
       else if (component.action === "manual") {
@@ -235,8 +300,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
       const target = event.target as HTMLInputElement;
       if (!target) return;
       const files = target.files;
-      if (!files) return;
-      if (files.length > 1) return;
+      if (!files || files.length > 1) return;
       const fileReader = new FileReader();
       fileReader.readAsText(files[0]);
       fileReader.onload = () => {
@@ -281,6 +345,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
     const temp = templates.find(f => f.id === activeTemplate);
     if (!temp) return;
+    globalData.current = generateScopeData(aircraft, loading, selectedOpsConfig, units);
     setInputParts(buildInputs(temp.body));
     setIframeParts(buildFromTemplate(activeTemplate));
   }, [activeTemplate, loading]);
@@ -376,7 +441,7 @@ function CustomIframe({ body, head, ...props }: customIframeProps) {
       </Subregion>
       <Subregion id="iframeHolder">
         <div id="scaleHolder">
-          <iframe {...props} ref={setContentRef}>
+          <iframe sandbox='allow-scripts allow-same-origin allow-modals' {...props} ref={setContentRef}>
             {headNode && createPortal(head, headNode)}
             {bodyNode && createPortal(body, bodyNode)}
           </iframe>
@@ -392,7 +457,6 @@ function CustomIframe({ body, head, ...props }: customIframeProps) {
 // the style directly? This would need a way to handle the dynamic content and
 // manual input items. Is it possible to create an html file where the values are
 // set by functions that are called internal to the frame that gets the data?
-// Is it possible to use React to build the entire iFrame?
 //
 //
 // Something like
