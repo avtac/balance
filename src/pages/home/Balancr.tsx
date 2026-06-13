@@ -10,6 +10,7 @@ import { UnitContext } from '../../UnitsContext.tsx'
 import Config from './Config.tsx'
 import { activeConfigData, uploadedConfigs } from '../../utility.ts'
 import Loading from './Loading.tsx'
+import { Export } from './Export.tsx'
 
 const defaultLoading: loadingT = {
   fuel: [],
@@ -177,6 +178,11 @@ function Balancr() {
                 name={"Loading"}
                 loading={loadingData}
                 setLoading={setLoadingData}
+                aircraft={config.aircraft && config.aircraft[aircraftIndex]}
+                selectedOpsConfig={selectedOpsConfig} />
+              <Export
+                name={"Export"}
+                loading={loadingData}
                 aircraft={config.aircraft && config.aircraft[aircraftIndex]}
                 selectedOpsConfig={selectedOpsConfig} />
             </MultiPane>

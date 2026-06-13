@@ -1,0 +1,9 @@
+#exportPreview {
+  height: 11in;
+  width: 8.5in;
+  margin: 0px auto;
+}
+
+:has(iframe) {
+  color-scheme: light;
+}
