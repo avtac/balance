@@ -1,8 +1,11 @@
 import './Export.css'
-import { useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
-import { baseFuelUnit, baseLengthUnit, baseWeightUnit, type aircraftT, type loadingT, type nameProps } from "../../Types";
+import { useContext, useEffect, useRef, useState, type ComponentPropsWithRef, type CSSProperties, type ReactNode, type RefObject } from "react";
+import { baseFuelUnit, baseLengthUnit, baseWeightUnit, DiagramModes, type aircraftT, type loadingT, type nameProps } from "../../Types";
 import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalanceForZeroFuel, calculateEmptyBalanceForConfig, calculateMAC, roundNumber } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
+import { createPortal } from 'react-dom';
+import Graph from '../../Graph';
+import Diagram from '../../Diagram';
 
 interface templateComponentT {
   type: (keyof HTMLElementTagNameMap);
@@ -86,7 +89,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
   const units = useContext(UnitContext);
   const ref: RefObject<(null | HTMLIFrameElement)> = useRef(null);
   const [temp, setTemplate] = useState({} as templateT);
-  const [body, setBody] = useState("");
+  const [iframeParts, setIframeParts] = useState(null as (null | { body: ReactNode, head: ReactNode }));
 
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
@@ -98,8 +101,15 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     ref.current.contentWindow.print();
   };
 
-  const graph = document.getElementById("graph")?.outerHTML;
-  const diagram = document.getElementById("diagram")?.outerHTML;
+  const graph = (<Graph aircraft={aircraft} loading={loading} selectedOpsConfig={selectedOpsConfig} selectedConfig={aircraft.operationConfigs[opsConfigIndex].config} />);
+  const diagram = (
+    <Diagram
+      aircraft={aircraft}
+      loading={loading}
+      setLoading={(_) => { }}
+      selectedOpsConfig={selectedOpsConfig}
+      selectedConfig={aircraft.operationConfigs[opsConfigIndex].config}
+      diagramMode={DiagramModes.Ops} />);
 
   const _date = new Date();
   const _formatter = new Intl.DateTimeFormat('en-US', {
@@ -159,14 +169,14 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
 
   const getMac = (arm: number) => roundNumber(calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC), unitPrecision);
 
-  function buildComponent(component: (templateComponentT | templateComponentT[])): string {
+  function buildComponent(component: (templateComponentT | templateComponentT[])): ReactNode {
     if (Array.isArray(component)) {
-      const ret: string[] = [];
+      const ret: ReactNode[] = [];
       component.forEach(c => ret.push(buildComponent(c)));
-      return ret.join("");
+      return <>{ret}</>;
     }
 
-    let content = "";
+    let content: (string | ReactNode) = "";
     if (component.content) {
       if (component.action === "function")
         try {
@@ -179,37 +189,34 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
         content = element ? element.value : "Missing Input";
       } else if (typeof component.content === "string")
         content = component.content;
-      else
+      else // Array
         content = buildComponent(component.content);
-    } else return ""
+    } else return <></>
 
-    const id = component.id ? ' id="' + component.id + '"' : "";
-    const className = component.className ? ' class="' + component.className + '"' : "";
-    const style = component.style ? ' style="' + styleToString(component.style) + '"' : "";
+    const id = component.id ? component.id : "";
+    const className = component.className ? component.className : "";
+    const style = component.style ? component.style : undefined;
 
-    let ret = `<${component.type}${className}${id}${style}>${content}</${component.type}>`
+    let ret = (<component.type className={className} id={id} style={style}>{content}</ component.type >)
     return ret;
   }
 
   function buildFromTemplate(template: templateT) {
-    if (!template.body) return "";
+    if (!template.body) return { body: <></>, head: <></> };
     // Handle main style and size
-    const header = `<!DOCTYPE html>
-        <html>
-          <head>
-            <title>Hello World</title>
-            <link rel="stylesheet" href="/src/index.css">
-            <link rel="stylesheet" href="/src/Graph.css">
-            <link rel="stylesheet" href="/src/Diagram.css">
-            ${'<style>' + template.style + '</style>'}
-          </head>
-          <body>`
+    const head = (
+      <>
+        <link rel="stylesheet" href="/src/index.css" />
+        <link rel="stylesheet" href="/src/Graph.css" />
+        <link rel="stylesheet" href="/src/Diagram.css" />
+        <style>{template.style}</style>
+      </>
+    )
 
     // Recursive build components
     const body = buildComponent(template.body);
 
-    const footer = "</body></html>"
-    return `${header}${body}${footer}`;
+    return { body: body, head: head };
   }
 
   function openFile() {
@@ -249,7 +256,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     input.classList.add("manualInput");
     input.id = component.content + "-manual-input";
     input.placeholder = component.content as string;
-    input.oninput = () => setBody(buildFromTemplate(temp));
+    input.oninput = () => setIframeParts(buildFromTemplate(temp));
     const holder = document.getElementById("inputsHolder");
     holder?.appendChild(input);
   }
@@ -258,7 +265,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     const holder = document.getElementById("inputsHolder");
     while (holder?.firstChild) holder.firstChild.remove();
     buildInputs(temp.body)
-    setBody(buildFromTemplate(temp));
+    setIframeParts(buildFromTemplate(temp));
   }, [temp])
 
   return (
@@ -270,12 +277,33 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
       <button
         id="exportButton"
         onClick={() => saveIframe()}>TEST</button>
-      <iframe
+      <CustomIframe
         ref={ref}
         id="exportPreview"
-        srcDoc={`${body} `} />
+        body={iframeParts && iframeParts.body}
+        head={iframeParts && iframeParts.head}
+      />
     </>
   );
+}
+
+interface customIframeProps extends ComponentPropsWithRef<"iframe"> {
+  body: (ReactNode | ReactNode[]);
+  head: (ReactNode | ReactNode[]);
+}
+
+function CustomIframe({ body, head, ...props }: customIframeProps) {
+  const [contentRef, setContentRef] = useState(null as (HTMLIFrameElement | null));
+
+  const headNode = contentRef?.contentWindow?.document?.head;
+  const bodyNode = contentRef?.contentWindow?.document?.body;
+
+  return (
+    <iframe {...props} ref={setContentRef}>
+      {headNode && createPortal(head, headNode)}
+      {bodyNode && createPortal(body, bodyNode)}
+    </iframe>
+  )
 }
 
 // TODO: Now that css can be set for all elements and class and ids can be set.
