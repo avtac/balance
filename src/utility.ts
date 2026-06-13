@@ -128,6 +128,46 @@ export function calculateBalanceForOperationConfig(config: aircraftT, selectedOp
   return [weight, moment / weight]
 }
 
+export function calculateBalanceForZeroFuel(aircraft: aircraftT, selectedOpsConfig: string, loading: loadingT): [number, number] {
+  let [weight, arm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
+  let moment = arm * weight;
+
+  // Passengers
+  loading.passengers.forEach(
+    (seat) => {
+      const seatIndex = aircraft.seats.findIndex(s => s.id === seat.location);
+      if (seatIndex < 0) return;
+      const seatData = aircraft.seats[seatIndex];
+      weight += Math.max(Number(seat.count), 0) * Math.max(Number(seat.avgWeight), 0);
+      moment += Math.max(Number(seat.count), 0) * Math.max(Number(seat.avgWeight), 0) * seatData.arm;
+    }
+  )
+
+  // Cargo
+  loading.cargo.forEach(
+    (cargo) => {
+      const cargoIndex = aircraft.cargoAreas.findIndex(c => c.id === cargo.location);
+      if (cargoIndex < 0) return;
+      const cargoData = aircraft.cargoAreas[cargoIndex];
+      weight += Math.max(Number(cargo.weight), 0);
+      moment += Math.max(Number(cargo.weight), 0) * cargoData.arm;
+    }
+  )
+
+  // Unusable Fuel
+  loading.fuel.forEach(
+    (fuel) => {
+      const fuelIndex = aircraft.fuelTanks.findIndex(f => f.id === fuel.tank);
+      if (fuelIndex < 0) return;
+      const fuelData = aircraft.fuelTanks[fuelIndex];
+      weight += fuelData.unusable;
+      moment += fuelData.unusable * fuelData.arm;
+    }
+  )
+
+  return [weight, moment / weight];
+}
+
 export function calculateBalanceForLanding(aircraft: aircraftT, selectedOpsConfig: string, loading: loadingT): [number, number] {
   let [weight, arm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
   let moment = arm * weight;
@@ -238,7 +278,6 @@ export function calculateBalancePointsForTanks(aircraft: aircraftT, selectedOpsC
   points.push({ weight: weight, arm: moment / weight });
   return points;
 }
-
 
 export function truncateNumber(n: number, precision: number): number {
   if (n < 0) return Math.ceil(n * precision) / precision;
