@@ -12,7 +12,6 @@
     fill: var(--text-d);
   }
 
-  #aircraftNose,
   #aircraft {
     fill: var(--diagram-aircraft-bg);
   }

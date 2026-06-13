@@ -133,7 +133,7 @@ function SeatIcon({ count, name, onClick, offX = 0, offY = 0, opsCount = 0, load
       })}
       <text
         x={+left + seatSize / 2}
-        y={-offY - (offY >= 0 ? 1 : -1) * (count / 2 + .2) * seatSize}
+        y={-offY - (offY >= 0 ? 1 : -1) * (count / 2 + .13) * seatSize}
         alignmentBaseline={'middle'}
         textAnchor="middle"
         fontSize={fontSize}>
@@ -345,15 +345,8 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
       viewBox={`${left} ${top} ${width} ${height}`}
       id="diagram">
       <path
-        id="aircraftNose"
-        d={`M ${-planeFront} ${planeLeft} C ${-planeFront + planeWidth / 2} ${planeWidth / 2 + planeLeft}, ${-planeFront + planeWidth / 2} ${planeWidth / 2 + planeLeft} ${-planeFront} ${planeRight}`}
-        stroke={'none'} />
-      <rect
         id="aircraft"
-        x={-planeBack}
-        y={planeLeft}
-        width={planeLength}
-        height={planeWidth}
+        d={`M ${-planeBack} ${planeLeft} L ${-planeFront} ${planeLeft} C ${-planeFront + planeWidth / 2} ${planeWidth / 3 + planeLeft}, ${-planeFront + planeWidth / 2} ${planeWidth * 2 / 3 - planeRight} ${-planeFront} ${planeRight} L ${-planeBack} ${planeRight} L ${-planeBack} ${planeLeft}`}
         stroke={'none'} />
       {seatItems}
       {cargoItems}
