@@ -5,7 +5,7 @@ import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calcula
 import { convertLengthUnit, convertWeightUnit, UnitContext } from './UnitsContext';
 
 let width = 140;
-let height = 80;
+let height = 90;
 let padding = 12;
 let graphInsetPadding = 5;
 

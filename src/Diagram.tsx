@@ -198,7 +198,7 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
   const planeWidth = planeRight - planeLeft;
 
   const left = -planeBack - canvasPadding;
-  const right = -planeFront + canvasPadding + 30;
+  const right = -planeFront + canvasPadding + planeWidth / 2;
   const width = right - left;
   const bottom = planeRight + canvasPadding + width * .025;
   const top = planeLeft - canvasPadding;
