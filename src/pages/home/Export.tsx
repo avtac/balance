@@ -1,5 +1,6 @@
 import './Export.css'
-import { useContext, useEffect, useRef, useState, type ComponentPropsWithRef, type CSSProperties, type ReactNode, type RefObject } from "react";
+import parse, { attributesToProps, domToReact, Element, type DOMNode, type HTMLReactParserOptions } from 'html-react-parser';
+import { useContext, useEffect, useRef, useState, type ComponentPropsWithRef, type CSSProperties, type ReactNode, type RefObject, type JSX } from "react";
 import { baseFuelUnit, baseLengthUnit, baseWeightUnit, DiagramModes, type aircraftT, type loadingT, type nameProps, type setupT } from "../../Types";
 import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalanceForZeroFuel, calculateEmptyBalanceForConfig, calculateMAC, roundNumber } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
@@ -18,11 +19,12 @@ interface templateComponentT {
 }
 
 interface templateT {
+  type: ("json" | "html");
   name?: string;
   size?: ("Letter" | "A4" | "Legal");
   style?: string;
   id?: string;
-  body: (templateComponentT[])
+  body: (templateComponentT | templateComponentT[] | string)
 }
 
 function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsConfig: string, units: setupT) {
@@ -201,7 +203,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
   const globalData = useRef(generateScopeData(aircraft, loading, selectedOpsConfig, units));
   const active: string = localStorage.getItem("activeTemplate") ?? "";
   const [activeTemplate, setTemplate] = useState(active);
-  const [iframeParts, setIframeParts] = useState(null as (null | { body: ReactNode, head: ReactNode }));
+  const [iframeParts, setIframeParts] = useState(null as (null | { body: (string | JSX.Element | JSX.Element[]), head: (string | JSX.Element | JSX.Element[]) }));
   const [inputParts, setInputParts] = useState(null as (null | ReactNode[]));
 
   function setTemplateSpecial(tempId: string) {
@@ -229,7 +231,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     return ret;
   }
 
-  function buildComponent(component: (templateComponentT | templateComponentT[])): ReactNode {
+  function buildComponent(component: (templateComponentT | templateComponentT[])): JSX.Element {
     if (Array.isArray(component)) {
       const ret: ReactNode[] = [];
       component.forEach(c => ret.push(buildComponent(c)));
@@ -266,36 +268,101 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
     const temp = templates.find(f => f.id === tempId);
     if (!temp || !temp.body) return { body: <></>, head: <></> };
-    // Handle main style and size
-    const head = (
-      <>
-        <link rel="stylesheet" href="/src/index.css" />
-        <link rel="stylesheet" href="/src/Graph.css" />
-        <link rel="stylesheet" href="/src/Diagram.css" />
-        <style>{temp.style}</style>
-        <style>{`
-          #graph .background {
+
+    let head, body: (string | JSX.Element | JSX.Element[]);
+    head = <></>;
+    body = <></>;
+    // JSON template
+    if (typeof temp.body !== 'string' && !(temp.body instanceof String)) {
+      // Handle main style and size
+      head = (
+        <>
+          <link rel="stylesheet" href="/src/index.css" />
+          <link rel="stylesheet" href="/src/Graph.css" />
+          <link rel="stylesheet" href="/src/Diagram.css" />
+          <style>{temp.style}</style>
+          <style>{`
+            #graph .background {
             fill: none !important;
-          }
-          #diagram #aircraft {
+            }
+            #diagram #aircraft {
             fill: none !important;
             stroke: black !important;
             stroke-width: .4 !important;
+            }
+          `}</style>
+        </>
+      )
+
+      // Recursive build components
+      body = buildComponent(temp.body);
+
+      // HTML Template
+    } else if (typeof temp.body === 'string' || temp.body instanceof String) {
+      const m = (temp.body as string).match(/<head>(?<head>.*)<\/head>.*<body>(?<body>.*)<\/body>/s);
+      const tmpFrameParts: ReactNode[] = [];
+
+      const options: HTMLReactParserOptions = {
+        replace(domNode) {
+          if (!(domNode instanceof Element) || !domNode.attribs) return;
+          let content: (string | undefined) = ""
+          if (domNode.attribs.function) {
+            const func = domNode.attribs.function;
+            if (func)
+              try { content = safeExecute(func) } catch { content = "bad function" }
+            delete domNode.attribs.function;
           }
-        `}</style>
-      </>
-    )
+          if (domNode.attribs.manual) {
+            const key = domNode.attribs.manual + "-manual-input"
+            tmpFrameParts.push(
+              <div key={key + "-holder"}>
+                <label style={{ paddingRight: "4px" }} htmlFor={key}>{domNode.attribs.manual as string}</label>
+                <input
+                  className="manualInput"
+                  id={key}
+                  placeholder={domNode.attribs.manual as string}
+                  onInput={() => setIframeParts(buildFromTemplate(activeTemplate))} />
+              </div>
+            )
 
-    // Recursive build components
-    const body = buildComponent(temp.body);
+            delete domNode.attribs.manual;
+            content = (content ?? "") + ((document.getElementById(key) as HTMLInputElement)?.value ?? "");
+          }
+          const props = attributesToProps((domNode.attribs));
+          return (
+            <>
+              <domNode.name {...props}>{domToReact(domNode.children as DOMNode[], options)} {content}</domNode.name>
+            </>
+          );
+        }
+      }
 
+      setInputParts(tmpFrameParts);
+
+      // Add general style to all templates
+      if (m && m.groups)
+        m.groups.head += `
+          <style>
+            #graph .background {
+              fill: none !important;
+            }
+
+            #diagram #aircraft {
+              fill: none !important;
+              stroke: black !important;
+              stroke-width: .5% !important;
+            }
+          </style>`
+      head = parse(m?.groups?.head?.replace(/>[\s]*</g, '><').trim() ?? "");
+      body = parse(m?.groups?.body?.replace(/>[\s]*</g, '><').trim() ?? "", options);
+    }
     return { body: body, head: head };
   }
 
   function openFile() {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = ".json";
+    input.accept = ".json, .html";
     input.onchange = function(event) {
       const target = event.target as HTMLInputElement;
       if (!target) return;
@@ -306,7 +373,15 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
       fileReader.onload = () => {
         const data: string = fileReader.result as string;
         if (!data) return;
-        const newTemplate: templateT = JSON.parse(data);
+        let newTemplate: templateT = { body: data, type: "html" };
+        try {
+          newTemplate = JSON.parse(data) as templateT;
+          newTemplate.type = "json";
+        } catch {
+          const t = (newTemplate.body as string).match(/<title>(?<name>.*)<\/title>/);
+          newTemplate.name = t?.groups?.name ?? "";
+        }
+
         newTemplate.id = crypto.randomUUID();
         setTemplateSpecial(newTemplate.id);
         const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
@@ -324,15 +399,12 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
       let tmp: ReactNode[] = []
       component.forEach(c => tmp = [...tmp, ...buildInputs(c)]);
       return tmp
-    }
-
-    if (Array.isArray(component?.content)) {
+    } else if (Array.isArray(component?.content)) {
       let tmp: ReactNode[] = []
-      component?.content.forEach(c => tmp = [...tmp, ...buildInputs(c)]);
+      component.content.forEach(c => tmp = [...tmp, ...buildInputs(c)]);
       return tmp
-    }
+    } else if (component?.action !== 'manual') return [];
 
-    if (component?.action !== 'manual') return [];
     return [
       <div key={component.content + "-manual-input-holder"}>
         <label style={{ paddingRight: "4px" }} htmlFor={component.content + "-manual-input"}>{component.content as string}</label>
@@ -346,7 +418,8 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     const temp = templates.find(f => f.id === activeTemplate);
     if (!temp) return;
     globalData.current = generateScopeData(aircraft, loading, selectedOpsConfig, units);
-    setInputParts(buildInputs(temp.body));
+    if (temp.type === "json" && typeof temp.body !== 'string')
+      setInputParts(buildInputs(temp.body)); // Inputs are build for HTML elsewhere
     setIframeParts(buildFromTemplate(activeTemplate));
   }, [activeTemplate, loading]);
 
@@ -378,7 +451,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
           }}>Delete Template</button>
       </Subregion>
 
-      <Subregion id='inputsHolder'>{inputParts}</Subregion>
+      {inputParts && inputParts.length > 0 && <Subregion id='inputsHolder'>{inputParts}</Subregion>}
 
       <CustomIframe
         ref={ref}
@@ -451,15 +524,3 @@ function CustomIframe({ body, head, ...props }: customIframeProps) {
   )
 }
 
-// TODO: Now that css can be set for all elements and class and ids can be set.
-// There should be complete control over building the output layout
-// Is there a way to upload either JSON or HTML directly where the HTML can have
-// the style directly? This would need a way to handle the dynamic content and
-// manual input items. Is it possible to create an html file where the values are
-// set by functions that are called internal to the frame that gets the data?
-//
-//
-// Something like
-// <div>
-//  getData("takeoffWeight")
-// </div>
