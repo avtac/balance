@@ -197,6 +197,72 @@ const protectedGlobals = [
   "Blob"
 ]
 
+const whitelistTags = [
+  "body",
+  "head",
+  "abbr",
+  "article",
+  "aside",
+  "b",
+  "bdi",
+  "bdo",
+  "blockquote",
+  "br",
+  "caption",
+  "code",
+  "col",
+  "colgroup",
+  "dd",
+  "del",
+  "dfn",
+  "div",
+  "dl",
+  "dt",
+  "em",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "header",
+  "hgroup",
+  "hr",
+  "html",
+  "i",
+  "label",
+  "legend",
+  "li",
+  "main",
+  "mark",
+  "ol",
+  "output",
+  "p",
+  "pre",
+  "q",
+  "s",
+  "samp",
+  "section",
+  "small",
+  "span",
+  "strong",
+  "style",
+  "sub",
+  "sup",
+  "table",
+  "tbody",
+  "td",
+  "tfoot",
+  "th",
+  "thead",
+  "time",
+  "title",
+  "tr",
+  "u",
+  "ul",
+  "var"
+]
+
 export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & nameProps): ReactNode {
   const units = useContext(UnitContext);
   const ref: RefObject<(null | HTMLIFrameElement)> = useRef(null);
@@ -260,6 +326,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     const className = component.className ? component.className : "";
     const style = component.style ? component.style : undefined;
 
+    if (!whitelistTags.includes(component.type)) return <p>Unsafe Tag</p>
     let ret = (<component.type key={crypto.randomUUID() + "-" + id + "-" + className + "-" + content} className={className} id={id} style={style}>{content}</ component.type >)
     return ret;
   }
@@ -270,29 +337,32 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     if (!temp || !temp.body) return { body: <></>, head: <></> };
 
     let head, body: (string | JSX.Element | JSX.Element[]);
-    head = <></>;
+
+    // Add general style to all templates
+    const headBase = `
+      <link rel="stylesheet" href="/src/index.css" />
+      <link rel="stylesheet" href="/src/Graph.css" />
+      <link rel="stylesheet" href="/src/Diagram.css" />
+      <style>
+        #graph .background {
+          fill: none !important;
+        }
+
+        #diagram #aircraft {
+          fill: none !important;
+          stroke: black !important;
+          stroke-width: .5% !important;
+        }
+      </style>`
+    head = parse(headBase.replace(/>[\s]*</g, '><').trim());
     body = <></>;
+
     // JSON template
     if (typeof temp.body !== 'string' && !(temp.body instanceof String)) {
       // Handle main style and size
-      head = (
-        <>
-          <link rel="stylesheet" href="/src/index.css" />
-          <link rel="stylesheet" href="/src/Graph.css" />
-          <link rel="stylesheet" href="/src/Diagram.css" />
-          <style>{temp.style}</style>
-          <style>{`
-            #graph .background {
-            fill: none !important;
-            }
-            #diagram #aircraft {
-            fill: none !important;
-            stroke: black !important;
-            stroke-width: .4 !important;
-            }
-          `}</style>
-        </>
-      )
+      const h = <style>{temp.style}</style>;
+      if (Array.isArray(head) && !(typeof h === 'string'))
+        head.push(h);
 
       // Recursive build components
       body = buildComponent(temp.body);
@@ -329,6 +399,8 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
             content = (content ?? "") + ((document.getElementById(key) as HTMLInputElement)?.value ?? "");
           }
           const props = attributesToProps((domNode.attribs));
+
+          if (!whitelistTags.includes(domNode.name)) return <p>Unsafe Tag</p>
           return (
             <>
               <domNode.name {...props}>{domToReact(domNode.children as DOMNode[], options)} {content}</domNode.name>
@@ -339,21 +411,12 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
 
       setInputParts(tmpFrameParts);
 
-      // Add general style to all templates
-      if (m && m.groups)
-        m.groups.head += `
-          <style>
-            #graph .background {
-              fill: none !important;
-            }
-
-            #diagram #aircraft {
-              fill: none !important;
-              stroke: black !important;
-              stroke-width: .5% !important;
-            }
-          </style>`
-      head = parse(m?.groups?.head?.replace(/>[\s]*</g, '><').trim() ?? "");
+      const h = parse(m?.groups?.head?.replace(/>[\s]*</g, '><').trim() ?? "", options);
+      if (Array.isArray(head))
+        if (Array.isArray(h))
+          head.push(...h);
+        else if (!(typeof h === 'string'))
+          head.push(h);
       body = parse(m?.groups?.body?.replace(/>[\s]*</g, '><').trim() ?? "", options);
     }
     return { body: body, head: head };
