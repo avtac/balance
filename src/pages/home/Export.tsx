@@ -375,13 +375,19 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
       const options: HTMLReactParserOptions = {
         replace(domNode) {
           if (!(domNode instanceof Element) || !domNode.attribs) return;
-          let content: (string | undefined) = ""
+
+          let funcContent: (string | JSX.Element | JSX.Element[]) = "";
           if (domNode.attribs.function) {
             const func = domNode.attribs.function;
             if (func)
-              try { content = safeExecute(func) } catch { content = "bad function" }
+              try { funcContent = safeExecute(func) ?? "" } catch { funcContent = "bad function" }
+            // Attempt to turn the function return to JSX elements
+            if (typeof funcContent === 'string')
+              funcContent = parse(funcContent, options);
             delete domNode.attribs.function;
           }
+
+          let manContent = ""
           if (domNode.attribs.manual) {
             const key = domNode.attribs.manual + "-manual-input"
             tmpFrameParts.push(
@@ -396,14 +402,14 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
             )
 
             delete domNode.attribs.manual;
-            content = (content ?? "") + ((document.getElementById(key) as HTMLInputElement)?.value ?? "");
+            manContent = ((document.getElementById(key) as HTMLInputElement)?.value ?? "");
           }
           const props = attributesToProps((domNode.attribs));
 
           if (!whitelistTags.includes(domNode.name)) return <p>Unsafe Tag</p>
           return (
             <>
-              <domNode.name {...props}>{domToReact(domNode.children as DOMNode[], options)} {content}</domNode.name>
+              <domNode.name {...props}>{domToReact(domNode.children as DOMNode[], options)} {manContent} {funcContent}</domNode.name>
             </>
           );
         }
