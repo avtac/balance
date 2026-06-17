@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import Graph from '../../Graph';
 import Diagram from '../../Diagram';
 import { Subregion } from '../../Layout';
+import dayjs from 'dayjs';
 
 interface templateComponentT {
   type: (keyof HTMLElementTagNameMap);
@@ -42,13 +43,9 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
       selectedConfig={aircraft.operationConfigs[opsConfigIndex].config}
       diagramMode={DiagramModes.Ops} />);
 
-  const _date = new Date();
-  const _formatter = new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
-  const date = _formatter.format(_date);
+  const date = (format: string = "MM/DD/YYYY") => {
+    return dayjs().format(format)
+  }
 
   const aircraftType = aircraft.config.type;
   const aircraftTailNumber = aircraft.config.tailNumber;
