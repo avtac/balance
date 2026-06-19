@@ -704,10 +704,10 @@ function FuelUsageLoader({ loading, setLoading, aircraft, selectedOpsConfig }: t
 
   return (
     <div className='filler'>
-      <label htmlFor='fuelLoadInput'>Trip Fuel</label>
+      <label htmlFor='fuelUsageInput'>Trip Fuel</label>
       <div>
         <input
-          id='fuelLoadInput'
+          id='fuelUsageInput'
           type='number'
           min={0}
           placeholder={units.fuelUnits}
@@ -719,9 +719,9 @@ function FuelUsageLoader({ loading, setLoading, aircraft, selectedOpsConfig }: t
         </button>
         <dialog ref={dialogRef} className='rightDialog' closedby='any'>
           <div>
-            <label htmlFor='fuelLoadingModeSelect'>Fuel Load Mode</label>
-            <select id='fuelLoadingModeSelect' value={mode} onChange={(e) => setMode(e.target.value as fuelModesT)}>
-              {fuelModes.map(d => <option value={d} key={d + "fuelLoadingModeSelect"} >{fuelModeNames[d]}</option>)}
+            <label htmlFor='fuelUsageModeSelect'>Fuel Load Mode</label>
+            <select id='fuelUsageModeSelect' value={mode} onChange={(e) => setMode(e.target.value as fuelModesT)}>
+              {fuelModes.map(d => <option value={d} key={d + "fuelUsageModeSelect"} >{fuelModeNames[d]}</option>)}
             </select>
           </div>
         </dialog>
