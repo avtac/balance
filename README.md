@@ -55,6 +55,6 @@ Code cleanup will also be welcomed.
 ### Priority Tasks
 
 - [ ] Mobile device accessibility
-- [ ] Interactive Diagram and Graph
-- [ ] Ability to export using a user defined template
+- [ ] Security of export
+- [ ] Optimize export page loading
 

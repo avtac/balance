@@ -5,7 +5,7 @@ import { baseFuelUnit, baseLengthUnit, baseWeightUnit, DiagramModes, type aircra
 import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalanceForZeroFuel, calculateEmptyBalanceForConfig, calculateMAC, roundNumber } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { createPortal } from 'react-dom';
-import Graph from '../../Graph';
+import Graph, { type graphOptionsT } from '../../Graph';
 import Diagram from '../../Diagram';
 import { Subregion } from '../../Layout';
 import dayjs from 'dayjs';
@@ -33,7 +33,7 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
 
-  const graph = (<Graph aircraft={aircraft} loading={loading} selectedOpsConfig={selectedOpsConfig} selectedConfig={aircraft.operationConfigs[opsConfigIndex].config} />);
+  const graph = (options: graphOptionsT) => (<Graph aircraft={aircraft} loading={loading} selectedOpsConfig={selectedOpsConfig} selectedConfig={aircraft.operationConfigs[opsConfigIndex].config} _options={options} />);
   const diagram = (
     <Diagram
       aircraft={aircraft}
@@ -98,6 +98,42 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
 
   const getMac = (arm: number) => roundNumber(calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, true), unitPrecision);
 
+  const getSeatPassengers = (seatName: string) => {
+    const seat = aircraft.seats.find(s => s.name === seatName)
+    if (!seat) return -1;
+    const pax = loading.passengers.find(p => p.location === seat.id)
+    if (!pax) return 0;
+    return pax.count
+  }
+
+  const getSeatWeight = (seatName: string) => {
+    const seat = aircraft.seats.find(s => s.name === seatName)
+    if (!seat) return -1;
+    const pax = loading.passengers.find(p => p.location === seat.id)
+    if (!pax) return 0;
+    return pax.avgWeight * pax.count;
+  }
+
+  const getSeatArm = (seatName: string) => {
+    const seat = aircraft.seats.find(s => s.name === seatName)
+    if (!seat) return -1;
+    return seat.arm;
+  }
+
+  const getCargoWeight = (cargoAreaName: string) => {
+    const cargoArea = aircraft.cargoAreas.find(c => c.name === cargoAreaName)
+    if (!cargoArea) return -1;
+    const cargo = loading.cargo.find(c => c.location === cargoArea.id)
+    if (!cargo) return 0;
+    return cargo.weight;
+  }
+
+  const getCargoArm = (cargoAreaName: string) => {
+    const cargoArea = aircraft.cargoAreas.find(c => c.name === cargoAreaName)
+    if (!cargoArea) return -1;
+    return cargoArea.arm;
+  }
+
   const globalData = {
     date: date,
     units: units,
@@ -148,6 +184,11 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
 
     getMac: getMac,
     roundNumber: roundNumber,
+    getSeatPassengers: getSeatPassengers,
+    getSeatWeight: getSeatWeight,
+    getSeatArm: getSeatArm,
+    getCargoWeight: getCargoWeight,
+    getCargoArm: getCargoArm
   }
 
   return globalData;
@@ -262,6 +303,29 @@ const whitelistTags = [
   "var"
 ]
 
+// Add general style to all templates
+const headBase = `
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <link rel="stylesheet" href="/src/index.css" />
+  <link rel="stylesheet" href="/src/Graph.css" />
+  <link rel="stylesheet" href="/src/Diagram.css" />
+  <style>
+    #diagram #aircraft {
+      fill: none !important;
+      stroke: black !important;
+      stroke-width: .5% !important;
+    }
+  </style>`
+
+const headBaseElements = parse(headBase.replace(/>[\s]*</g, '><').trim(), {
+  replace(domNode, index) {
+    if (domNode.type === 'tag') {
+      const props = attributesToProps(domNode.attribs);
+      return <domNode.name {...props} key={index + "A"}></domNode.name>
+    }
+  }
+}) as JSX.Element[];
+
 export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & nameProps): ReactNode {
   const units = useContext(UnitContext);
   const ref: RefObject<(null | HTMLIFrameElement)> = useRef(null);
@@ -330,34 +394,19 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     return ret;
   }
 
-  function buildFromTemplate(tempId: string) {
+  async function buildFromTemplate(tempId: string) {
     const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
     const temp = templates.find(f => f.id === tempId);
     if (!temp || !temp.body) return { body: <></>, head: <></> };
 
     let head, body: (string | JSX.Element | JSX.Element[]);
-
-    // Add general style to all templates
-    const headBase = `
-      <link rel="stylesheet" href="/src/index.css" />
-      <link rel="stylesheet" href="/src/Graph.css" />
-      <link rel="stylesheet" href="/src/Diagram.css" />
-      <style>
-        #graph .background {
-          fill: none !important;
-        }
-
-        #diagram #aircraft {
-          fill: none !important;
-          stroke: black !important;
-          stroke-width: .5% !important;
-        }
-      </style>`
-    head = parse(headBase.replace(/>[\s]*</g, '><').trim());
+    head = <></>;
     body = <></>;
 
     // JSON template
     if (typeof temp.body !== 'string' && !(temp.body instanceof String)) {
+      head = headBaseElements;
+
       // Handle main style and size
       const h = <style>{temp.style}</style>;
       if (Array.isArray(head) && !(typeof h === 'string'))
@@ -374,19 +423,27 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
       const options: HTMLReactParserOptions = {
         replace(domNode) {
           if (!(domNode instanceof Element) || !domNode.attribs) return;
+          // Block non-whitelist tags
+          if (!whitelistTags.includes(domNode.name)) return <p>Unsafe Tag</p>
 
+          // Element Children
+          let children = domToReact(domNode.children as DOMNode[], options);
+
+          // Function Calculations
           let funcContent: (string | JSX.Element | JSX.Element[]) = "";
           if (domNode.attribs.function) {
             const func = domNode.attribs.function;
             if (func)
               try { funcContent = safeExecute(func) ?? "" } catch { funcContent = "bad function" }
+
             // Attempt to turn the function return to JSX elements
             if (typeof funcContent === 'string')
               funcContent = parse(funcContent, options);
             delete domNode.attribs.function;
           }
 
-          let manContent = ""
+          // Manual Inputs
+          let manContent = "";
           if (domNode.attribs.manual) {
             const key = domNode.attribs.manual + "-manual-input"
             tmpFrameParts.push(
@@ -396,19 +453,19 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
                   className="manualInput"
                   id={key}
                   placeholder={domNode.attribs.manual as string}
-                  onInput={() => setIframeParts(buildFromTemplate(activeTemplate))} />
+                  onInput={() => buildFromTemplate(activeTemplate)
+                    .then(body => setIframeParts(body))} />
               </div>
             )
 
             delete domNode.attribs.manual;
             manContent = ((document.getElementById(key) as HTMLInputElement)?.value ?? "");
           }
-          const props = attributesToProps((domNode.attribs));
 
-          if (!whitelistTags.includes(domNode.name)) return <p>Unsafe Tag</p>
+          const props = attributesToProps((domNode.attribs));
           return (
             <>
-              <domNode.name {...props}>{domToReact(domNode.children as DOMNode[], options)} {manContent} {funcContent}</domNode.name>
+              <domNode.name {...props}>{children}{manContent}{funcContent}</domNode.name>
             </>
           );
         }
@@ -416,12 +473,9 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
 
       setInputParts(tmpFrameParts);
 
-      const h = parse(m?.groups?.head?.replace(/>[\s]*</g, '><').trim() ?? "", options);
-      if (Array.isArray(head))
-        if (Array.isArray(h))
-          head.push(...h);
-        else if (!(typeof h === 'string'))
-          head.push(h);
+      const h = parse((m?.groups?.head ?? "").replace(/>[\s]*</g, '><').trim(), options);
+      if (typeof h !== 'string')
+        head = headBaseElements.concat(h);
       body = parse(m?.groups?.body?.replace(/>[\s]*</g, '><').trim() ?? "", options);
     }
     return { body: body, head: head };
@@ -475,8 +529,14 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
 
     return [
       <div key={component.content + "-manual-input-holder"}>
-        <label style={{ paddingRight: "4px" }} htmlFor={component.content + "-manual-input"}>{component.content as string}</label>
-        <input className="manualInput" id={component.content + "-manual-input"} placeholder={component.content as string} onInput={() => setIframeParts(buildFromTemplate(activeTemplate))} />
+        <label
+          style={{ paddingRight: "4px" }}
+          htmlFor={component.content + "-manual-input"}>{component.content as string}</label>
+        <input
+          className="manualInput"
+          id={component.content + "-manual-input"}
+          placeholder={component.content as string}
+          onInput={() => buildFromTemplate(activeTemplate).then(body => setIframeParts(body))} />
       </div>
     ]
   }
@@ -488,11 +548,19 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     globalData.current = generateScopeData(aircraft, loading, selectedOpsConfig, units);
     if (temp.type === "json" && typeof temp.body !== 'string')
       setInputParts(buildInputs(temp.body)); // Inputs are build for HTML elsewhere
-    setIframeParts(buildFromTemplate(activeTemplate));
+    buildFromTemplate(activeTemplate)
+      .then(body => setIframeParts(body));
   }, [activeTemplate, loading]);
 
   const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
   const options = templates.sort((a, b) => a.name?.localeCompare(b.name ?? "") ?? -1).map(t => <option key={t.id} value={t.id}>{t.name}</option>)
+
+  const manualEntries = (
+    <details>
+      <summary>Manual Entries</summary>
+      <Subregion id='inputsHolder'>{inputParts}</Subregion>
+    </details>
+  )
 
   return (
     <>
@@ -519,7 +587,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
           }}>Delete Template</button>
       </Subregion>
 
-      {inputParts && inputParts.length > 0 && <Subregion id='inputsHolder'>{inputParts}</Subregion>}
+      {inputParts && inputParts.length > 0 && manualEntries}
 
       <CustomIframe
         ref={ref}
@@ -582,7 +650,7 @@ function CustomIframe({ body, head, ...props }: customIframeProps) {
       </Subregion>
       <Subregion id="iframeHolder">
         <div id="scaleHolder">
-          <iframe sandbox='allow-scripts allow-same-origin allow-modals' {...props} ref={setContentRef}>
+          <iframe {...props} ref={setContentRef}>
             {headNode && createPortal(head, headNode)}
             {bodyNode && createPortal(body, bodyNode)}
           </iframe>
