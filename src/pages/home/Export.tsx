@@ -317,15 +317,6 @@ const headBase = `
     }
   </style>`
 
-const headBaseElements = parse(headBase.replace(/>[\s]*</g, '><').trim(), {
-  replace(domNode, index) {
-    if (domNode.type === 'tag') {
-      const props = attributesToProps(domNode.attribs);
-      return <domNode.name {...props} key={index + "A"}></domNode.name>
-    }
-  }
-}) as JSX.Element[];
-
 export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & nameProps): ReactNode {
   const units = useContext(UnitContext);
   const ref: RefObject<(null | HTMLIFrameElement)> = useRef(null);
@@ -398,6 +389,15 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
     const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
     const temp = templates.find(f => f.id === tempId);
     if (!temp || !temp.body) return { body: <></>, head: <></> };
+
+    const headBaseElements = parse(headBase.replace(/>[\s]*</g, '><').trim(), {
+      replace(domNode, index) {
+        if (domNode.type === 'tag') {
+          const props = attributesToProps(domNode.attribs);
+          return <domNode.name {...props} key={index + "A"}></domNode.name>
+        }
+      }
+    }) as JSX.Element[];
 
     let head, body: (string | JSX.Element | JSX.Element[]);
     head = <></>;
@@ -556,10 +556,14 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
   const options = templates.sort((a, b) => a.name?.localeCompare(b.name ?? "") ?? -1).map(t => <option key={t.id} value={t.id}>{t.name}</option>)
 
   const manualEntries = (
-    <details>
-      <summary>Manual Entries</summary>
-      <Subregion id='inputsHolder'>{inputParts}</Subregion>
-    </details>
+    <Subregion>
+      <details>
+        <summary>Manual Entries</summary>
+        <div id='inputsHolder'>
+          {inputParts}
+        </div>
+      </details>
+    </Subregion>
   )
 
   return (
