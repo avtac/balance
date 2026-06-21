@@ -1,4 +1,7 @@
 import './Export.css'
+import mainStyle from '../../index.css?inline'
+import diagramStyle from '../../Diagram.css?inline'
+import graphStyle from '../../Graph.css?inline'
 import parse, { attributesToProps, domToReact, Element, type DOMNode, type HTMLReactParserOptions } from 'html-react-parser';
 import { useContext, useEffect, useRef, useState, type ComponentPropsWithRef, type CSSProperties, type ReactNode, type RefObject, type JSX } from "react";
 import { baseFuelUnit, baseLengthUnit, baseWeightUnit, DiagramModes, type aircraftT, type loadingT, type nameProps, type setupT } from "../../Types";
@@ -306,9 +309,9 @@ const whitelistTags = [
 // Add general style to all templates
 const headBase = `
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <link rel="stylesheet" href="/src/index.css" />
-  <link rel="stylesheet" href="/src/Graph.css" />
-  <link rel="stylesheet" href="/src/Diagram.css" />
+  <style>${mainStyle}</style>
+  <style>${graphStyle}</style>
+  <style>${diagramStyle}</style>
   <style>
     #diagram #aircraft {
       fill: none !important;
