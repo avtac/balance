@@ -173,7 +173,7 @@ function PlotLimit({ data, limits, options }: plotLimitProps): ReactNode {
             y={y}
             alignmentBaseline={data.name != "" ? 'after-edge' : 'middle'}
             fill={data.color ?? 'white'}>
-            {data.weight}
+            {roundNumber(data.weight, 1)}
           </text>
           {data.name.split(";").map((name: string, i: number) => {
             return <text
@@ -324,8 +324,9 @@ function PlotVerticalGrid({ limits, gridSpacing, units }: plotGridProps): ReactN
             strokeDasharray={".5"} />)
           <text
             className='gridLines'
-            x={1}
+            x={10.5}
             y={y.pos}
+            textAnchor='end'
             alignmentBaseline='middle'>
             {y.value}
           </text>
