@@ -65,5 +65,10 @@
       <div function="() => global.graph({background: false})"></div>
       <div function="() => global.diagram"></div>
     </div>
+    <div>
+      <span>Within Normal Range: </span>
+      <span function="() => global.withinRegion('Normal', global.takeoffWeight, global.takeoffArm) ?'Yes':'No'">
+      </span>
+    </div>
   </div>
 </body>

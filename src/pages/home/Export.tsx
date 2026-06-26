@@ -4,8 +4,8 @@ import diagramStyle from '../../Diagram.css?inline'
 import graphStyle from '../../Graph.css?inline'
 import parse, { attributesToProps, domToReact, Element, type DOMNode, type HTMLReactParserOptions } from 'html-react-parser';
 import { useContext, useEffect, useRef, useState, type ComponentPropsWithRef, type CSSProperties, type ReactNode, type RefObject, type JSX } from "react";
-import { baseFuelUnit, baseLengthUnit, baseWeightUnit, DiagramModes, type aircraftT, type loadingT, type nameProps, type setupT } from "../../Types";
-import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalanceForZeroFuel, calculateEmptyBalanceForConfig, calculateMAC, roundNumber } from '../../utility';
+import { baseFuelUnit, baseLengthUnit, baseWeightUnit, DiagramModes, type aircraftT, type fuelUnitsT, type lengthUnitsT, type loadingT, type nameProps, type setupT, type weightUnitsT } from "../../Types";
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalanceForZeroFuel, calculateEmptyBalanceForConfig, calculateMAC, roundNumber, withinRegion } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { createPortal } from 'react-dom';
 import Graph, { type graphOptionsT } from '../../Graph';
@@ -50,6 +50,8 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
     return dayjs().format(format)
   }
 
+  const mac = convertLengthUnit(aircraft.config.mac, baseLengthUnit, units.lengthUnits);
+  const leadingEdgeMAC = convertLengthUnit(aircraft.config.leadingEdgeMAC, baseLengthUnit, units.lengthUnits);
   const aircraftType = aircraft.config.type;
   const aircraftTailNumber = aircraft.config.tailNumber;
   const aircraftConfig = aircraft.operationConfigs[opsConfigIndex].name;
@@ -74,21 +76,21 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
 
   const numCrew = aircraft.operationConfigs[opsConfigIndex].seats.reduce((sum, p) => sum + Math.ceil(p.weight / 200), 0);
 
-  const crewWeight = aircraft.operationConfigs[opsConfigIndex].seats.reduce((sum, p) => sum + p.weight, 0);
-  const crewArm = crewWeight === 0 ? 0 : aircraft.operationConfigs[opsConfigIndex].seats.reduce((sum, p) => { const s = aircraft.seats.find(s => s.id === p.id); if (!s) return sum; return sum + (p.weight * s.arm) }, 0) / crewWeight;
+  const crewWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].seats.reduce((sum, p) => sum + p.weight, 0), baseWeightUnit, units.weightUnits), unitPrecision);
+  const crewArm = crewWeight === 0 ? 0 : roundNumber(convertLengthUnit(aircraft.operationConfigs[opsConfigIndex].seats.reduce((sum, p) => { const s = aircraft.seats.find(s => s.id === p.id); if (!s) return sum; return sum + (p.weight * s.arm) }, 0) / crewWeight, baseLengthUnit, units.lengthUnits), unitPrecision);
 
-  const crewCargoWeight = aircraft.operationConfigs[opsConfigIndex].cargoAreas.reduce((sum, c) => sum + c.weight, 0);
-  const crewCargoArm = crewCargoWeight === 0 ? 0 : roundNumber(aircraft.operationConfigs[opsConfigIndex].cargoAreas.reduce((sum, c) => { const C = aircraft.cargoAreas.find(v => v.id === c.id); if (!C) return sum; return sum + (c.weight * C.arm) }, 0) / crewCargoWeight, 100);
+  const crewCargoWeight = roundNumber(convertWeightUnit(aircraft.operationConfigs[opsConfigIndex].cargoAreas.reduce((sum, c) => sum + c.weight, 0), baseWeightUnit, units.weightUnits), unitPrecision);
+  const crewCargoArm = crewCargoWeight === 0 ? 0 : roundNumber(convertLengthUnit(aircraft.operationConfigs[opsConfigIndex].cargoAreas.reduce((sum, c) => { const C = aircraft.cargoAreas.find(v => v.id === c.id); if (!C) return sum; return sum + (c.weight * C.arm) }, 0) / crewCargoWeight, baseLengthUnit, baseLengthUnit), unitPrecision);
 
   const numPassengers = loading.passengers.reduce((sum, p) => sum + p.count, 0);
-  const passengerWeight = loading.passengers.reduce((sum, s) => sum + s.avgWeight * s.count, 0);
-  const passengerArm = passengerWeight === 0 ? 0 : roundNumber(loading.passengers.reduce((sum, s) => { const S = aircraft.seats.find(v => v.id === s.location); if (!S) return sum; return sum + (s.avgWeight * s.count * S.arm) }, 0) / passengerWeight, 100);
+  const passengerWeight = roundNumber(convertWeightUnit(loading.passengers.reduce((sum, s) => sum + s.avgWeight * s.count, 0), baseWeightUnit, units.weightUnits), unitPrecision);
+  const passengerArm = passengerWeight === 0 ? 0 : roundNumber(convertLengthUnit(loading.passengers.reduce((sum, s) => { const S = aircraft.seats.find(v => v.id === s.location); if (!S) return sum; return sum + (s.avgWeight * s.count * S.arm) }, 0) / passengerWeight, baseLengthUnit, units.lengthUnits), unitPrecision);
 
-  const cargoWeight = loading.cargo.reduce((sum, c) => sum + c.weight, 0);
-  const cargoArm = cargoWeight === 0 ? 0 : roundNumber(loading.cargo.reduce((sum, c) => { const area = aircraft.cargoAreas.find(C => C.id === c.location); if (!area) return sum; return sum + (c.weight * area?.arm) }, 0) / cargoWeight, 100);
+  const cargoWeight = roundNumber(convertWeightUnit(loading.cargo.reduce((sum, c) => sum + c.weight, 0), baseWeightUnit, units.weightUnits), unitPrecision);
+  const cargoArm = cargoWeight === 0 ? 0 : roundNumber(convertLengthUnit(loading.cargo.reduce((sum, c) => { const area = aircraft.cargoAreas.find(C => C.id === c.location); if (!area) return sum; return sum + (c.weight * area?.arm) }, 0) / cargoWeight, baseLengthUnit, units.lengthUnits), unitPrecision);
 
-  const equipmentWeight = aircraft.aircraftConfigs[configIndex].equipment.reduce((sum, e) => { const equip = aircraft.equipment.find(E => E.id === e.id); if (!equip) return sum; return sum + e.count * equip.weight }, 0);
-  const equipmentArm = equipmentWeight === 0 ? 0 : roundNumber(aircraft.aircraftConfigs[configIndex].equipment.reduce((sum, e) => { const equip = aircraft.equipment.find(E => E.id === e.id); if (!equip) return sum; return sum + e.count * equip.weight * equip.arm }, 0) / equipmentWeight, 100);
+  const equipmentWeight = roundNumber(convertWeightUnit(aircraft.aircraftConfigs[configIndex].equipment.reduce((sum, e) => { const equip = aircraft.equipment.find(E => E.id === e.id); if (!equip) return sum; return sum + e.count * equip.weight }, 0), baseWeightUnit, units.weightUnits), unitPrecision);
+  const equipmentArm = equipmentWeight === 0 ? 0 : roundNumber(convertLengthUnit(aircraft.aircraftConfigs[configIndex].equipment.reduce((sum, e) => { const equip = aircraft.equipment.find(E => E.id === e.id); if (!equip) return sum; return sum + e.count * equip.weight * equip.arm }, 0) / equipmentWeight, baseLengthUnit, units.lengthUnits), unitPrecision);
 
   const totalFuel = roundNumber(convertFuelUnits(loading.fuel.reduce((sum, f) => sum + f.loadedFuel, 0), baseFuelUnit, units.fuelUnits, units.fuelDensity), unitPrecision);
   const totalFuelWeight = roundNumber(convertFuelUnits(totalFuel, units.fuelUnits, units.weightUnits, units.fuelDensity), unitPrecision);
@@ -99,7 +101,7 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
   const landingFuelWeight = roundNumber(convertFuelUnits(landingFuel, units.fuelUnits, units.weightUnits, units.fuelDensity), unitPrecision);
   const landingFuelArm = landingFuelWeight === 0 ? 0 : roundNumber(convertFuelUnits(loading.fuel.reduce((sum, f) => { const t = aircraft.fuelTanks.find(v => v.id === f.tank); if (!t) return sum; return sum + (t.arm * f.loadedFuel) }, 0), units.fuelUnits, units.weightUnits, units.fuelDensity) / landingFuelWeight, unitPrecision);
 
-  const getMac = (arm: number) => roundNumber(calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, true), unitPrecision);
+  const getMac = (arm: number) => roundNumber(calculateMAC(convertLengthUnit(arm, units.lengthUnits, baseLengthUnit), aircraft.config.mac, aircraft.config.leadingEdgeMAC, true), unitPrecision);
 
   const getSeatPassengers = (seatName: string) => {
     const seat = aircraft.seats.find(s => s.name === seatName)
@@ -137,12 +139,30 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
     return cargoArea.arm;
   }
 
+  const getLimit = (limitName: string) => {
+    const limit = aircraft.limits.limits.find(l => l.name === limitName);
+    return limit && limit.weight ? convertWeightUnit(limit.weight, baseWeightUnit, units.weightUnits) : 0;
+  }
+
+  // Expects units to be units.weightUnits and units.lengthUnits
+  const withinRegionL = (regionName: string, weight: number, arm: number) => {
+    const region = aircraft.limits.regions.find((r) => r.name === regionName);
+    if (!region) return false;
+    return withinRegion(region, convertWeightUnit(weight, units.weightUnits, baseWeightUnit), convertLengthUnit(arm, units.lengthUnits, baseLengthUnit));
+  }
+
+  const convertWeight = (weight: number, fromUnit: weightUnitsT) => convertWeightUnit(weight, fromUnit, units.weightUnits);
+  const convertLength = (length: number, fromUnit: lengthUnitsT) => convertLengthUnit(length, fromUnit, units.lengthUnits);
+  const convertFuel = (fuel: number, fromUnit: fuelUnitsT) => convertFuelUnits(fuel, fromUnit, units.fuelUnits, units.fuelDensity);
+
   const globalData = {
     date: date,
     units: units,
     graph: graph,
     diagram: diagram,
 
+    mac: mac,
+    leadingMAC: leadingEdgeMAC,
     aircraftType: aircraftType,
     aircraftTailNumber: aircraftTailNumber,
     aircraftConfig: aircraftConfig,
@@ -191,7 +211,12 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
     getSeatWeight: getSeatWeight,
     getSeatArm: getSeatArm,
     getCargoWeight: getCargoWeight,
-    getCargoArm: getCargoArm
+    getCargoArm: getCargoArm,
+    getLimit: getLimit,
+    withinRegion: withinRegionL,
+    convertWeight: convertWeight,
+    convertLength: convertLength,
+    convertFuel: convertFuel
   }
 
   return globalData;

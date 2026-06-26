@@ -1,4 +1,4 @@
-import { type aircraftT, type fuelLoadT, type fuelTankT, type loadingT, type maxMomentObjectT, type momentObjectT } from './Types';
+import { type aircraftT, type fuelLoadT, type fuelTankT, type loadingT, type maxMomentObjectT, type momentObjectT, type regionT } from './Types';
 
 export const activeConfigBuilder = "activeConfigBuilder"
 export const savedBuilderConfigs = "savedBuilderConfigs"
@@ -21,6 +21,49 @@ export function getSortedByArmClosest<T extends (maxMomentObjectT | momentObject
 export function calculateMAC(arm: number, mac: (number | undefined), leadingMac: (number | undefined), useMAC: boolean = false): number {
   if (!useMAC || leadingMac == undefined || mac == undefined || mac == 0) return arm;
   return (arm - leadingMac) / mac * 100;
+}
+
+function linesIntersect(p11: momentObjectT, p12: momentObjectT, p21: momentObjectT, p22: momentObjectT): number {
+  const a1 = p12.weight - p11.weight;
+  const b1 = p11.arm - p12.arm;
+  const c1 = (p12.arm * p11.weight) - (p11.arm * p12.weight);
+
+  let d1 = (a1 * p21.arm) + (b1 * p21.weight) + c1;
+  let d2 = (a1 * p22.arm) + (b1 * p22.weight) + c1;
+
+  if (d1 > 0 && d2 > 0) return 0;
+  if (d1 < 0 && d2 < 0) return 0;
+
+  const a2 = p22.weight - p21.weight;
+  const b2 = p21.arm - p22.arm;
+  const c2 = (p22.arm * p21.weight) - (p21.arm * p22.weight);
+
+  d1 = (a2 * p11.arm) + (b2 * p11.weight) + c2;
+  d2 = (a2 * p12.arm) + (b2 * p12.weight) + c2;
+
+  if (d1 > 0 && d2 > 0) return 0;
+  if (d1 < 0 && d2 < 0) return 0;
+
+  if ((a1 * b2) - (a2 * b1) === 0) return 2;
+
+  return 1;
+}
+
+export const withinRegion = (region: regionT, weight: number, arm: number) => {
+  // Quick bounding box check
+  const minWeight = region.data.reduce((min, p) => p.weight < min ? p.weight : min, region.data[0].weight);
+  const maxWeight = region.data.reduce((max, p) => p.weight > max ? p.weight : max, region.data[0].weight);
+  const minArm = region.data.reduce((min, p) => p.arm < min ? p.arm : min, region.data[0].arm);
+  const maxArm = region.data.reduce((max, p) => p.arm > max ? p.arm : max, region.data[0].arm);
+  if (weight < minWeight || weight > maxWeight || arm < minArm || arm > maxArm) return false;
+
+  let intersections = 0;
+  for (let p = 0; p < region.data.length - 1; p++) {
+    intersections += linesIntersect({ arm: minArm - 1, weight: weight }, { arm: arm, weight: weight }, region.data[p], region.data[p + 1]);
+  }
+  console.log(intersections);
+
+  return (intersections & 1) === 1;
 }
 
 export function calculateEmptyBalanceForConfig(config: aircraftT, selectedConfig: string): [number, number] {
