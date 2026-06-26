@@ -154,6 +154,7 @@ interface diagramProps {
 
 function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
   if (!aircraft) return (<></>);
+  const [scale, setScale] = useState(1);
   let seats = [...aircraft.seats]
   let cargoAreas = [...aircraft.cargoAreas]
 
@@ -198,9 +199,9 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
   const planeWidth = planeRight - planeLeft;
 
   const left = -planeBack - canvasPadding;
-  const right = -planeFront + canvasPadding + planeWidth / 2;
+  const right = -planeFront + canvasPadding + planeWidth / 2.65;
   const width = right - left;
-  const bottom = planeRight + canvasPadding + width * .025;
+  const bottom = planeRight + canvasPadding;
   const top = planeLeft - canvasPadding;
   const height = bottom - top;
 
@@ -279,7 +280,7 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
     const diagram = document.getElementById("aircraft");
     if (!diagram) return;
     const box = diagram.getBoundingClientRect();
-    const mousePos = { x: planeLength - (e.pageX - box.x) * planeLength / box.width + planeFront, y: (e.pageY - box.y) * planeWidth / box.height + planeLeft }
+    const mousePos = { x: planeBack - (e.pageX - box.x) * (planeLength + planeWidth / 2.65) / box.width, y: (e.pageY - box.y) * planeWidth / box.height + planeLeft }
     setMouseIn(mousePos.x > planeFront && mousePos.x < planeBack && mousePos.y < planeRight && mousePos.y > planeLeft);
     setMousePos(mousePos);
   }
@@ -300,10 +301,10 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
           strokeWidth={width * .001} />
         <text
           x={-mousePos.x}
-          y={planeRight}
-          textAnchor="middle"
-          dominantBaseline='hanging'
-          fontSize={width * .025}
+          y={planeRight - 1}
+          textAnchor="start"
+          dominantBaseline='alphabetic'
+          fontSize={width * .025 / scale}
           fill='white'>
           {string}
         </text>
@@ -336,12 +337,24 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
     }
   }, [ref, showCoords]);
 
+  function setDiagramScale(e: React.WheelEvent<SVGSVGElement>) {
+    if (e.ctrlKey || e.shiftKey) return;
+    const diagram = document.getElementById("aircraft");
+    if (!diagram) return;
+    setScale(Math.min(Math.max(scale + -Math.sign(e.deltaY) * 0.1 * scale, 1), 10));
+    // TODO: Zoom to where the mouse is not just start of scroll area
+    if (ref.current) {
+      ref.current.style.transform = `scale(${scale})`;
+    }
+  }
+
   return (
     <svg
       ref={ref}
       onContextMenu={(e) => e.preventDefault()}
       onPointerUp={e => handleMouse(e)}
       onMouseMove={e => setMouse(e)}
+      onWheel={e => setDiagramScale(e)}
       viewBox={`${left} ${top} ${width} ${height}`}
       id="diagram">
       <path
