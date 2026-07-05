@@ -1,4 +1,4 @@
-import { type aircraftT, type fuelLoadT, type fuelTankT, type loadingT, type maxMomentObjectT, type momentObjectT, type regionT } from './Types';
+import { type aircraftT, type configT, type fuelLoadT, type fuelTankT, type loadingT, type maxMomentObjectT, type momentObjectT, type regionT } from './Types';
 
 export const activeConfigBuilder = "activeConfigBuilder"
 export const savedBuilderConfigs = "savedBuilderConfigs"
@@ -61,7 +61,6 @@ export const withinRegion = (region: regionT, weight: number, arm: number) => {
   for (let p = 0; p < region.data.length - 1; p++) {
     intersections += linesIntersect({ arm: minArm - 1, weight: weight }, { arm: arm, weight: weight }, region.data[p], region.data[p + 1]);
   }
-  console.log(intersections);
 
   return (intersections & 1) === 1;
 }
@@ -303,11 +302,9 @@ export function calculateBalancePointsForTanks(aircraft: aircraftT, selectedOpsC
     for (const { tank: _, load: load } of Object.values(sortedGroup)) {
       // Get the segment of consumed fuel by all tanks in group
       let segmentConsumedFuel = Math.max(load.tripFuel - totalConsumedFuel, 0);
-      // console.log("This should go low to high", load.tripFuel);
       // Remove the segment fuel amount from each tank in group if they more to give
       for (const { tank: fuelTankI, load: loadI } of Object.values(sortedGroup)) {
         if (totalConsumedFuel >= loadI.tripFuel) continue;
-        // console.log("Draining", segmentConsumedFuel, "from tank", fuelTankI.name);
         weight -= (Math.min(segmentConsumedFuel, loadI.tripFuel))
         moment -= (Math.min(segmentConsumedFuel, loadI.tripFuel)) * fuelTankI.arm;
       }
@@ -341,3 +338,12 @@ export const saveStringToFile = (content: string, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+export function validateConfig(config: Object) {
+  return (
+    config != null &&
+    typeof config === 'object' &&
+    typeof (config as configT).setup === 'object' &&
+    typeof (config as configT).name === 'string' &&
+    Array.isArray((config as configT).aircraft)
+  )
+}

@@ -2,7 +2,7 @@ import './Setup.css'
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Subregion } from "../../Layout";
 import { type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
-import { activeConfigBuilder, roundNumber, savedBuilderConfigs, saveStringToFile } from "../../utility";
+import { activeConfigBuilder, roundNumber, savedBuilderConfigs, saveStringToFile, validateConfig } from "../../utility";
 import { getNewConfig } from "./ConfigBuilder";
 import { convertDensityUnits, fuelTypes, fuelUnitsElements, lengthUnitsElements, unitPrecision, weightUnitsElements } from '../../UnitsContext';
 
@@ -214,6 +214,7 @@ function Setup({ config, setConfig, selectedAircraft }: SetupProps & nameProps):
       fileReader.onload = () => {
         const data: string = fileReader.result as string;
         if (!data) return;
+        if (!validateConfig(JSON.parse(data))) return;
         setConfig(JSON.parse(data));
         localStorage.setItem(activeConfigBuilder, data)
       };

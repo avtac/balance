@@ -361,8 +361,8 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
         id="aircraft"
         d={`M ${-planeBack} ${planeLeft} L ${-planeFront} ${planeLeft} C ${-planeFront + planeWidth / 2} ${planeWidth / 3 + planeLeft}, ${-planeFront + planeWidth / 2} ${planeWidth * 2 / 3 - planeRight} ${-planeFront} ${planeRight} L ${-planeBack} ${planeRight} L ${-planeBack} ${planeLeft}`}
         stroke={'none'} />
-      {seatItems}
       {cargoItems}
+      {seatItems}
       {showCoords && mouseIn && mouseText()}
     </svg>
   );

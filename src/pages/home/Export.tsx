@@ -31,6 +31,26 @@ interface templateT {
   body: (templateComponentT | templateComponentT[] | string)
 }
 
+function validTemplate(data: string, type: ('html' | 'json')) {
+  if (type === 'html') {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data, 'text/html');
+
+    const errorNode = doc.querySelector('parsererror');
+    console.log("LOAD", errorNode, doc);
+    return !errorNode;
+  } else if (type === 'json') {
+    try {
+      const template = JSON.parse(data)
+      return (
+        // TODO: Create check for valid JSON structure
+        typeof template === 'object'
+      )
+    } catch { }
+  }
+  return false;
+}
+
 function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsConfig: string, units: setupT) {
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
@@ -531,6 +551,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
           const t = (newTemplate.body as string).match(/<title>(?<name>.*)<\/title>/);
           newTemplate.name = t?.groups?.name ?? "";
         }
+        if (!validTemplate(data, newTemplate.type)) return;
 
         newTemplate.id = crypto.randomUUID();
         setTemplateSpecial(newTemplate.id);
