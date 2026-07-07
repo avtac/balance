@@ -93,7 +93,7 @@ export interface weightLimitT {
   name: string;
   color?: string;
   lineStyle?: string;
-  weight: number | null;
+  weight?: number;
 }
 
 export interface regionPointT extends momentObjectT {

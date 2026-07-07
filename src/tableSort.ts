@@ -46,6 +46,8 @@ function modifyHeader(table: HTMLTableElement) {
     if (column.classList.contains("noSort")) return;
     column.classList.add("sortable");
     column.onclick = () => sortOnColumn(table, index)
+    if (column.classList.contains("defaultForward")) column.click();
+    if (column.classList.contains("defaultBackward")) { column.click(); column.click() };
   });
 }
 

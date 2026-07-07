@@ -75,8 +75,8 @@ function Units({ config, setConfig, macAvailable }: unitsProps): ReactNode {
     <Subregion>
       <h3>Units</h3>
       {macAvailable && (<>
-        <label>Use MAC</label>
-        <input type='checkbox' checked={config.setup.useMAC} onChange={(e) => setValue('useMAC', e.target.checked)} />
+        <label htmlFor='useMAC'>Use MAC</label>
+        <input id='useMAC' name='useMAC' type='checkbox' checked={config.setup.useMAC} onChange={(e) => setValue('useMAC', e.target.checked)} />
       </>
       )}
       <div id='unitsSelect'>
@@ -239,7 +239,7 @@ function Setup({ config, setConfig, selectedAircraft }: SetupProps & nameProps):
     <>
       <Subregion id="configSelectRow">
         <div>
-          <label htmlFor='configFileSelect'>Active Config File</label>
+          <h3>Config File</h3>
           <select id="configFileSelect" value={config.id} onChange={e => selectConfig(e.target.value)}>
             {availableConfigs}
           </select>

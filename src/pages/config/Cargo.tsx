@@ -5,7 +5,7 @@ import { Subregion } from "../../Layout";
 import { type cargoAreaT, type aircraftProps, type aircraftT, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { roundNumber } from "../../utility";
-import { faX } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface cargoInputProps extends aircraftProps {
@@ -56,7 +56,7 @@ function CargoInput({ area, index, aircraft, setAircraft }: cargoInputProps) {
           onChange={e => setValue('maxWeight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
       </td>
       <td>
-        <button onClick={() => removeCargo()}><FontAwesomeIcon icon={faX} /></button>
+        <button onClick={() => removeCargo()}><FontAwesomeIcon icon={faXmark} /></button>
       </td>
     </tr>
   );
@@ -78,17 +78,21 @@ function CargoConfig({ aircraft, setAircraft }: aircraftProps) {
 
   return (
     <Subregion>
-      <div id="cargoConfig">
-        <h3>Cargo Config</h3>
-        <button onClick={addCargo}>Add Cargo Area</button>
+      <details open id="cargoConfig">
+        <summary id='title'>
+          <h3>Cargo Config</h3>
+          <button onClick={addCargo}><FontAwesomeIcon icon={faPlus} /></button>
+        </summary>
         <table className="tableData sortedTable">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>{`Arm (${units.lengthUnits})`}</th>
-              <th>{`Max Weight (${units.weightUnits})`}</th>
-              <th className='noSort'></th>
-            </tr>
+            {aircraft.cargoAreas.length > 0 &&
+              <tr>
+                <th>Name</th>
+                <th className="defaultForward">{`Arm (${units.lengthUnits})`}</th>
+                <th>{`Max Weight (${units.weightUnits})`}</th>
+                <th className='noSort'></th>
+              </tr>
+            }
           </thead>
           <tbody>
             {aircraft.cargoAreas.map((area: cargoAreaT, index: number) => (
@@ -101,8 +105,8 @@ function CargoConfig({ aircraft, setAircraft }: aircraftProps) {
             ))}
           </tbody>
         </table>
-      </div>
-    </Subregion>
+      </details>
+    </Subregion >
   );
 }
 

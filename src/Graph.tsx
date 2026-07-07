@@ -37,17 +37,54 @@ function calculateArm(weight1: number, arm1: number, weight2: number, arm2: numb
   return (arm1 * weight1 + arm2 * weight2) / (weight1 + weight2);
 }
 
-function cleanLimits(limits: weightLimitT[]): weightLimitT[] {
-  const ret: weightLimitT[] = [];
+interface cleanLimitsT {
+  id: string;
+  name: string;
+  color: string;
+  lineStyle: string;
+  weight: number;
+}
+
+function cleanLimits(limits: weightLimitT[], graphLimits: limitsT): cleanLimitsT[][] {
+  const ret: cleanLimitsT[][] = [];
   for (const i in limits) {
     let limit = limits[i];
-    if (ret.find(a => a.weight === limit.weight)) {
-      const index = ret.findIndex(a => a.weight === limit.weight);
-      ret[index].name += ";" + limit.name;
+    if (!limit.weight) continue;
+
+    // Same number
+    let groupIndex = ret.findIndex(v => v.some(v => v.weight === (limit.weight ?? 0)));
+    if (groupIndex >= 0) {
+      const index = ret[groupIndex].findIndex(v => v.weight === (limit.weight ?? 0));
+      if (groupIndex >= 0 || index >= 0) {
+        ret[groupIndex][index].name += ';' + limit.name;
+        ret[groupIndex][index].color += ';' + limit.color;
+      }
       continue;
     }
-    ret.push({ id: limit.id, weight: limit.weight, name: limit.name, color: limit.color, lineStyle: limit.lineStyle });
+
+    // Close number
+    groupIndex = ret.findIndex(v => v.some(w => Math.abs((limit.weight ?? 0) - w.weight) < (limit.name.split(";").length + v.reduce((sum, V) => sum + V.name.split(";").length, 0)) / graphLimits.yRatio * 4.0));
+    if (groupIndex >= 0) {
+      ret[groupIndex].push({
+        id: limit.id,
+        name: limit.name,
+        weight: limit.weight,
+        color: limit.color ?? 'white',
+        lineStyle: limit.lineStyle ?? 'Solid'
+      });
+      continue;
+    }
+
+    ret.push([{
+      id: limit.id,
+      name: limit.name,
+      weight: limit.weight,
+      color: limit.color ?? "#fff",
+      lineStyle: limit.lineStyle ?? "Solid"
+    }]);
   }
+
+  ret.forEach(v => v.sort((a, b) => b.weight - a.weight));
   return ret;
 }
 
@@ -148,45 +185,61 @@ function PlotArea({ width, height }: plotAreaProps): ReactNode {
 }
 
 interface plotLimitProps {
-  data: weightLimitT,
+  data: cleanLimitsT[],
   limits: limitsT
   options: graphOptionsT;
 }
 
 function PlotLimit({ data, limits, options }: plotLimitProps): ReactNode {
-  if (!data.weight) return;
   let x1 = padding;
   let x2 = width - padding;
-  let y = calculatePointY(limits, data.weight);
-  let points = `${x1},${y} ${x2},${y}`;
+  let avgY = calculatePointY(limits, data.reduce((sum, v) => sum + v.weight, 0) / data.length);
+
+  const charSize = 2.7;
+  const gapSize = 1.1;
+  const spacing = 1.5;
+
+  // top position - (space used by spacing, number label and gap - space used by all names) / 2
+  let topY = avgY - ((data.length - 1) * (spacing + charSize + gapSize) + (data.reduce((sum, v) => sum + v.name.split(";").length, 0)) * charSize) / 2;
   return (
     <>
-      <polyline
-        points={points}
-        stroke={data.color ?? 'white'}
-        strokeDasharray={data.lineStyle ?? ''}
-        strokeWidth='.3' />
-      {options.limitsLabels &&
-        <>
-          <text
-            x={x2 + 1}
-            y={y}
-            alignmentBaseline={data.name != "" ? 'after-edge' : 'middle'}
-            fill={data.color ?? 'white'}>
-            {roundNumber(data.weight, 1)}
-          </text>
-          {data.name.split(";").map((name: string, i: number) => {
-            return <text
-              key={data.id + "TEXT" + i}
+      {data.map(v => {
+        let y = calculatePointY(limits, v.weight);
+        let points = `${x1},${y} ${x2},${y}`;
+        return (
+          <polyline
+            points={points}
+            stroke={v.color.split(";")[0]}
+            strokeDasharray={v.lineStyle}
+            strokeWidth='.3' />
+        )
+      })}
+      {options.limitsLabels && data.map((v, i) => {
+        if (i > 0)
+          topY += data[i - 1].name.split(";").length * charSize + charSize + gapSize + spacing;
+        // FIX assumption that previous names are 1 length
+        return (
+          <>
+            <text
               x={x2 + 1}
-              y={y + i * 2}
-              alignmentBaseline='before-edge'
-              fill={data.color ?? 'white'}>
-              {name}
+              y={topY}
+              alignmentBaseline={v.name != "" ? 'after-edge' : 'middle'}
+              fill={v.color.split(";")[0] ?? 'white'}>
+              {roundNumber(v.weight, 1)}
             </text>
-          })}
-        </>
-      }
+            {v.name.split(';').map((name: string, j: number) => {
+              return <text
+                key={"weight" + i + "TEXT" + j}
+                x={x2 + 1}
+                y={topY + (j + 1) * charSize + gapSize}
+                alignmentBaseline='after-edge'
+                fill={v.color.split(';')[j]}>
+                {name}
+              </text>
+            })}
+          </>
+        )
+      })}
     </>
   );
 }
@@ -237,15 +290,16 @@ function PlotRegion({ data, limits, options }: plotRegionProps): ReactNode {
 
 interface plotRegionsProps {
   aircraft: aircraftLimitsT,
+  aircraftLimits: cleanLimitsT[][],
   limits: limitsT
   options: graphOptionsT;
 }
 
-function PlotRegions({ aircraft, limits, options }: plotRegionsProps): ReactNode {
+function PlotRegions({ aircraft, aircraftLimits, limits, options }: plotRegionsProps): ReactNode {
   return (
     <>
       {aircraft.regions.map((region: regionT) => <PlotRegion key={region.id} data={region} limits={limits} options={options} />)}
-      {aircraft.limits.map((limit: weightLimitT) => <PlotLimit key={limit.id} data={limit} limits={limits} options={options} />)}
+      {aircraftLimits.map((limit: cleanLimitsT[]) => <PlotLimit key={limit[0].id} data={limit} limits={limits} options={options} />)}
     </>
   );
 }
@@ -273,6 +327,8 @@ function PlotHorizontalGrid({ limits, gridSpacing, units }: plotGridProps): Reac
       value: truncateNumber(startValue + index * gridSpacing, 1000) + units
     }
   });
+  const longestString = positions.reduce((max, a) => Math.max(max, a.value.toString().length), 0);
+
   return (
     <>
       {positions.map((x, i) => (
@@ -286,7 +342,7 @@ function PlotHorizontalGrid({ limits, gridSpacing, units }: plotGridProps): Reac
             className={"gridLines"}
             x={x.pos}
             y={height - padding / 2}
-            transform={`rotate(${x.value.toString().length > 4 ? 45 : 0}, ${x.pos}, ${height - padding / 2})`}
+            transform={`rotate(${longestString >= gapBetweenGrid / 2.5 ? 45 : 0}, ${x.pos}, ${height - padding / 2})`}
             textAnchor='middle'
             alignmentBaseline='after-edge'>
             {x.value}
@@ -630,8 +686,8 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
   }
 
   if (data.limits.length > 0) {
-    maxY = Math.max(...data.limits.map((lim: weightLimitT) => lim.weight).filter((v: (number | null)) => v !== null), maxY) ?? maxY;
-    minY = Math.min(...data.limits.map((lim: weightLimitT) => lim.weight).filter((v: (number | null)) => v !== null), minY) ?? minY;
+    maxY = Math.max(...data.limits.map((lim: weightLimitT) => lim.weight).filter((v: (number | undefined)) => v !== undefined), maxY) ?? maxY;
+    minY = Math.min(...data.limits.map((lim: weightLimitT) => lim.weight).filter((v: (number | undefined)) => v !== undefined), minY) ?? minY;
   }
 
   if (points.length > 0) {
@@ -709,7 +765,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
     />
   })
 
-  data.limits = cleanLimits(data.limits);
+  const cleanLimit: cleanLimitsT[][] = cleanLimits(data.limits, limits);
 
   const [mousePos, setMousePos] = useState({ x: -1, y: -1 });
   const [mouseIn, setMouseIn] = useState(false);
@@ -787,7 +843,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
       {dataAvailable && horizontalBars}
       {dataAvailable && verticalBars}
       {options.configRegion && dataAvailable && selectedConfig && <polyline className="configArea" points={configAreaPoints.current} />}
-      {dataAvailable && <PlotRegions aircraft={data} limits={limits} options={options} />}
+      {dataAvailable && <PlotRegions aircraft={data} aircraftLimits={cleanLimit} limits={limits} options={options} />}
       {dataAvailable && lineComponents}
       {dataAvailable && pointComponents}
       {mouseIn && showCoords && mouseText()}

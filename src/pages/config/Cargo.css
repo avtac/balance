@@ -20,3 +20,10 @@
     max-width: 8rem;
   }
 }
+
+#title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}

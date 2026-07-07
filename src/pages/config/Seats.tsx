@@ -5,7 +5,7 @@ import { Subregion } from "../../Layout";
 import { type aircraftT, type seatT, type aircraftProps, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { roundNumber } from "../../utility";
-import { faX } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface seatInputProps extends aircraftProps {
@@ -73,7 +73,7 @@ function SeatInput({ seat, index, aircraft, setAircraft }: seatInputProps) {
           onChange={e => setValue('seatCount', Number(e.target.value))} />
       </td>
       <td>
-        {index !== 0 && <button onClick={() => removeSeat()}><FontAwesomeIcon icon={faX} /></button>}
+        {index !== 0 && <button onClick={() => removeSeat()}><FontAwesomeIcon icon={faXmark} /></button>}
       </td>
     </tr >
   );
@@ -96,19 +96,23 @@ function SeatConfig({ aircraft, setAircraft }: aircraftProps) {
 
   return (
     <Subregion>
-      <div id="seatConfig">
-        <h3>Seat Config</h3>
-        <button onClick={addSeat}>Add Seat</button>
+      <details open id="seatConfig">
+        <summary id='title'>
+          <h3>Seat Config</h3>
+          <button onClick={addSeat}><FontAwesomeIcon icon={faPlus} /></button>
+        </summary>
         <table className="tableData sortedTable">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>{`Arm (${units.lengthUnits})`}</th>
-              <th>{`Max Weight (${units.weightUnits})`}</th>
-              <th>{`Lateral Offset (${units.lengthUnits})`}</th>
-              <th># of Seats</th>
-              <th className='noSort'></th>
-            </tr>
+            {aircraft.seats.length > 0 &&
+              <tr>
+                <th>Name</th>
+                <th className="defaultForward">{`Arm (${units.lengthUnits})`}</th>
+                <th>{`Max Weight (${units.weightUnits})`}</th>
+                <th>{`Lateral Offset (${units.lengthUnits})`}</th>
+                <th># of Seats</th>
+                <th className='noSort'></th>
+              </tr>
+            }
           </thead>
           <tbody>
             {aircraft.seats.map((seat: seatT, index: number) => (
@@ -121,7 +125,7 @@ function SeatConfig({ aircraft, setAircraft }: aircraftProps) {
             ))}
           </tbody>
         </table>
-      </div>
+      </details>
     </Subregion>
   );
 }

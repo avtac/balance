@@ -5,7 +5,7 @@ import { Subregion } from "../../Layout";
 import { type fuelTankT, type aircraftProps, type aircraftT, baseLengthUnit, baseFuelUnit } from "../../Types";
 import { convertFuelUnits, convertLengthUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { roundNumber } from "../../utility";
-import { faX } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface fuelInputProps extends aircraftProps {
@@ -78,7 +78,7 @@ function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
           onChange={e => setValue('removable', e.target.checked)} />
       </td>
       <td>
-        <button onClick={() => removeFuel()}><FontAwesomeIcon icon={faX} /></button>
+        <button onClick={() => removeFuel()}><FontAwesomeIcon icon={faXmark} /></button>
       </td>
     </tr>
   );
@@ -103,20 +103,24 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
 
   return (
     <Subregion>
-      <div id="fuelConfig">
-        <h3>Fuel Config</h3>
-        <button onClick={addFuel}>Add Fuel Tank</button>
+      <details open id="fuelConfig">
+        <summary id='title'>
+          <h3>Fuel Config</h3>
+          <button onClick={addFuel}><FontAwesomeIcon icon={faPlus} /></button>
+        </summary>
         <table className="tableData sortedTable">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>{`Arm (${units.lengthUnits})`}</th>
-              <th>{`Max Fuel (${units.fuelUnits})`}</th>
-              <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
-              <th>Priority</th>
-              <th>Removable</th>
-              <th className='noSort'></th>
-            </tr>
+            {aircraft.fuelTanks.length > 0 &&
+              <tr>
+                <th>Name</th>
+                <th className="defaultForward">{`Arm (${units.lengthUnits})`}</th>
+                <th>{`Max Fuel (${units.fuelUnits})`}</th>
+                <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
+                <th>Priority</th>
+                <th>Removable</th>
+                <th className='noSort'></th>
+              </tr>
+            }
           </thead>
           <tbody>
             {
@@ -131,7 +135,7 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
             }
           </tbody >
         </table >
-      </div >
+      </details >
     </Subregion >
   );
 }

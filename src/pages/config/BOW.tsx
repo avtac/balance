@@ -68,6 +68,7 @@ function SeatSelection({ seat, opsConfigIndex, aircraft, setAircraft }: seatSele
           type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{seat.name}</td>
+      <td onClick={selectCheckbox}>{seat.arm}</td>
       <td>
         <input
           id={`configSeatWeight-${seat.id}`}
@@ -139,6 +140,7 @@ function CargoSelection({ cargoArea, opsConfigIndex, aircraft, setAircraft }: ca
         <input onChange={() => { }} checked={checked.current} type={"checkbox"} />
       </td>
       <td onClick={selectCheckbox}>{cargoArea.name}</td>
+      <td onClick={selectCheckbox}>{cargoArea.arm}</td>
       <td>
         <input
           id={`configCargoWeight-${cargoArea.id}`}
@@ -281,11 +283,12 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>Weight ({units.weightUnits})</th>
+                <th className='defaultForward' style={{ width: "4rem" }}>Arm</th>
+                <th style={{ width: "8rem" }}>Weight ({units.weightUnits})</th>
               </tr>
             </thead>
             <tbody>
-              {getSortedByArm(seats).map((seat: seatT) => {
+              {seats.map((seat: seatT) => {
                 return <SeatSelection
                   key={seat.id + " seatSelect"}
                   opsConfigIndex={opsConfigIndex}
@@ -302,7 +305,8 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>Weight ({units.weightUnits})</th>
+                <th className='defaultForward' style={{ width: "4rem" }}>Arm</th>
+                <th style={{ width: "8rem" }}>Weight ({units.weightUnits})</th>
               </tr>
             </thead>
             <tbody>

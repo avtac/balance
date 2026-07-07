@@ -3,7 +3,7 @@ import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
 import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type aircraftProps, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit } from "../../Types";
-import { getSortedByArm, roundNumber } from '../../utility';
+import { roundNumber } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -303,14 +303,14 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
             <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
-                <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
-                <th style={{ width: "3rem" }}># of Seats</th>
+                <th style={{ width: "9.5rem" }}>Name</th>
+                <th className="defaultForward" style={{ width: "5.5rem" }}>{`Arm (${units.lengthUnits})`}</th>
+                <th style={{ width: "9.5rem" }}>{`Max Weight (${units.weightUnits})`}</th>
+                <th style={{ width: "5rem" }}># Seats</th>
               </tr>
             </thead>
             <tbody>
-              {getSortedByArm(aircraft.seats).map((seat: seatT) => {
+              {aircraft.seats.map((seat: seatT) => {
                 return <SeatSelection key={seat.id + " seatSelect"} configIndex={configIndex} seat={seat} aircraft={aircraft} setAircraft={setAircraft} />
               })}
             </tbody>
@@ -321,13 +321,13 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
             <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
-                <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Max Weight (${units.weightUnits})`}</th>
+                <th style={{ width: "9.5rem" }}>Name</th>
+                <th className="defaultForward" style={{ width: "5.5rem" }}>{`Arm (${units.lengthUnits})`}</th>
+                <th style={{ width: "9.5rem" }}>{`Max Weight (${units.weightUnits})`}</th>
               </tr>
             </thead>
             <tbody>
-              {getSortedByArm(aircraft.cargoAreas).map((cargo: cargoAreaT) => {
+              {aircraft.cargoAreas.map((cargo: cargoAreaT) => {
                 return <CargoSelection key={cargo.id + " cargoSelect"} configIndex={configIndex} cargoArea={cargo} aircraft={aircraft} setAircraft={setAircraft} />
               })}
             </tbody>
@@ -338,14 +338,14 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
             <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
-                <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Max Fuel (${units.fuelUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Unusable Fuel (${units.fuelUnits})`}</th>
+                <th style={{ width: "9.5rem" }}>Name</th>
+                <th className="defaultForward" style={{ width: "5.5rem" }}>{`Arm (${units.lengthUnits})`}</th>
+                <th style={{ width: "9rem" }}>{`Max Fuel (${units.fuelUnits})`}</th>
+                <th style={{ width: "11.5rem" }}>{`Unusable Fuel (${units.fuelUnits})`}</th>
               </tr>
             </thead>
             <tbody>
-              {getSortedByArm(aircraft.fuelTanks).map((fuel: fuelTankT) => {
+              {aircraft.fuelTanks.map((fuel: fuelTankT) => {
                 return <FuelSelection key={fuel.id + " fuelSelect"} configIndex={configIndex} fuelTank={fuel} aircraft={aircraft} setAircraft={setAircraft} />
               })}
             </tbody>
@@ -356,14 +356,14 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
             <thead>
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
-                <th style={{ width: "10rem" }}>Name</th>
-                <th style={{ width: "3rem" }}>{`Arm (${units.lengthUnits})`}</th>
-                <th style={{ width: "3rem" }}>{`Weight (${units.weightUnits})`}</th>
-                <th style={{ width: "3rem" }}>Count</th>
+                <th style={{ width: "9.5rem" }}>Name</th>
+                <th className="defaultForward" style={{ width: "5.5rem" }}>{`Arm (${units.lengthUnits})`}</th>
+                <th style={{ width: "9.5rem" }}>{`Weight (${units.weightUnits})`}</th>
+                <th style={{ width: "5rem" }}>Count</th>
               </tr>
             </thead>
             <tbody>
-              {getSortedByArm(aircraft.equipment).map((equipment: equipmentT) => {
+              {aircraft.equipment.map((equipment: equipmentT) => {
                 return <EquipmentSelection key={equipment.id + " equipSelect"} configIndex={configIndex} equipment={equipment} aircraft={aircraft} setAircraft={setAircraft} />
               })}
             </tbody>

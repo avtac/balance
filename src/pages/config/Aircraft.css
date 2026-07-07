@@ -1,38 +1,31 @@
 .rows {
   display: grid;
   max-width: 25rem;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 10rem 1fr 8rem 1fr;
+  align-items: center;
   gap: 8px;
 
-  @media (max-width: 580px) {
-    grid-template-columns: 1fr;
-
-    h3 {
-      margin: .2rem;
-    }
+  @media (max-width: 640px) {
+    grid-template-columns: 10rem 1fr;
   }
 
   input {
-    min-width: 10.4rem;
-    max-width: 10.4rem;
+    width: 8rem;
   }
 }
 
 #aircraftSelectRow {
-  margin: 3px;
-  display: grid;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 5px;
-
-  @media (max-width: 580px) {
-    grid-template-columns: auto 8rem;
-    align-items: center;
-  }
 
   #selector {
     display: grid;
-    grid-template-columns: 5rem 1fr;
+    grid-template-columns: auto 1fr;
     justify-content: space-between;
     max-width: 20rem;
+    gap: 6px;
 
     label {
       margin: 0px 3px;
@@ -40,7 +33,11 @@
       margin: auto;
     }
 
-    @media (max-width: 580px) {
+    select {
+      min-width: 10rem;
+    }
+
+    @media (max-width: 400px) {
       grid-template-columns: 1fr;
     }
   }
@@ -51,7 +48,7 @@
     justify-content: space-between;
     gap: 5px;
 
-    @media (max-width: 580px) {
+    @media (max-width: 700px) {
       grid-template-columns: 8rem;
     }
   }
@@ -59,7 +56,7 @@
 
 #aircraftMergeHolder {
   display: flex;
-  justify-content: start;
+  justify-content: space-between;
   gap: 5px;
 
   #aircraftCopyRow {

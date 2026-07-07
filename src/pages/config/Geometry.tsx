@@ -5,10 +5,10 @@ import { Subregion } from "../../Layout";
 import { type regionT, type regionPointT, type weightLimitT, type aircraftProps, type aircraftT, type nameProps, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { roundNumber } from "../../utility";
-import { faX } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const availableStyles = [['solid', ''], ['dashed', '1 1'], ['dotted', '.3 1'], ['dot dash', '3 2 .4 2']]
+const availableStyles = [['Solid', ''], ['Dashed', '1 1'], ['Dotted', '.3 1'], ['Dot Dash', '3 2 .4 2']]
 
 interface weightLimitProps extends aircraftProps {
   limit: weightLimitT
@@ -74,7 +74,7 @@ function WeightLimit({ limit, aircraft, setAircraft }: weightLimitProps): ReactN
         </select>
       </td>
       <td>
-        <button onClick={removeLimit}><FontAwesomeIcon icon={faX} /></button>
+        <button onClick={removeLimit}><FontAwesomeIcon icon={faXmark} /></button>
       </td>
     </tr>
   );
@@ -129,7 +129,7 @@ function WeightRegionRow({ regionPoint, aircraft, setAircraft, regionIndex, inde
       </td>
       <td>
         {aircraft.limits.regions[regionIndex].data.length > 3 &&
-          <button onClick={deletePoint}><FontAwesomeIcon icon={faX} /></button>}
+          <button onClick={deletePoint}><FontAwesomeIcon icon={faXmark} /></button>}
       </td>
       <td>
         {<button className="addButton" onClick={addPoint}></button>}
@@ -175,28 +175,30 @@ function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): Rea
 
   const name = region.name;
   return (
-    <div className="weightRegion">
-      <div className="title">
-        <input
-          id={`geometryRegionName-${region.id}`}
-          placeholder="Name"
-          defaultValue={name}
-          onChange={e => setValue('name', e.target.value)} />
-        <input
-          id={`geometryRegionColor-${region.id}`}
-          type="color"
-          value={region.color}
-          onChange={e => setColor(e.target.value)} />
-        <select
-          id={`geometryRegionStyle-${region.id}`}
-          value={region.lineStyle}
-          onChange={e => setValue('lineStyle', e.target.value)}>
-          {availableStyles.map((style: string[]) =>
-            <option key={style[0]} value={style[1]}>{style[0]}</option>
-          )}
-        </select>
-        <button onClick={removeRegion}><FontAwesomeIcon icon={faX} /></button>
-      </div>
+    <details className="weightRegion">
+      <summary style={{ width: "100%", display: 'flex', justifyContent: 'space-between', alignItems: "center", cursor: 'pointer' }}>
+        <div className="title">
+          <input
+            id={`geometryRegionName-${region.id}`}
+            placeholder="Name"
+            defaultValue={name}
+            onChange={e => setValue('name', e.target.value)} />
+          <input
+            id={`geometryRegionColor-${region.id}`}
+            type="color"
+            value={region.color}
+            onChange={e => setColor(e.target.value)} />
+          <select
+            id={`geometryRegionStyle-${region.id}`}
+            value={region.lineStyle}
+            onChange={e => setValue('lineStyle', e.target.value)}>
+            {availableStyles.map((style: string[]) =>
+              <option key={style[0]} value={style[1]}>{style[0]}</option>
+            )}
+          </select>
+          <button onClick={removeRegion}><FontAwesomeIcon icon={faXmark} /></button>
+        </div>
+      </summary>
       <table className="regionTable">
         <tbody>
           <tr>
@@ -215,7 +217,7 @@ function WeightRegion({ region, aircraft, setAircraft }: weightRegionProps): Rea
           })}
         </tbody>
       </table>
-    </div>
+    </details>
   );
 }
 
@@ -253,31 +255,43 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
   return (
     <>
       <Subregion id="limits">
-        <table className="tableData">
-          <tbody>
-            <tr>
-              <th>Name</th>
-              <th>Weight Limit ({units.weightUnits})</th>
-              <th>Color</th>
-              <th>Style</th>
-              <th></th>
-            </tr>
-            {aircraft.limits.limits.map((limit: weightLimitT) => {
-              return <WeightLimit
-                key={limit.id}
-                limit={limit}
-                aircraft={aircraft}
-                setAircraft={setAircraft} />
-            })}
-          </tbody>
-        </table>
-        <button onClick={() => addLimit()}>Add Limit</button>
+        <details open>
+          <summary id='title'>
+            <h3>Limits</h3>
+            <button onClick={addLimit}><FontAwesomeIcon icon={faPlus} /></button>
+          </summary>
+          <table className="tableData sortedTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th className="defaultForward">Weight Limit ({units.weightUnits})</th>
+                <th className="noSort">Color</th>
+                <th className="noSort">Style</th>
+                <th className="noSort"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {aircraft.limits.limits.map((limit: weightLimitT) => {
+                return <WeightLimit
+                  key={limit.id}
+                  limit={limit}
+                  aircraft={aircraft}
+                  setAircraft={setAircraft} />
+              })}
+            </tbody>
+          </table>
+        </details>
       </Subregion>
       <Subregion id="regions">
-        {aircraft.limits.regions.map((region: regionT) => (
-          <WeightRegion key={region.id} region={region} aircraft={aircraft} setAircraft={setAircraft} />
-        ))}
-        <button onClick={addRegion}>Add Region</button>
+        <details open>
+          <summary id='title'>
+            <h3>Regions</h3>
+            <button onClick={addRegion}><FontAwesomeIcon icon={faPlus} /></button>
+          </summary>
+          {aircraft.limits.regions.map((region: regionT) => (
+            <WeightRegion key={region.id} region={region} aircraft={aircraft} setAircraft={setAircraft} />
+          ))}
+        </details>
       </Subregion>
     </>
   );
