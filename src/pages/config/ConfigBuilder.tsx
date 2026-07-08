@@ -197,7 +197,7 @@ function ConfigBuilder() {
 
   return (
     <>
-      <Header />
+      <Header title='Balance Config' />
       <section id="content">
         <UnitContext value={config.setup}>
           <div className='panel' id='leftPanel'>

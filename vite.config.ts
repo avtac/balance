@@ -30,8 +30,8 @@ export default defineConfig({
     includeAssets: ['favicon.ico'],
     strategies: 'generateSW',
     manifest: {
-      name: "Balancr",
-      short_name: "Balancr",
+      name: "Balance",
+      short_name: "Balance",
       icons: [
         {
           "src": "/pwa-192x192.png",

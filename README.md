@@ -1,11 +1,11 @@
-# Balancr
+# Balance
 
 <picture>
-  <img height="100px" src="public/favicon.svg" alt="Balancr Logo">
+  <img height="100px" src="public/favicon.svg" alt="Balance Logo">
 </picture>
 
 > [!NOTE]
-> Developers of Balancr do not take any responsibility for incorrect calculations
+> Developers of Balance do not take any responsibility for incorrect calculations
 > that may lead to exceeding aircraft limitations. Using this planning tool designed
 > not substitute sound pilot judgement, confirm all calculations with your
 > aircraft POH.
@@ -14,7 +14,7 @@
 > This is in early development, it is not guaranteed if any that configuration
 > files will work in future versions.
 
-Balancr is a tool to help pilots calculate their aircraft's weight and balance.
+Balance is a tool to help pilots calculate their aircraft's weight and balance.
 This is designed to allow users or organizations to create configuration files
 for their aircraft and share that with anyone flying their aircraft.
 

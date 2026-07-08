@@ -1,4 +1,4 @@
-import './Balancr.css'
+import './Balance.css'
 import { MultiPane } from '../../Layout'
 import Diagram from '../../Diagram'
 import Graph from '../../Graph.tsx'
@@ -66,7 +66,7 @@ function Warning({ display, text }: warningProps): ReactNode {
   )
 }
 
-function Balancr() {
+function Balance() {
   const defaultValue = {} as configT;
 
   let storageConfig: configT = defaultValue;
@@ -153,7 +153,7 @@ function Balancr() {
   const changed = checkConfigChanged(config)
   return (
     <>
-      <Header />
+      <Header title="Balance" />
       <Warning text={"Config has changed and does not match original"} display={changed} />
       <section id="content">
         <UnitContext value={config.setup}>
@@ -211,4 +211,4 @@ function Balancr() {
   )
 }
 
-export default Balancr;
+export default Balance;

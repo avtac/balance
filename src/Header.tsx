@@ -20,8 +20,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   deferredEvent = e as BeforeInstallPromptEvent;
 });
 
-function Header(): ReactNode {
-  const title = "Balancr"
+function Header({ title }: { title: string }): ReactNode {
   return (
     <header id='header'>
       <nav>
