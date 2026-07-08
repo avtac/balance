@@ -13,15 +13,16 @@ jobs:
    runs-on: ubuntu-latest
   
       steps:
-      - uses: actions/checkout@v4
+      - name: Checkout branch
+        uses: actions/checkout@v4
       - name: Use Node ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
-      - run: npm ci
-      - run: npm run build --if-present
-      - run: npm test
+        run: npm ci
+        run: npm run build --if-present
+        run: npm test
 
       - name: Upload static files as artifact
         id: deployment
