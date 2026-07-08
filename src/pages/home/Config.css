@@ -64,48 +64,28 @@ dialog {
 }
 
 dialog.addRemoveDialog {
-  top: 0rem;
-  bottom: 0rem;
-  left: 2rem;
-  width: 8rem;
+  bottom: 2.5rem;
+  left: anchor(left);
 
   button {
-    width: 7rem;
-  }
-}
-
-@media (max-width: 625px) {
-  dialog.addRemoveDialog {
-    bottom: 2.5rem;
-    top: unset;
-    left: calc(-10rem + 10px);
-    width: 10rem;
+    width: fit-content;
+    text-wrap: nowrap;
   }
 }
 
 dialog.addRemoveDialog::before {
   content: '';
   position: absolute;
-  border-right: 10px solid var(--dialog-border);
-  border-bottom: 10px solid transparent;
-  border-top: 10px solid transparent;
   /* Color and size of the arrow */
 
   width: 0px;
   height: 0px;
-  transform: translateX(-50%);
-  left: -7px;
-  bottom: calc(50% - 10px);
-
-  @media (max-width: 625px) {
-    border-bottom: unset;
-    border-top: 10px solid var(--dialog-border);
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    transform: translateY(-50%);
-    left: calc(10rem - 10px);
-    top: calc(100% + 7px);
-  }
+  border-top: 10px solid var(--dialog-border);
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  transform: translateY(-50%);
+  right: 4px;
+  bottom: -16px;
 }
 
 dialog:has(.equipmentEdit)::before {
@@ -155,10 +135,10 @@ dialog:has(.equipmentEdit) {
 
   tr {
     display: grid;
-    grid-template-columns: 2rem minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 6rem) 2rem;
+    grid-template-columns: 3rem minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 6rem) 2rem;
 
     @media (max-width: 450px) {
-      grid-template-columns: 2rem minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 6rem) 2rem;
+      grid-template-columns: 3rem minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 6rem) 2rem;
     }
   }
 }
@@ -166,40 +146,40 @@ dialog:has(.equipmentEdit) {
 #seatConfigTable {
   tr {
     display: grid;
-    grid-template-columns: 2rem minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 6rem) 2rem;
+    grid-template-columns: 3rem minmax(4rem, 9.5rem) minmax(3rem, 6rem) minmax(4rem, 10.5rem) minmax(3rem, 7rem) minmax(4rem, 7rem) 2rem;
 
     @media (max-width: 450px) {
-      grid-template-columns: 2rem minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 6rem) 2rem;
+      grid-template-columns: 2rem minmax(4rem, 9.5rem) minmax(3rem, 6rem) minmax(4rem, 6rem) 2rem;
     }
   }
 }
 
 #cargoConfigTable {
   tr {
-    grid-template-columns: 2rem minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 10rem) minmax(4rem, 6rem) 2rem;
+    grid-template-columns: 3rem minmax(4rem, 9.5rem) minmax(3rem, 6rem) minmax(4rem, 10.5rem) minmax(4rem, 7rem) 2rem;
 
     @media (max-width: 450px) {
-      grid-template-columns: 2rem minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 6rem) 2rem;
+      grid-template-columns: 3rem minmax(4rem, 9.5rem) minmax(3rem, 6rem) minmax(4rem, 6rem) 2rem;
     }
   }
 }
 
 #fuelConfigTable {
   tr {
-    grid-template-columns: minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(3rem, 6rem) minmax(4rem, 10rem) minmax(4rem, 6rem) auto;
+    grid-template-columns: minmax(4rem, 9.5rem) minmax(3rem, 6rem) minmax(3rem, 9rem) minmax(4rem, 14rem) minmax(4rem, 6rem) auto;
 
     @media (max-width: 450px) {
-      grid-template-columns: minmax(4rem, 10rem) minmax(3rem, 6rem) minmax(4rem, 10rem);
+      grid-template-columns: minmax(4rem, 9.5rem) minmax(3rem, 6rem) minmax(4rem, 10rem);
     }
   }
 }
 
 #equipmentConfigTable {
   tr {
-    grid-template-columns: 2rem minmax(4rem, 10rem) minmax(3rem, 5rem) minmax(4rem, 7rem) minmax(4rem, 5rem) minmax(4rem, 9rem);
+    grid-template-columns: 3rem minmax(4rem, 9.5rem) minmax(3rem, 6rem) minmax(4rem, 7rem) minmax(4rem, 5rem) minmax(4rem, 9rem);
 
     @media (max-width: 450px) {
-      grid-template-columns: 2rem minmax(4rem, 10rem) minmax(4rem, 5rem) minmax(4rem, 9rem);
+      grid-template-columns: 3rem minmax(4rem, 9.5rem) minmax(4rem, 6rem) minmax(4rem, 9rem);
     }
   }
 }

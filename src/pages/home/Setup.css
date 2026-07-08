@@ -2,18 +2,22 @@
   display: flex;
   justify-content: space-between;
 
-  select {
+  label {
     margin: 0px 6px;
-    width: 14rem;
+  }
+
+  select {
+    width: 13rem;
   }
 
   #buttons {
     display: grid;
     grid-template-columns: 8rem;
+    align-items: center;
     gap: 6px;
   }
 
-  @media (max-width: 580px) {
+  @media (max-width: 680px) {
     display: block;
   }
 }

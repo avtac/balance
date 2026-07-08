@@ -59,7 +59,7 @@ h2 {
 
   tr {
     display: grid;
-    grid-template-columns: minmax(8rem, 16rem) minmax(4rem, 7rem) minmax(4rem, 7rem) minmax(5rem, 9rem);
+    grid-template-columns: minmax(8rem, 9.5rem) minmax(4rem, 9.5rem) minmax(4rem, 9rem) minmax(5rem, 9rem);
   }
 
   .passengerLoadingWeight,
@@ -89,13 +89,19 @@ h2 {
   }
 }
 
+#cargo {
+  tr {
+    grid-template-columns: minmax(8rem, 9.5rem) minmax(4rem, 9.5rem) minmax(4rem, 9rem);
+  }
+}
+
 #fuel {
   tr {
-    grid-template-columns: minmax(7rem, 14rem) minmax(3rem, 9rem) minmax(3rem, 10rem) minmax(3rem, 9rem);
+    grid-template-columns: minmax(7rem, 9.5rem) minmax(3rem, 10rem) minmax(3rem, 10rem) minmax(3rem, 10rem);
   }
 
   @media (max-width: 450px) {
-    grid-template-columns: minmax(7rem, 14rem) minmax(3rem, 9rem) minmax(3rem, 9rem);
+    grid-template-columns: minmax(7rem, 9.5rem) minmax(3rem, 10rem) minmax(3rem, 9rem);
 
     .narrowFilter {
       display: none;

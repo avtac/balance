@@ -179,6 +179,18 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
     input.click();
   }
 
+  function deleteConfig(): void {
+    const configsData = localStorage.getItem(uploadedConfigs);
+    if (!configsData) return;
+    const configs: configT[] = JSON.parse(configsData);
+    const index = configs.findIndex(c => c.id == config.id);
+    configs.splice(index, 1);
+    localStorage.setItem(uploadedConfigs, JSON.stringify(configs));
+
+    if (configs.length > 0)
+      setConfig(configs[0])
+  }
+
   function selectConfig(configId: string): void {
     const savedConfigsString = localStorage.getItem(uploadedConfigs);
     if (!savedConfigsString) return;
@@ -219,15 +231,16 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
 
   return (
     <>
-      <Subregion id="balancr-configSelectRow">
+      <Subregion id="balance-configSelectRow">
         <div>
-          <label htmlFor='configFileSelect'>Active Config File</label>
+          <h3>Config File</h3>
           <select id="configFileSelect" value={config.id} onChange={e => selectConfig(e.target.value)}>
             {availableConfigs}
           </select>
         </div>
         <div id="buttons">
           <button onClick={openFile}>Upload Config</button>
+          <button onClick={deleteConfig}>Remove Config</button>
         </div>
       </Subregion>
       <Subregion id='aircraftSelect'>

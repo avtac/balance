@@ -43,7 +43,7 @@
     }
   }
 
-  @media (max-width: 580px) {
+  @media (max-width: 660px) {
     grid-template-columns: auto auto;
     justify-content: start;
     height: 60px;
@@ -52,7 +52,7 @@
       font-size: 2rem;
       margin: auto .5rem;
 
-      img {
+      span {
         display: none;
       }
     }
@@ -61,7 +61,8 @@
       width: 4rem;
 
       button {
-        padding: 4px 0px;
+        padding: 2px 0px;
+        width: 100%;
       }
     }
   }

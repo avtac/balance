@@ -476,7 +476,7 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
   const [emptyWeight, emptyArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config);
   const [opsWeight, opsArm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
 
-  let seatRows = getSortedByArm(aircraft.seats)
+  let seatRows = aircraft.seats
     .filter(seat => !filter || aircraft.aircraftConfigs[configIndex].seats.some(s => s === seat.id))
     .map((seat: seatT) => {
       return <SeatSelection
@@ -490,7 +490,7 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
         seat={seat} />
     })
 
-  let cargoRows = getSortedByArm(aircraft.cargoAreas)
+  let cargoRows = aircraft.cargoAreas
     .filter(cargoArea => !filter || aircraft.aircraftConfigs[configIndex].cargoAreas.some(c => c === cargoArea.id))
     .map((cargo: cargoAreaT) => {
       return <CargoSelection
@@ -504,7 +504,7 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
         airConfigIndex={configIndex} />
     })
 
-  let fuelRows = getSortedByArm(aircraft.fuelTanks)
+  let fuelRows = aircraft.fuelTanks
     .filter(fuelTank => !filter || !(fuelTank.removable && !aircraft.aircraftConfigs[configIndex].fuelTanks.some(f => f === fuelTank.id)))
     .map((fuel: fuelTankT) => {
       return <FuelSelection
@@ -517,7 +517,7 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
         airConfigIndex={configIndex} />
     })
 
-  let equipmentRows = getSortedByArm(aircraft.equipment)
+  let equipmentRows = aircraft.equipment
     .map((equipment: equipmentT) => {
       return <EquipmentSelection
         key={equipment.id + " equipSelect"}
@@ -529,9 +529,9 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
 
   return (
     <>
-      <Subregion id='balancr-configTitle'>
+      <Subregion id='balance-configTitle'>
         <div>
-          <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
+          <h3>{aircraft.operationConfigs[opsConfigIndex].name}</h3>
           <label htmlFor='configFilter'>Filter Rows</label>
           <input id='configFilter' type='checkbox' checked={filter} onChange={(e) => setFilter(e.target.checked)} />
         </div>
@@ -553,8 +553,8 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th>Name</th>
-                <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
-                <th className='narrowFilter'>{`Max Weight (${units.weightUnits})`}</th>
+                <th className='narrowFilter defaultForward'>{`Arm (${units.lengthUnits})`}</th>
+                <th className='narrowFilter'>{`Max Wt. (${units.weightUnits})`}</th>
                 <th># of Seats</th>
                 <th>Ops Load</th>
                 <th className="noSort"></th>
@@ -571,8 +571,8 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
               <tr>
                 <th><FontAwesomeIcon icon={faCheck} /></th>
                 <th>Name</th>
-                <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
-                <th>{`Max Weight (${units.weightUnits})`}</th>
+                <th className='narrowFilter defaultForward'>{`Arm (${units.lengthUnits})`}</th>
+                <th>{`Max Wt. (${units.weightUnits})`}</th>
                 <th>Ops Load</th>
                 <th className="noSort"></th>
               </tr>
@@ -582,12 +582,29 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
             </tbody>
           </table>
         </Subregion>
+        <Subregion id='equipmentConfigTable' name={"Equipment"}>
+          <table className="tableData sortedTable">
+            <thead>
+              <tr>
+                <th><FontAwesomeIcon icon={faCheck} /></th>
+                <th>Name</th>
+                <th className='narrowFilter defaultForward'>{`Arm (${units.lengthUnits})`}</th>
+                <th className='narrowFilter'>{`Wt. (${units.weightUnits})`}</th>
+                <th>Count</th>
+                <th>{`Total Wt. (${units.weightUnits})`}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {equipmentRows}
+            </tbody>
+          </table>
+        </Subregion>
         <Subregion id='fuelConfigTable' name={"Fuel Tanks"}>
           <table className="tableData sortedTable">
             <thead>
               <tr>
                 <th>Name</th>
-                <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
+                <th className='narrowFilter defaultForward'>{`Arm (${units.lengthUnits})`}</th>
                 <th>{`Max Fuel (${units.fuelUnits})`}</th>
                 <th>{`Unusable Fuel (${units.fuelUnits})`}</th>
                 <th>Priority</th>
@@ -596,23 +613,6 @@ function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig 
             </thead>
             <tbody>
               {fuelRows}
-            </tbody>
-          </table>
-        </Subregion>
-        <Subregion id='equipmentConfigTable' name={"Equipment"}>
-          <table className="tableData sortedTable">
-            <thead>
-              <tr>
-                <th><FontAwesomeIcon icon={faCheck} /></th>
-                <th>Name</th>
-                <th className='narrowFilter'>{`Arm (${units.lengthUnits})`}</th>
-                <th className='narrowFilter'>{`Weight (${units.weightUnits})`}</th>
-                <th>Count</th>
-                <th>{`Total Weight (${units.weightUnits})`}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {equipmentRows}
             </tbody>
           </table>
         </Subregion>

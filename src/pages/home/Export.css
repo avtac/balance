@@ -5,40 +5,41 @@
   border: unset;
 }
 
-#exportButtonHolder {
-  display: grid;
-  grid-template-columns: 10rem 8rem 8rem;
-  gap: 6px;
+#exportTitle {
+  display: flex;
+  justify-content: space-between;
+
+  select {
+    width: 13rem;
+  }
+
+  #exportButtonHolder {
+    display: grid;
+    grid-template-columns: 8rem;
+    align-items: center;
+    gap: 6px;
+  }
 }
 
 #inputsHolder {
-  display: grid;
-  grid-template-columns: auto auto;
-
-  @media (max-width: 400px) {
-    grid-template-columns: auto;
-  }
-
-  grid-auto-flow: row;
+  display: flex;
+  flex-wrap: wrap;
   gap: 5px;
 }
 
 #inputsHolder>div {
   display: grid;
-  grid-template-columns: auto 10rem;
+  grid-auto-flow: row;
+  grid-template-rows: auto auto;
   gap: 6px;
   margin: 4px 0px;
-
-  @media (max-width: 700px) {
-    grid-template-columns: auto;
-  }
 
   label {
     margin: auto 0px;
   }
 
   input {
-    max-width: 100%;
+    max-width: 10.2rem;
     min-width: 4rem;
   }
 }
@@ -46,6 +47,10 @@
 #iframeHolder {
   overflow-y: auto;
   min-height: 25rem;
+}
+
+#exportButton {
+  width: 100%;
 }
 
 #scaleHolder {

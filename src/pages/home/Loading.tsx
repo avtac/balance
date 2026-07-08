@@ -749,7 +749,7 @@ function Title({ aircraft, selectedOpsConfig, loading, setLoading }: titleProps)
   return (
     <>
       <div id='loadingTitle'>
-        <h2>{aircraft.operationConfigs[opsConfigIndex].name}</h2>
+        <h3>{aircraft.operationConfigs[opsConfigIndex].name}</h3>
         <div id='loaders'>
           <PassengerLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
           <CargoLoader aircraft={aircraft} selectedOpsConfig={selectedOpsConfig} loading={loading} setLoading={setLoading} />
@@ -828,7 +828,7 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
 
   return (
     <>
-      <Subregion id='balancr-configTitle'>
+      <Subregion id='balance-configTitle'>
         <Title
           aircraft={aircraft}
           selectedOpsConfig={selectedOpsConfig}
@@ -841,9 +841,9 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Passenger Count</th>
-                <th>Avg Weight ({units.weightUnits})</th>
-                <th>Total Weight ({units.weightUnits})</th>
+                <th>Passengers</th>
+                <th>Avg Wt. ({units.weightUnits})</th>
+                <th>Total Wt. ({units.weightUnits})</th>
               </tr>
             </thead>
             <tbody>
@@ -856,8 +856,8 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Cargo Weight ({units.weightUnits})</th>
-                <th>Total Weight ({units.weightUnits})</th>
+                <th>Cargo Wt. ({units.weightUnits})</th>
+                <th>Total Wt. ({units.weightUnits})</th>
               </tr>
             </thead>
             <tbody>
@@ -871,8 +871,8 @@ function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoad
               <tr>
                 <th>Name</th>
                 <th>Fuel Load ({units.fuelUnits})</th>
-                <th>Consumed Fuel ({units.fuelUnits})</th>
-                <th className='narrowFilter'>Landing Fuel ({units.fuelUnits})</th>
+                <th>Trip Fuel ({units.fuelUnits})</th>
+                <th className='narrowFilter'>Land Fuel ({units.fuelUnits})</th>
               </tr>
             </thead>
             <tbody>

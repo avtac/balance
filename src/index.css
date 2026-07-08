@@ -282,6 +282,14 @@ button:active:not(.hiddenButton) {
     width: 200px;
     min-width: 0px;
   }
+
+  @media (max-width: 340px) {
+    width: 100px;
+
+    #diagramHolder {
+      display: none;
+    }
+  }
 }
 
 @media (max-width: 1200px) and (min-width: 500px) {
@@ -304,12 +312,15 @@ button:active:not(.hiddenButton) {
     display: grid;
     height: fit-content;
     width: calc(100svw - var(--margin-size) * 2);
-    /* height: calc(50svh - var(--margin-size) * 2); */
     top: var(--margin-size);
     right: var(--margin-size);
 
     transition-property: width, height, top, right;
     transition-duration: 300ms;
     transition-timing-function: ease-out;
+
+    #diagramHolder {
+      display: block;
+    }
   }
 }

@@ -617,27 +617,32 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
 
   return (
     <>
-      <Subregion id='exportButtonHolder'>
-        <select
-          id="templateSelect"
-          value={activeTemplate}
-          onChange={(e) => {
-            setTemplateSpecial(e.target.value);
-          }}>{options}</select>
-        <button
-          id="openFile"
-          onClick={() => openFile()}>Upload Template</button>
-        <button
-          id="deleteButton"
-          onClick={() => {
-            const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
-            const index = templates.findIndex(t => t.id === activeTemplate);
-            if (index >= 0) {
-              templates.splice(index, 1);
-              setTemplateSpecial(templates.length > 0 ? (templates[0].id ?? "") : "");
-              localStorage.setItem("savedTemplates", JSON.stringify(templates));
-            }
-          }}>Delete Template</button>
+      <Subregion id='exportTitle'>
+        <div>
+          <h3>Export</h3>
+          <select
+            id="templateSelect"
+            value={activeTemplate}
+            onChange={(e) => {
+              setTemplateSpecial(e.target.value);
+            }}>{options}</select>
+        </div>
+        <div id='exportButtonHolder'>
+          <button
+            id="openFile"
+            onClick={() => openFile()}>Upload Template</button>
+          <button
+            id="deleteButton"
+            onClick={() => {
+              const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
+              const index = templates.findIndex(t => t.id === activeTemplate);
+              if (index >= 0) {
+                templates.splice(index, 1);
+                setTemplateSpecial(templates.length > 0 ? (templates[0].id ?? "") : "");
+                localStorage.setItem("savedTemplates", JSON.stringify(templates));
+              }
+            }}>Delete Template</button>
+        </div>
       </Subregion>
 
       {inputParts && inputParts.length > 0 && manualEntries}
@@ -699,7 +704,7 @@ function CustomIframe({ body, head, ...props }: customIframeProps) {
       <Subregion id="iframeButton">
         <button
           id="exportButton"
-          onClick={() => saveIframe()}>Save</button>
+          onClick={() => saveIframe()}>Export Form</button>
       </Subregion>
       <Subregion id="iframeHolder">
         <div id="scaleHolder">
