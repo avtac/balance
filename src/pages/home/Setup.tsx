@@ -279,6 +279,9 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
         macAvailable={selectedAircraftIndex >= 0 ? (config.aircraft[selectedAircraftIndex].config.mac != 0 && config.aircraft[selectedAircraftIndex].config.leadingEdgeMAC != 0) : false}
         config={config}
         setConfig={setConfig} />
+      <Subregion>
+        <p><b>NOTICE:</b> Balance is an advisory tool for pilots, using this tool does not relieve the pilot of confirming all calculations and using sound pilot judgement. Developers do not take responsibility for any erroneous calculations.</p>
+      </Subregion>
     </>
   )
 }
