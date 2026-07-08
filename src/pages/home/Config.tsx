@@ -466,9 +466,9 @@ interface ConfigProps extends aircraftProps, loadingProps {
 }
 
 function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig }: ConfigProps & nameProps): ReactElement {
-  if (!aircraft) return (<></>);
   const units = useContext(UnitContext);
   const [filter, setFilter] = useState(true);
+  if (!aircraft) return (<></>);
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);

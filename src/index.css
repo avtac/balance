@@ -271,7 +271,7 @@ button:active:not(.hiddenButton) {
   flex-direction: column;
   max-width: 70rem;
   min-width: 25rem;
-  min-height: 0px;
+  min-height: 60px;
 
   @media (max-width: 1200px) {
     position: absolute;

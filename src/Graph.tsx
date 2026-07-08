@@ -542,6 +542,46 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
     });
 
   const units = useContext(UnitContext);
+  const configAreaPoints = useRef("");
+
+  let limits: limitsT = {
+    minX: 0,
+    maxX: 1,
+    minY: 0,
+    maxY: 1,
+    xRatio: 1,
+    yRatio: 1
+  };
+
+  useMemo(() => {
+    if (aircraft && selectedConfig)
+      configAreaPoints.current = generateConfigArea(aircraft, limits, selectedConfig, units).join(" ");
+  }, [aircraft, selectedConfig, limits]);
+
+  const [mousePos, setMousePos] = useState({ x: -1, y: -1 });
+  const [mouseIn, setMouseIn] = useState(false);
+  const [showCoords, setShowCoords] = useState(false);
+  const ref: RefObject<(SVGSVGElement | null)> = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    let timerId: number;
+
+    const handleKey = () => {
+      timerId = setTimeout(() => {
+        setShowCoords(!showCoords);
+      }, 500); // 500ms threshold
+    };
+    ref.current.addEventListener('touchstart', handleKey, { passive: true });
+
+    const clearID = () => clearTimeout(timerId);
+    ref.current.addEventListener('touchend', clearID);
+    return () => {
+      document.removeEventListener('touchstart', handleKey);
+      document.removeEventListener('touchend', clearID);
+    }
+  }, [ref, showCoords]);
+
+
   if (aircraft === undefined) return;
   let data: aircraftLimitsT = JSON.parse(JSON.stringify(aircraft.limits));
 
@@ -554,7 +594,6 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
   data.limits = [...data.limits.map(a => {
     return { ...a, weight: convertWeightUnit(a.weight ?? 0, baseWeightUnit, units.weightUnits) }
   })];
-  const configAreaPoints = useRef("");
 
   // Add any desired points to graph
   const points: { name: string, func: (arg0: aircraftT) => plotPointT }[] = []
@@ -700,7 +739,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
     minY = Math.min(...tmpPoints.map(p => p.weight), minY) ?? minY;
   }
 
-  const limits: limitsT = {
+  limits = {
     minX: minX,
     maxX: maxX,
     minY: minY,
@@ -708,11 +747,6 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
     xRatio: (width - graphInsetPadding * 2 - padding * 2) / (maxX - minX),
     yRatio: (height - graphInsetPadding * 2 - padding * 2) / (maxY - minY)
   };
-
-  useMemo(() => {
-    if (selectedConfig)
-      configAreaPoints.current = generateConfigArea(aircraft, limits, selectedConfig, units).join(" ");
-  }, [aircraft, selectedConfig, limits]);
 
   // Convert interval to spacing of 1, 2, or 5 * 10^x
   function getCleanInterval(width: number, desiredTicks: number): number {
@@ -767,9 +801,6 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
 
   const cleanLimit: cleanLimitsT[][] = cleanLimits(data.limits, limits);
 
-  const [mousePos, setMousePos] = useState({ x: -1, y: -1 });
-  const [mouseIn, setMouseIn] = useState(false);
-  const [showCoords, setShowCoords] = useState(false);
   function setMouse(e: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) {
     const graph = document.getElementById("graph");
     if (!graph) return;
@@ -808,26 +839,6 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
       setShowCoords(!showCoords);
     }
   }
-
-  const ref: RefObject<(SVGSVGElement | null)> = useRef(null);
-  useEffect(() => {
-    if (!ref.current) return;
-    let timerId: number;
-
-    const handleKey = () => {
-      timerId = setTimeout(() => {
-        setShowCoords(!showCoords);
-      }, 500); // 500ms threshold
-    };
-    ref.current.addEventListener('touchstart', handleKey, { passive: true });
-
-    const clearID = () => clearTimeout(timerId);
-    ref.current.addEventListener('touchend', clearID);
-    return () => {
-      document.removeEventListener('touchstart', handleKey);
-      document.removeEventListener('touchend', clearID);
-    }
-  }, [ref, showCoords]);
 
   return (
     <svg

@@ -153,8 +153,33 @@ interface diagramProps {
 }
 
 function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, selectedOpsConfig }: diagramProps): ReactNode {
-  if (!aircraft) return (<></>);
   const [scale, setScale] = useState(1);
+  const units = useContext(UnitContext);
+  const [mousePos, setMousePos] = useState({ x: -1, y: -1 });
+  const [mouseIn, setMouseIn] = useState(false);
+  const [showCoords, setShowCoords] = useState(false);
+  const ref: RefObject<(SVGSVGElement | null)> = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    let timerId: number;
+
+    const handleKey = () => {
+      timerId = setTimeout(() => {
+        setShowCoords(!showCoords);
+      }, 500); // 500ms threshold
+    };
+    ref.current.addEventListener('touchstart', handleKey, { passive: true });
+
+    const clearID = () => clearTimeout(timerId);
+    ref.current.addEventListener('touchend', clearID);
+    return () => {
+      document.removeEventListener('touchstart', handleKey);
+      document.removeEventListener('touchend', clearID);
+    }
+  }, [ref, showCoords]);
+
+  if (!aircraft) return (<></>);
+
   let seats = [...aircraft.seats]
   let cargoAreas = [...aircraft.cargoAreas]
 
@@ -172,13 +197,19 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
       return aircraft.cargoAreas[cargoAreaIndex];
     }).filter(v => v != undefined);
   }
+  if (seats.length === 0 && cargoAreas.length === 0) return (<></>);
 
   const planePadding = 6;
-  let minArm = 0;
+  let minArm = Infinity;
   let maxArm = 0;
+  let minDisplacement = 0;
+  let maxDisplacement = 0;
   if (seats.length !== 0) {
     minArm = seats.reduce((min, item) => Math.min(min, item.arm), seats[0].arm);
     maxArm = seats.reduce((max, item) => Math.max(max, item.arm), seats[0].arm);
+
+    minDisplacement = seats.reduce((min, item) => Math.min(min, item.lateralDist - item.seatCount * seatSize / 2), seats[0].lateralDist - seats[0].seatCount * seatSize / 2);
+    maxDisplacement = seats.reduce((max, item) => Math.max(max, item.lateralDist + item.seatCount * seatSize / 2), seats[0].lateralDist + seats[0].seatCount * seatSize / 2);
   }
 
   if (cargoAreas.length !== 0) {
@@ -186,13 +217,10 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
     maxArm = Math.max(maxArm, cargoAreas.reduce((max, item) => Math.max(max, item.arm), cargoAreas[0].arm));
   }
 
-  let minDisplacement = seats.reduce((min, item) => Math.min(min, item.lateralDist - item.seatCount * seatSize / 2), seats[0].lateralDist - seats[0].seatCount * seatSize / 2);
-  let maxDisplacement = seats.reduce((max, item) => Math.max(max, item.lateralDist + item.seatCount * seatSize / 2), seats[0].lateralDist + seats[0].seatCount * seatSize / 2);
-
   const canvasPadding = 4;
   // Dimensions in inches of displayed aircraft
-  const planeRight = maxDisplacement + planePadding;
-  const planeLeft = minDisplacement - planePadding;
+  const planeRight = maxDisplacement - minDisplacement >= seatSize ? maxDisplacement + planePadding : seatSize / 2 + planePadding;
+  const planeLeft = maxDisplacement - minDisplacement >= seatSize ? minDisplacement - planePadding : -planeRight;
   const planeFront = minArm - planePadding - seatSize / 2;
   const planeBack = maxArm + planePadding + seatSize / 2;
   const planeLength = planeBack - planeFront;
@@ -272,10 +300,6 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
       width={planeWidth - planePadding * 2} />
   });
 
-  const units = useContext(UnitContext);
-  const [mousePos, setMousePos] = useState({ x: -1, y: -1 });
-  const [mouseIn, setMouseIn] = useState(false);
-  const [showCoords, setShowCoords] = useState(false);
   function setMouse(e: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) {
     const diagram = document.getElementById("aircraft");
     if (!diagram) return;
@@ -316,26 +340,6 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
     if (e.button === 2)
       setShowCoords(!showCoords);
   }
-
-  const ref: RefObject<(SVGSVGElement | null)> = useRef(null);
-  useEffect(() => {
-    if (!ref.current) return;
-    let timerId: number;
-
-    const handleKey = () => {
-      timerId = setTimeout(() => {
-        setShowCoords(!showCoords);
-      }, 500); // 500ms threshold
-    };
-    ref.current.addEventListener('touchstart', handleKey, { passive: true });
-
-    const clearID = () => clearTimeout(timerId);
-    ref.current.addEventListener('touchend', clearID);
-    return () => {
-      document.removeEventListener('touchstart', handleKey);
-      document.removeEventListener('touchend', clearID);
-    }
-  }, [ref, showCoords]);
 
   function setDiagramScale(e: React.WheelEvent<SVGSVGElement>) {
     if (e.ctrlKey || e.shiftKey) return;

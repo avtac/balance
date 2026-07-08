@@ -10,14 +10,18 @@ interface unitsProps extends configProps {
 }
 
 function Units({ config, setConfig, macAvailable }: unitsProps): ReactNode {
-  if (!config.id) return (<></>);
-  const index = fuelTypes.findIndex(t => t.density === config.setup.fuelDensity);
-  const [selectedDensity, setSelectedDensity] = useState(index >= 0 ? index : fuelTypes.length - 1);
-  const oldDensity = useRef(config.setup.fuelDensity);
+  const [selectedDensity, setSelectedDensity] = useState(fuelTypes.length - 1);
+  const oldDensity = useRef(6);
 
   useEffect(() => {
-    config.setup.useMAC = macAvailable;
+    if (config.id) {
+      config.setup.useMAC = macAvailable;
+      setSelectedDensity(index >= 0 ? index : fuelTypes.length - 1)
+      oldDensity.current = config.setup.fuelDensity;
+    }
   }, [])
+  if (!config.id) return (<></>);
+  const index = fuelTypes.findIndex(t => t.density === config.setup.fuelDensity);
 
   function setValue<T extends keyof setupT, V extends setupT[T]>(name: T, value: V): void {
     const tmp: configT = JSON.parse(JSON.stringify(config));
@@ -180,15 +184,24 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
   }
 
   function deleteConfig(): void {
-    const configsData = localStorage.getItem(uploadedConfigs);
-    if (!configsData) return;
-    const configs: configT[] = JSON.parse(configsData);
-    const index = configs.findIndex(c => c.id == config.id);
-    configs.splice(index, 1);
-    localStorage.setItem(uploadedConfigs, JSON.stringify(configs));
-
-    if (configs.length > 0)
-      setConfig(configs[0])
+    // Get Configs
+    const savedConfigsString = localStorage.getItem(uploadedConfigs);
+    if (!savedConfigsString) return;
+    const savedConfigs: { [key: string]: configT } = JSON.parse(savedConfigsString)
+    // Does it include the one to delete
+    if (!Object.keys(savedConfigs).includes(config.id)) return;
+    // Delete
+    delete savedConfigs[config.id];
+    localStorage.setItem(uploadedConfigs, JSON.stringify(savedConfigs));
+    // Set config to a different config
+    if (Object.keys(savedConfigs).length > 0) {
+      const foundConfigs: { id: string, name: string }[] = Object.entries(savedConfigs).map(([id, config]) => ({ id: id, name: config.name }));
+      setAvailableConfigList(foundConfigs);
+      selectConfig(Object.keys(savedConfigs)[0]);
+    } else {
+      setAvailableConfigList([]);
+      setConfig({} as configT);
+    }
   }
 
   function selectConfig(configId: string): void {
