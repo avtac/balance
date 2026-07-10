@@ -18,12 +18,45 @@ Balance is a tool to help pilots calculate their aircraft's weight and balance.
 This is designed to allow users or organizations to create configuration files
 for their aircraft and share that with anyone flying their aircraft.
 
-## Use/Install
+### Setup page
 
-I am planning to host this as a static website but at the moment it can only be
-used by building the project locally and hosting it on a python server.
+<img src="docs/images/balance-setup.png" alt="Balance Setup" width="400">
 
-### Building
+### Loading Page
+
+<img src="docs/images/balance-loading.png" alt="Balance Loading" width="400">
+
+### Export Page
+
+<img src="docs/images/balance-export.png" alt="Balance Export" width="400">
+
+Features include:
+
+- Quick-load passengers/cargo
+- Prioritized fuel tanks
+- Offline capability
+- User defined pdf export
+- Plain text configuration files
+- Multiple units
+- Separated operations loadout
+
+## Use
+
+You can use Balance now at [here](https://www.av-tac.com). It is also available as a PWA for [install](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing) and offline use.
+
+### Configurations
+
+Configuration files contain all information about the aircraft in terms of weight
+and balance. They can have multiple aircraft of varying types and includes all
+seats and cargo locations, possible equipment, aircraft layouts, fuel tanks (fixed
+or removable), balance envelopes, and weight limits.
+
+The configuration file can be edited in [Balance Config](https://www.av-tac.com/config).
+For further information checkout the docs on using the config builder are coming soon.
+
+## Building
+
+The app is built using a Vite build environment with React typescript.
 
 > [!NOTE]
 > `npm` is a prerequisite for building the project.
@@ -44,7 +77,13 @@ To run the python http server:
 $ python -m http.server 8000
 ```
 
-In your browser navigate to localhost:8000.
+In your browser navigate to `localhost:8000`.
+
+Alternatively, you can run the development version using the `run` command.
+
+``` bash
+$ npm run dev
+```
 
 ## Development
 
@@ -57,4 +96,5 @@ Code cleanup will also be welcomed.
 - [ ] Mobile device accessibility
 - [ ] Security of export
 - [ ] Optimize export page loading
+- [ ] Provide way to share configurations/templates
 
