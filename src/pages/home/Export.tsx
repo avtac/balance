@@ -13,6 +13,124 @@ import Diagram from '../../Diagram';
 import { Subregion } from '../../Layout';
 import dayjs from 'dayjs';
 
+interface templateBrowserProps {
+  setTemplate: (argv: string) => void;
+}
+
+interface templateDescription {
+  fileName: string;
+  name?: string;
+  description?: string;
+  primaryUse?: string;
+  expectedLimits?: string[]; // List of names of limits that are used
+  expectedRegions?: string[]; // List of names of regions that are used
+  usesMAC?: boolean;
+}
+
+// Available Templates: This is where the template data is stored so clients
+// have the information on what is available.
+// Add to this list with the appropriate information along with the template
+// in the public/templates folder to make more templates available
+
+const availableTemplates: templateDescription[] = [
+  {
+    fileName: "BasicTemplate.json",
+    name: "Basic JSON Template",
+    description: "Basic export template written using the json format.",
+    primaryUse: "Simple export"
+  },
+  {
+    fileName: "BasicTemplate.html",
+    name: "Basic HTML Template",
+    description: "Basic export template written using the html format.",
+    primaryUse: "Simple export"
+  }
+]
+
+function TemplateBrowser({ setTemplate }: templateBrowserProps) {
+  const ref: RefObject<null | HTMLDialogElement> = useRef(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(0);
+
+  async function addFile() {
+    const select = document.getElementById("templateSearchSelect") as HTMLSelectElement;
+    if (!select) return;
+    const fileName = availableTemplates[Number(select.value)].fileName;
+    const resp = await fetch(`templates/${fileName}`);
+    const data = await resp.text();
+    if (!data) return;
+    let newTemplate: templateT = { body: data, type: "html" };
+    try {
+      newTemplate = JSON.parse(data) as templateT;
+      newTemplate.type = "json";
+    } catch {
+      const t = (newTemplate.body as string).match(/<title>(?<name>.*)<\/title>/);
+      newTemplate.name = t?.groups?.name ?? "";
+    }
+    if (!validTemplate(data, newTemplate.type)) return;
+
+    newTemplate.id = crypto.randomUUID();
+    setTemplate(newTemplate.id);
+    const templates: templateT[] = JSON.parse(localStorage.getItem("savedTemplates") ?? "[]");
+    const index = templates.findIndex(t => t.id === newTemplate.id);
+    if (index < 0) templates.push(newTemplate);
+    else templates[index] = newTemplate;
+    localStorage.setItem("savedTemplates", JSON.stringify(templates));
+    if (ref.current)
+      ref.current.close();
+  }
+
+  const options = availableTemplates.map(
+    (v, i) => (<option key={v.fileName} value={i}>{v.name}</option>)
+  )
+
+  return (
+    <>
+      <button onClick={() => { if (ref.current) ref.current.showModal() }}>Browse Templates</button>
+      <dialog
+        ref={ref}
+        closedby='any'>
+        <div id='templateDownloadDialog'>
+          <div className='top'>
+            <select id='templateSearchSelect' onChange={e => setSelectedTemplate(Number(e.target.value))}>{options}</select>
+            <button onClick={addFile}>Get Template</button>
+          </div>
+          <h4>Description: </h4>
+          <p>{
+            availableTemplates[selectedTemplate].description
+              ? availableTemplates[selectedTemplate].description
+              : "None"
+          }</p>
+          <h4>Primary Use: </h4>
+          <p>{
+            availableTemplates[selectedTemplate].primaryUse
+              ? availableTemplates[selectedTemplate].primaryUse
+              : "None"
+          }</p>
+          <h4>Expected Limits: </h4>
+          {
+            availableTemplates[selectedTemplate].expectedLimits
+              ? <ul>{availableTemplates[selectedTemplate].expectedLimits.map(v => <li key={v}>{v}</li>)}</ul>
+              : <p>{"None"}</p>
+          }
+          <h4>Expected Regions: </h4>
+          {
+            availableTemplates[selectedTemplate].expectedRegions
+              ? <ul>{availableTemplates[selectedTemplate].expectedRegions.map(v => <li key={v}>{v}</li>)}</ul>
+              : <p>{"None"}</p>
+          }
+          <h4>Uses MAC: </h4>
+          <p>{
+            availableTemplates[selectedTemplate].usesMAC
+              ? "Yes"
+              : "No"
+          }</p>
+        </div>
+      </dialog>
+    </>
+  )
+}
+
+
 interface templateComponentT {
   type: (keyof HTMLElementTagNameMap);
   action?: ("function" | "manual");
@@ -628,6 +746,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
             }}>{options}</select>
         </div>
         <div id='exportButtonHolder'>
+          <TemplateBrowser setTemplate={setTemplateSpecial} />
           <button
             id="openFile"
             onClick={() => openFile()}>Upload Template</button>

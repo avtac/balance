@@ -15,9 +15,13 @@
 
   #exportButtonHolder {
     display: grid;
-    grid-template-columns: 8rem;
+    grid-template-columns: 8rem 8rem;
     align-items: center;
     gap: 6px;
+
+    @media (max-width: 580px) {
+      grid-template-columns: 8rem;
+    }
   }
 }
 
@@ -60,4 +64,29 @@
 
 :has(iframe) {
   color-scheme: light;
+}
+
+#templateDownloadDialog {
+  width: 30rem;
+  max-width: 80vw;
+  max-height: 80vh;
+  display: grid;
+  align-items: start;
+  align-content: start;
+  color: var(--text-h);
+  overflow: auto;
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  p {
+    text-indent: 1.5rem;
+  }
+
+  ul {
+    margin-block-start: .15em;
+    margin-block-end: .15em;
+  }
 }
