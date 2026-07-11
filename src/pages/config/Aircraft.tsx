@@ -13,7 +13,7 @@ interface aircraftConfigProps extends configProps {
 function getNewAircraft(): aircraftT {
   return {
     id: crypto.randomUUID(),
-    config: {
+    properties: {
       tailNumber: "",
       type: "",
       emptyArm: 0,
@@ -61,7 +61,7 @@ function AircraftMerging({ config, setConfig, selectedAircraft }: aircraftMergin
 
   const options = config.aircraft.map(a => {
     if (a.id === selectedAircraft) return;
-    return <option key={a.id} value={a.id}>{(a.config.type != "" ? a.config.type + ": " : "") + a.config.tailNumber}</option>;
+    return <option key={a.id} value={a.id}>{(a.properties.type != "" ? a.properties.type + ": " : "") + a.properties.tailNumber}</option>;
   });
 
   return (
@@ -88,7 +88,7 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
 
   function setValue<K extends keyof aircraftPropertiesT, V extends aircraftPropertiesT[K]>(key: K, value: V) {
     const tmp: configT = JSON.parse(JSON.stringify(config));
-    tmp.aircraft[aircraftIndex].config[key] = value;
+    tmp.aircraft[aircraftIndex].properties[key] = value;
     setConfig(tmp);
   }
 
@@ -118,8 +118,8 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
     setConfig(tmp);
   }
 
-  const options = config.aircraft.sort((a, b) => a.config.tailNumber.localeCompare(b.config.tailNumber)).map(a => {
-    return <option key={a.id} value={a.id}>{(a.config.type != "" ? a.config.type + ": " : "") + a.config.tailNumber}</option>
+  const options = config.aircraft.sort((a, b) => a.properties.tailNumber.localeCompare(b.properties.tailNumber)).map(a => {
+    return <option key={a.id} value={a.id}>{(a.properties.type != "" ? a.properties.type + ": " : "") + a.properties.tailNumber}</option>
   })
 
   return (
@@ -145,40 +145,40 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
           <label>Tail Number *</label>
           <input
             id='aircraftTailNumber'
-            value={config.aircraft[aircraftIndex].config.tailNumber}
+            value={config.aircraft[aircraftIndex].properties.tailNumber}
             placeholder="Tail Number"
             onChange={(e) => setValue('tailNumber', e.target.value)} />
           <label>Aircraft Type *</label>
           <input
             id='aircraftType'
-            value={config.aircraft[aircraftIndex].config.type}
+            value={config.aircraft[aircraftIndex].properties.type}
             placeholder="Type"
             onChange={(e) => setValue('type', e.target.value)} />
           <label>Empty Weight ({config.setup.weightUnits}) *</label>
           <input
             id='aircraftEmptyWeight'
-            value={config.aircraft[aircraftIndex].config.emptyWeight ? roundNumber(convertWeightUnit(config.aircraft[aircraftIndex].config.emptyWeight, baseWeightUnit, config.setup.weightUnits), unitPrecision) : ""}
+            value={config.aircraft[aircraftIndex].properties.emptyWeight ? roundNumber(convertWeightUnit(config.aircraft[aircraftIndex].properties.emptyWeight, baseWeightUnit, config.setup.weightUnits), unitPrecision) : ""}
             type="number"
             placeholder={config.setup.weightUnits}
             onChange={(e) => setValue('emptyWeight', convertWeightUnit(Number(e.target.value), config.setup.weightUnits, baseWeightUnit))} />
           <label>Empty Arm ({config.setup.lengthUnits}) *</label>
           <input
             id='aircraftEmptyArm'
-            value={config.aircraft[aircraftIndex].config.emptyArm ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].config.emptyArm, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
+            value={config.aircraft[aircraftIndex].properties.emptyArm ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].properties.emptyArm, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
             type="number"
             placeholder={config.setup.lengthUnits}
             onChange={(e) => setValue('emptyArm', convertLengthUnit(Number(e.target.value), config.setup.lengthUnits, baseLengthUnit))} />
           <label>Leading MAC ({config.setup.lengthUnits})</label>
           <input
             id='aircraftLeadingMAC'
-            value={config.aircraft[aircraftIndex].config.leadingEdgeMAC ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].config.leadingEdgeMAC, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
+            value={config.aircraft[aircraftIndex].properties.leadingEdgeMAC ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].properties.leadingEdgeMAC, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
             type="number"
             placeholder={config.setup.lengthUnits}
             onChange={(e) => setValue('leadingEdgeMAC', convertLengthUnit(Number(e.target.value), config.setup.lengthUnits, baseLengthUnit))} />
           <label>MAC ({config.setup.lengthUnits})</label>
           <input
             id='aircraftMAC'
-            value={config.aircraft[aircraftIndex].config.mac ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].config.mac, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
+            value={config.aircraft[aircraftIndex].properties.mac ? roundNumber(convertLengthUnit(config.aircraft[aircraftIndex].properties.mac, baseLengthUnit, config.setup.lengthUnits), unitPrecision) : ""}
             type="number"
             placeholder={config.setup.lengthUnits}
             onChange={(e) => setValue('mac', convertLengthUnit(Number(e.target.value), config.setup.lengthUnits, baseLengthUnit))} />

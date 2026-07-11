@@ -66,8 +66,8 @@ export const withinRegion = (region: regionT, weight: number, arm: number) => {
 }
 
 export function calculateEmptyBalanceForConfig(config: aircraftT, selectedConfig: string): [number, number] {
-  let weight = config.config.emptyWeight;
-  let moment = config.config.emptyWeight * config.config.emptyArm;
+  let weight = config.properties.emptyWeight;
+  let moment = config.properties.emptyWeight * config.properties.emptyArm;
 
   const selectedConfigIndex = config.aircraftConfigs.findIndex(v => v.id === selectedConfig);
 
@@ -93,8 +93,8 @@ export function calculateEmptyBalanceForConfig(config: aircraftT, selectedConfig
 }
 
 export function calculateMaxBalanceForConfig(config: aircraftT, selectedConfig: string): [number, number] {
-  let weight = config.config.emptyWeight;
-  let moment = config.config.emptyWeight * config.config.emptyArm;
+  let weight = config.properties.emptyWeight;
+  let moment = config.properties.emptyWeight * config.properties.emptyArm;
 
   const selectedConfigIndex = config.aircraftConfigs.findIndex(v => v.id === selectedConfig);
   if (selectedConfigIndex < 0) return [weight, moment / weight];

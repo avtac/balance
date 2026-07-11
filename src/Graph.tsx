@@ -131,13 +131,13 @@ function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig
     positions.push({ weight: totalWeight, arm: totalArm })
   });
 
-  let x = units.useMAC ? calculateMAC(configEmptyArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(configEmptyArm, baseLengthUnit, units.lengthUnits);
+  let x = units.useMAC ? calculateMAC(configEmptyArm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(configEmptyArm, baseLengthUnit, units.lengthUnits);
   x = calculatePointX(limits, x);
   let y = calculatePointY(limits, convertWeightUnit(configEmptyWeight, baseWeightUnit, units.weightUnits));
   const points: string[] = [`${x},${y}`];
 
   for (let i = 0; i < positions.length; i++) {
-    x = units.useMAC ? calculateMAC(positions[i].arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(positions[i].arm, baseLengthUnit, units.lengthUnits);
+    x = units.useMAC ? calculateMAC(positions[i].arm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(positions[i].arm, baseLengthUnit, units.lengthUnits);
     x = calculatePointX(limits, x);
     y = calculatePointY(limits, convertWeightUnit(positions[i].weight, baseWeightUnit, units.weightUnits));
     points.push(`${x},${y}`);
@@ -157,7 +157,7 @@ function generateConfigArea(aircraft: aircraftT, limits: limitsT, selectedConfig
   });
 
   for (let i = positions.length - 1; i >= 0; i--) {
-    x = units.useMAC ? calculateMAC(positions[i].arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(positions[i].arm, baseLengthUnit, units.lengthUnits);
+    x = units.useMAC ? calculateMAC(positions[i].arm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(positions[i].arm, baseLengthUnit, units.lengthUnits);
     x = calculatePointX(limits, x);
     y = calculatePointY(limits, convertWeightUnit(positions[i].weight, baseWeightUnit, units.weightUnits));
     points.push(`${x},${y}`);
@@ -587,7 +587,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
 
   // Ensure that the arm is in MAC or distance units
   data.regions = [...data.regions.map(a => {
-    const newData = a.data.map(d => ({ ...d, weight: convertWeightUnit(d.weight, baseWeightUnit, units.weightUnits), arm: units.useMAC ? calculateMAC(d.arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(d.arm, baseLengthUnit, units.lengthUnits) }));
+    const newData = a.data.map(d => ({ ...d, weight: convertWeightUnit(d.weight, baseWeightUnit, units.weightUnits), arm: units.useMAC ? calculateMAC(d.arm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(d.arm, baseLengthUnit, units.lengthUnits) }));
     return { ...a, data: newData };
   })];
 
@@ -603,8 +603,8 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
   if (options.emptyPoint)
     points.push({
       name: "emptyWeight", func: (aircraft: aircraftT): plotPointT => ({
-        weight: convertWeightUnit(aircraft.config.emptyWeight, baseWeightUnit, units.weightUnits),
-        arm: units.useMAC ? calculateMAC(aircraft.config.emptyArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(aircraft.config.emptyArm, baseLengthUnit, units.lengthUnits),
+        weight: convertWeightUnit(aircraft.properties.emptyWeight, baseWeightUnit, units.weightUnits),
+        arm: units.useMAC ? calculateMAC(aircraft.properties.emptyArm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(aircraft.properties.emptyArm, baseLengthUnit, units.lengthUnits),
         style: 'circle',
         size: 1,
         label: "Empty Aircraft"
@@ -618,7 +618,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
           const [weight, arm] = calculateEmptyBalanceForConfig(aircraft, selectedConfig);
           return {
             weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
-            arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+            arm: units.useMAC ? calculateMAC(arm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
             style: 'circle',
             size: 1,
             label: "Empty Config"
@@ -631,7 +631,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
           const [weightFull, armFull] = calculateMaxBalanceForConfig(aircraft, selectedConfig);
           return {
             weight: convertWeightUnit(weightFull, baseWeightUnit, units.weightUnits),
-            arm: units.useMAC ? calculateMAC(armFull, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(armFull, baseLengthUnit, units.lengthUnits),
+            arm: units.useMAC ? calculateMAC(armFull, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(armFull, baseLengthUnit, units.lengthUnits),
             style: 'circle',
             size: 1,
             label: "Max Config"
@@ -647,7 +647,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
           const [weight, arm] = calculateBalanceForOperationConfig(aircraft, selectedOpsConfig);
           return {
             weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
-            arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+            arm: units.useMAC ? calculateMAC(arm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
             style: 'circle',
             size: 1,
             label: "Ops Config"
@@ -660,13 +660,13 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
       let lastWeight, lastArm;
       ({ weight: lastWeight, arm: lastArm } = fuelTankPoints[0]);
       lastWeight = convertWeightUnit(lastWeight, baseWeightUnit, units.weightUnits);
-      lastArm = units.useMAC ? calculateMAC(lastArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(lastArm, baseLengthUnit, units.lengthUnits);
+      lastArm = units.useMAC ? calculateMAC(lastArm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(lastArm, baseLengthUnit, units.lengthUnits);
 
       for (let i = 1; i < fuelTankPoints.length; i++) {
         let currentWeight, currentArm;
         ({ weight: currentWeight, arm: currentArm } = fuelTankPoints[i]);
         currentWeight = convertWeightUnit(currentWeight, baseWeightUnit, units.weightUnits);
-        currentArm = units.useMAC ? calculateMAC(currentArm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(currentArm, baseLengthUnit, units.lengthUnits);
+        currentArm = units.useMAC ? calculateMAC(currentArm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(currentArm, baseLengthUnit, units.lengthUnits);
         lines.push({
           weight1: lastWeight,
           arm1: lastArm,
@@ -687,7 +687,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
           let [weight, arm] = calculateBalanceForLanding(aircraft, selectedOpsConfig, loading);
           return {
             weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
-            arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+            arm: units.useMAC ? calculateMAC(arm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
             style: 'square',
             size: 2,
             label: "Land"
@@ -701,7 +701,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
           let [weight, arm] = calculateBalanceForTakeoff(aircraft, selectedOpsConfig, loading);
           return {
             weight: convertWeightUnit(weight, baseWeightUnit, units.weightUnits),
-            arm: units.useMAC ? calculateMAC(arm, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
+            arm: units.useMAC ? calculateMAC(arm, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(arm, baseLengthUnit, units.lengthUnits),
             style: 'square',
             size: 2,
             label: "Takeoff"
@@ -767,7 +767,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
   const horizontalBars = <PlotHorizontalGrid
     limits={limits}
     gridSpacing={horSpacing}
-    units={units.useMAC && (aircraft.config.mac && aircraft.config.leadingEdgeMAC) ? "%" : ""} />;
+    units={units.useMAC && (aircraft.properties.mac && aircraft.properties.leadingEdgeMAC) ? "%" : ""} />;
   const verticalBars = <PlotVerticalGrid
     limits={limits}
     gridSpacing={verSpacing}

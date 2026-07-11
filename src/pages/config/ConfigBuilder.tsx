@@ -30,7 +30,7 @@ export function getNewConfig(): configT {
     },
     aircraft: [{
       id: crypto.randomUUID(),
-      config: {
+      properties: {
         tailNumber: "",
         type: "",
         emptyArm: 35.5,

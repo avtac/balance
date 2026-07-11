@@ -310,7 +310,7 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
   }
 
   const mouseText = () => {
-    const string = roundNumber(units.useMAC ? calculateMAC(mousePos.x, aircraft.config.mac, aircraft.config.leadingEdgeMAC, units.useMAC) : convertLengthUnit(mousePos.x, baseLengthUnit, units.lengthUnits), 100) + (units.useMAC ? "%" : units.lengthUnits);
+    const string = roundNumber(units.useMAC ? calculateMAC(mousePos.x, aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, units.useMAC) : convertLengthUnit(mousePos.x, baseLengthUnit, units.lengthUnits), 100) + (units.useMAC ? "%" : units.lengthUnits);
     return (
       <>
         <line

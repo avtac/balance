@@ -219,13 +219,13 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
   const availableConfigs = availableConfigList.sort((a, b) => a.name.localeCompare(b.name)).map((v) => <option value={v.id} key={v.id}>{v.name}</option>)
   const aircraftOptions = !config.aircraft ? [] : config.aircraft
     .sort((a, b) =>
-      a.config.tailNumber.localeCompare(b.config.tailNumber)
+      a.properties.tailNumber.localeCompare(b.properties.tailNumber)
     )
     .map((a) =>
       <option
         key={a.id}
         value={a.id}>
-        {(a.config.type != "" ? a.config.type + ": " : "") + a.config.tailNumber}
+        {(a.properties.type != "" ? a.properties.type + ": " : "") + a.properties.tailNumber}
       </option>
     )
 
@@ -276,7 +276,7 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
         </div>
       </Subregion>
       <Units
-        macAvailable={selectedAircraftIndex >= 0 ? (config.aircraft[selectedAircraftIndex].config.mac != 0 && config.aircraft[selectedAircraftIndex].config.leadingEdgeMAC != 0) : false}
+        macAvailable={selectedAircraftIndex >= 0 ? (config.aircraft[selectedAircraftIndex].properties.mac != 0 && config.aircraft[selectedAircraftIndex].properties.leadingEdgeMAC != 0) : false}
         config={config}
         setConfig={setConfig} />
       <Subregion>

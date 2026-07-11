@@ -256,7 +256,7 @@ function Setup({ config, setConfig, selectedAircraft }: SetupProps & nameProps):
         <input id="configName" value={config.name} onChange={(e) => setName(e.target.value)} />
       </Subregion>
       <Units
-        macAvailable={selectedAircraftIndex >= 0 ? (config.aircraft[selectedAircraftIndex].config.mac != 0 && config.aircraft[selectedAircraftIndex].config.leadingEdgeMAC != 0) : false}
+        macAvailable={selectedAircraftIndex >= 0 ? (config.aircraft[selectedAircraftIndex].properties.mac != 0 && config.aircraft[selectedAircraftIndex].properties.leadingEdgeMAC != 0) : false}
         config={config}
         setConfig={setConfig} />
     </>

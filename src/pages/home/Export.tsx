@@ -189,14 +189,14 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
     return dayjs().format(format)
   }
 
-  const mac = convertLengthUnit(aircraft.config.mac, baseLengthUnit, units.lengthUnits);
-  const leadingEdgeMAC = convertLengthUnit(aircraft.config.leadingEdgeMAC, baseLengthUnit, units.lengthUnits);
-  const aircraftType = aircraft.config.type;
-  const aircraftTailNumber = aircraft.config.tailNumber;
+  const mac = convertLengthUnit(aircraft.properties.mac, baseLengthUnit, units.lengthUnits);
+  const leadingEdgeMAC = convertLengthUnit(aircraft.properties.leadingEdgeMAC, baseLengthUnit, units.lengthUnits);
+  const aircraftType = aircraft.properties.type;
+  const aircraftTailNumber = aircraft.properties.tailNumber;
   const aircraftConfig = aircraft.operationConfigs[opsConfigIndex].name;
 
-  const emptyWeight = roundNumber(convertWeightUnit(aircraft.config.emptyWeight, baseWeightUnit, units.weightUnits), unitPrecision);
-  const emptyArm = roundNumber(convertLengthUnit(aircraft.config.emptyArm, baseLengthUnit, units.lengthUnits), unitPrecision);
+  const emptyWeight = roundNumber(convertWeightUnit(aircraft.properties.emptyWeight, baseWeightUnit, units.weightUnits), unitPrecision);
+  const emptyArm = roundNumber(convertLengthUnit(aircraft.properties.emptyArm, baseLengthUnit, units.lengthUnits), unitPrecision);
   let [configWeight, configArm] = calculateEmptyBalanceForConfig(aircraft, aircraft.operationConfigs[opsConfigIndex].config)
   configWeight = roundNumber(convertWeightUnit(configWeight, baseWeightUnit, units.weightUnits), unitPrecision);
   configArm = roundNumber(convertLengthUnit(configArm, baseLengthUnit, units.lengthUnits), unitPrecision);
@@ -240,7 +240,7 @@ function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsCo
   const landingFuelWeight = roundNumber(convertFuelUnits(landingFuel, units.fuelUnits, units.weightUnits, units.fuelDensity), unitPrecision);
   const landingFuelArm = landingFuelWeight === 0 ? 0 : roundNumber(convertFuelUnits(loading.fuel.reduce((sum, f) => { const t = aircraft.fuelTanks.find(v => v.id === f.tank); if (!t) return sum; return sum + (t.arm * f.loadedFuel) }, 0), units.fuelUnits, units.weightUnits, units.fuelDensity) / landingFuelWeight, unitPrecision);
 
-  const getMac = (arm: number) => roundNumber(calculateMAC(convertLengthUnit(arm, units.lengthUnits, baseLengthUnit), aircraft.config.mac, aircraft.config.leadingEdgeMAC, true), unitPrecision);
+  const getMac = (arm: number) => roundNumber(calculateMAC(convertLengthUnit(arm, units.lengthUnits, baseLengthUnit), aircraft.properties.mac, aircraft.properties.leadingEdgeMAC, true), unitPrecision);
 
   const getSeatPassengers = (seatName: string) => {
     const seat = aircraft.seats.find(s => s.name === seatName)

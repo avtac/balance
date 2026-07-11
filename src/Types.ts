@@ -144,7 +144,7 @@ export interface aircraftPropertiesT {
 
 export interface aircraftT {
   id: string;
-  config: aircraftPropertiesT;
+  properties: aircraftPropertiesT;
   limits: aircraftLimitsT;
   seats: seatT[];
   cargoAreas: cargoAreaT[];
