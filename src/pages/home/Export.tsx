@@ -170,6 +170,7 @@ function validTemplate(data: string, type: ('html' | 'json')) {
 }
 
 function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsConfig: string, units: setupT) {
+  if (!aircraft) return (<></>);
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
@@ -491,6 +492,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
   const [activeTemplate, setTemplate] = useState(active);
   const [iframeParts, setIframeParts] = useState(null as (null | { body: (string | JSX.Element | JSX.Element[]), head: (string | JSX.Element | JSX.Element[]) }));
   const [inputParts, setInputParts] = useState(null as (null | ReactNode[]));
+  if (!aircraft) return (<></>);
 
   function setTemplateSpecial(tempId: string) {
     localStorage.setItem("activeTemplate", tempId);

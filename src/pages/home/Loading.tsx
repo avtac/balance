@@ -786,6 +786,7 @@ interface localLoadingProps extends loadingProps {
 
 function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoadingProps & nameProps): ReactNode {
   const units = useContext(UnitContext);
+  if (!aircraft) return (<></>);
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
