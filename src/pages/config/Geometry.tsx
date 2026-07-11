@@ -1,6 +1,6 @@
 import "./Geometry.css"
 import "../../Layout.css"
-import { useContext, useRef, type ReactNode } from "react";
+import { useContext, useRef, type ClipboardEvent, type ReactNode } from "react";
 import { Subregion } from "../../Layout";
 import { type regionT, type regionPointT, type weightLimitT, type aircraftProps, type aircraftT, type nameProps, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
@@ -107,6 +107,26 @@ function WeightRegionRow({ regionPoint, aircraft, setAircraft, regionIndex, inde
     setAircraft(tmp);
   }
 
+  function paste(event: ClipboardEvent<HTMLInputElement>): void {
+    event.preventDefault();
+    const raw = event.clipboardData.getData("text/plain");
+    const data: regionPointT[] = [];
+    for (const row of raw.split("\n")) {
+      if (row == "") break;
+      const split = row.split("\t");
+      if (split.length < 2) return; // Break out and don't do anything
+      if (isNaN(Number(split[0])) || isNaN(Number(split[1]))) return;
+      data.push({ id: crypto.randomUUID(), weight: Number(split[0]), arm: Number(split[1]) });
+    }
+
+    const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
+    tmp.limits.regions[regionIndex].data.splice(index, 1)
+    for (let i = 0; i < data.length; i++) {
+      tmp.limits.regions[regionIndex].data.splice(index + i, 0, data[i])
+    }
+    setAircraft(tmp);
+  }
+
   return (
     <tr className="weightRegionRow">
       <td>
@@ -117,6 +137,7 @@ function WeightRegionRow({ regionPoint, aircraft, setAircraft, regionIndex, inde
           step={10}
           type="number"
           value={regionPoint.weight ? roundNumber(convertWeightUnit(regionPoint.weight, baseWeightUnit, units.weightUnits), unitPrecision) : ""}
+          onPaste={e => paste(e)}
           onChange={e => setValue('weight', convertWeightUnit(Number(e.target.value), units.weightUnits, baseWeightUnit))} />
       </td>
       <td>
