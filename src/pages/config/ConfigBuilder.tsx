@@ -1,6 +1,6 @@
 import './ConfigBuilder.css'
 import { MultiPane } from '../../Layout'
-import Geometry from './Geometry.tsx'
+import Limitations from './Limitations.tsx'
 import Diagram from '../../Diagram'
 import Graph from '../../Graph.tsx'
 import { useMemo, useState } from 'react'
@@ -212,8 +212,8 @@ function ConfigBuilder() {
                 setConfig={setConfigSpecial}
                 selectedAircraft={selectedAircraft}
                 setSelectedAircraft={setSelectedAircraftSpecial} />
-              <Geometry
-                name={"Geometry"}
+              <Limitations
+                name={"Limitations"}
                 aircraft={config.aircraft[aircraftIndex]}
                 setAircraft={setAircraftSpecial} />
               <SeatCargoFuelConfig

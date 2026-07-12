@@ -32,11 +32,10 @@ function SeatInput({ seat, index, aircraft, setAircraft }: seatInputProps) {
   return (
     <tr>
       <td>
-        {index === 0 ? <p>{seat.name}</p> : <input name={"name" + index}
+        <input name={"name" + index}
           placeholder="Name"
           value={seat.name ? seat.name : ""}
           onChange={e => setValue('name', e.target.value)} />
-        }
       </td>
       <td>
         <input
@@ -73,7 +72,7 @@ function SeatInput({ seat, index, aircraft, setAircraft }: seatInputProps) {
           onChange={e => setValue('seatCount', Number(e.target.value))} />
       </td>
       <td>
-        {index !== 0 && <button onClick={() => removeSeat()}><FontAwesomeIcon icon={faXmark} /></button>}
+        <button onClick={() => removeSeat()}><FontAwesomeIcon icon={faXmark} /></button>
       </td>
     </tr >
   );
@@ -101,6 +100,7 @@ function SeatConfig({ aircraft, setAircraft }: aircraftProps) {
           <h3>Seat Config</h3>
           <button onClick={addSeat}><FontAwesomeIcon icon={faPlus} /></button>
         </summary>
+        <p>Define all possible seat positions</p>
         <table className="tableData sortedTable">
           <thead>
             {aircraft.seats.length > 0 &&

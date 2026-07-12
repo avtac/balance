@@ -114,6 +114,7 @@ function Equipment({ aircraft, setAircraft }: equipmentProps & nameProps): React
         <h3>Equipment</h3>
         <button onClick={addEquipment}><FontAwesomeIcon icon={faPlus} /></button>
       </div>
+      <p>Define all possible equipment not included in the empty weight</p>
       <table className='tableData sortedTable'>
         <thead>
           <tr>

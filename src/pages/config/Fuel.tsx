@@ -108,6 +108,7 @@ function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
           <h3>Fuel Config</h3>
           <button onClick={addFuel}><FontAwesomeIcon icon={faPlus} /></button>
         </summary>
+        <p>Define all possible fuel tanks</p>
         <table className="tableData sortedTable">
           <thead>
             {aircraft.fuelTanks.length > 0 &&

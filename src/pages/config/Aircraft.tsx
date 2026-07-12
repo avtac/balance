@@ -66,6 +66,7 @@ function AircraftMerging({ config, setConfig, selectedAircraft }: aircraftMergin
 
   return (
     <Subregion>
+      <h3>Aircraft Merging</h3>
       <div id='aircraftMergeHolder'>
         <select id='childAircraftSelect' multiple ref={selectRef}>
           {options}
@@ -141,6 +142,7 @@ function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircra
       </Subregion>
       <AircraftMerging config={config} setConfig={setConfig} selectedAircraft={selectedAircraft} />
       <Subregion>
+        <h3>Aircraft Properties</h3>
         <div className="rows">
           <label>Tail Number *</label>
           <input

@@ -83,6 +83,7 @@ function CargoConfig({ aircraft, setAircraft }: aircraftProps) {
           <h3>Cargo Config</h3>
           <button onClick={addCargo}><FontAwesomeIcon icon={faPlus} /></button>
         </summary>
+        <p>Define all possible cargo locations</p>
         <table className="tableData sortedTable">
           <thead>
             {aircraft.cargoAreas.length > 0 &&

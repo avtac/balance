@@ -1,4 +1,4 @@
-import "./Geometry.css"
+import "./Limitations.css"
 import "../../Layout.css"
 import { useContext, useRef, type ClipboardEvent, type ReactNode } from "react";
 import { Subregion } from "../../Layout";
@@ -281,7 +281,8 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
             <h3>Limits</h3>
             <button onClick={addLimit}><FontAwesomeIcon icon={faPlus} /></button>
           </summary>
-          <table className="tableData sortedTable">
+          <p>Define all weight limits</p>
+          {aircraft.limits.limits.length > 0 && <table className="tableData sortedTable">
             <thead>
               <tr>
                 <th>Name</th>
@@ -300,7 +301,7 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
                   setAircraft={setAircraft} />
               })}
             </tbody>
-          </table>
+          </table>}
         </details>
       </Subregion>
       <Subregion id="regions">
@@ -309,6 +310,7 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
             <h3>Regions</h3>
             <button onClick={addRegion}><FontAwesomeIcon icon={faPlus} /></button>
           </summary>
+          <p>Define all regions using weight/arm pairs</p>
           {aircraft.limits.regions.map((region: regionT) => (
             <WeightRegion key={region.id} region={region} aircraft={aircraft} setAircraft={setAircraft} />
           ))}

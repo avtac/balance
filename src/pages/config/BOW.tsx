@@ -238,30 +238,39 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
     <>
       <Subregion>
         <div id="opsConfigTitle">
-          <select
-            id='opsConfigSelect'
-            onChange={(e) => setSelectedOpsConfig(e.target.value)}
-            value={selectedOpsConfig}
-          >
-            {aircraft.operationConfigs.map((conf) => {
-              return <option key={conf.id + "selectOption"} value={conf.id}>{conf.name}</option>
-            })}
-          </select>
-          <input
-            id='opsConfigName'
-            value={opsConfigIndex >= 0 ? aircraft.operationConfigs[opsConfigIndex].name : ""}
-            onChange={(e) => setName(e.target.value)} />
-          <select
-            id='opsConfigConfigSelect'
-            ref={configSelectRef}
-            disabled={aircraft.aircraftConfigs.length == 0}
-            onChange={(e) => setAircraftConfig(e.target.value)}
-            value={selectedConfig}
-          >
-            {aircraft.aircraftConfigs.map((conf) => {
-              return <option key={conf.id + "selectOption"} value={conf.id}>{conf.name}</option>
-            })}
-          </select>
+          <div>
+            <p>Active Ops Config</p>
+            <select
+              id='opsConfigSelect'
+              onChange={(e) => setSelectedOpsConfig(e.target.value)}
+              value={selectedOpsConfig}
+            >
+              {aircraft.operationConfigs.map((conf) => {
+                return <option key={conf.id + "selectOption"} value={conf.id}>{conf.name}</option>
+              })}
+            </select>
+          </div>
+          <div>
+            <p>Ops Config Name</p>
+            <input
+              id='opsConfigName'
+              value={opsConfigIndex >= 0 ? aircraft.operationConfigs[opsConfigIndex].name : ""}
+              onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div>
+            <p>Corresponding Layout</p>
+            <select
+              id='opsConfigConfigSelect'
+              ref={configSelectRef}
+              disabled={aircraft.aircraftConfigs.length == 0}
+              onChange={(e) => setAircraftConfig(e.target.value)}
+              value={selectedConfig}
+            >
+              {aircraft.aircraftConfigs.map((conf) => {
+                return <option key={conf.id + "selectOption"} value={conf.id}>{conf.name}</option>
+              })}
+            </select>
+          </div>
           <button
             disabled={aircraft.aircraftConfigs.length == 0}
             onClick={addOpsConfig}
@@ -275,6 +284,7 @@ function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSel
             disabled={aircraft.aircraftConfigs.length == 0}
           >Delete</button>
         </div>
+        <p>Create configurations with pre-defined crew and cargo compliments</p>
       </Subregion>
       <MultiPane>
         <Subregion name={"Seats"}>

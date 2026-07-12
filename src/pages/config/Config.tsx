@@ -280,22 +280,29 @@ function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedCon
     <>
       <Subregion>
         <div id="aircraftTitle">
-          <select
-            id='configSelect'
-            onChange={(e) => setSelectedConfig(e.target.value)}
-            value={selectedConfig}>
-            {aircraft.aircraftConfigs.map((conf) => {
-              return <option key={conf.id + "selectOption"} value={conf.id}>{conf.name}</option>
-            })}
-          </select>
-          <input
-            id='configName'
-            value={configIndex >= 0 ? aircraft.aircraftConfigs[configIndex].name : ""}
-            onChange={(e) => setName(e.target.value)} />
+          <div>
+            <p style={{ fontSize: ".7rem" }}>Active Config</p>
+            <select
+              id='configSelect'
+              onChange={(e) => setSelectedConfig(e.target.value)}
+              value={selectedConfig}>
+              {aircraft.aircraftConfigs.map((conf) => {
+                return <option key={conf.id + "selectOption"} value={conf.id}>{conf.name}</option>
+              })}
+            </select>
+          </div>
+          <div>
+            <p>Config Name</p>
+            <input
+              id='configName'
+              value={configIndex >= 0 ? aircraft.aircraftConfigs[configIndex].name : ""}
+              onChange={(e) => setName(e.target.value)} />
+          </div>
           <button onClick={addConfig}>Add</button>
           <button onClick={duplicateConfig}>Duplicate</button>
           <button onClick={deleteConfig}>Delete</button>
         </div>
+        <p>Using the defined seats, cargo areas, fuel tanks, and equipment define all layouts the aircraft can be configured in</p>
       </Subregion>
       <MultiPane>
         <Subregion name={"Seats"}>

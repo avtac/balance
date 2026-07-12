@@ -24,8 +24,8 @@ function Header({ title }: { title: string }): ReactNode {
   return (
     <header id='header'>
       <nav>
-        <button onClick={() => window.location.href = '/'}>Home</button>
-        <button onClick={() => window.location.href = '/config'}>Config</button>
+        <button onClick={() => window.location.href = '/'}>Balance</button>
+        <button onClick={() => window.location.href = '/config'}>Balance Config</button>
       </nav>
       <h1>
         <img
