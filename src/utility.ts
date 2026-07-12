@@ -1,4 +1,4 @@
-import { type aircraftT, type configT, type fuelLoadT, type fuelTankT, type loadingT, type maxMomentObjectT, type momentObjectT, type regionT } from './Types';
+import { fuelUnits, lengthUnits, weightUnits, type aircraftLimitsT, type aircraftPropertiesT, type aircraftT, type cargoAreaT, type configT, type fuelLoadT, type fuelTankT, type loadingT, type maxMomentObjectT, type momentObjectT, type regionT, type seatT, type setupT, type weightLimitT, type equipmentT, type aircraftConfigT } from './Types';
 
 export const activeConfigBuilder = "activeConfigBuilder"
 export const savedBuilderConfigs = "savedBuilderConfigs"
@@ -272,7 +272,7 @@ export function calculateBalanceForTakeoff(aircraft: aircraftT, selectedOpsConfi
 export function calculateBalancePointsForTanks(aircraft: aircraftT, selectedOpsConfig: string, loading: loadingT): momentObjectT[] {
   var groupBy = (xs: { tank: fuelTankT, load: fuelLoadT }[]) => {
     return xs.reduce((rv: { [key: number]: { tank: fuelTankT, load: fuelLoadT }[] }, x) => {
-      (rv[x.tank.priority] ??= []).push(x);
+      (rv[x.tank.priority ?? 0] ??= []).push(x);
       return rv;
     }, {});
   };
@@ -338,25 +338,205 @@ export const saveStringToFile = (content: string, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+function validateAircraftConfig(aircraftConfig: aircraftConfigT) {
+  if (aircraftConfig === null) return "Bad aircraft config";
+  if (typeof aircraftConfig !== 'object') return "Bad aircraft config";
+  if (!Object.hasOwn(aircraftConfig, 'name')) return "Aircraft config missing 'name' property";
+  if (typeof aircraftConfig.name !== 'string') return "Aircraft config 'name' property is incorrect type"
+  if (!Object.hasOwn(aircraftConfig, 'seats')) return "Aircraft config missing 'seats' property";
+  if (Array.isArray(aircraftConfig.seats)) {
+    for (const seat of aircraftConfig.seats) {
+      if (typeof seat !== 'string') return "Aircraft config seats 'seat' property is incorrect type"
+    }
+  }
+  if (Array.isArray(aircraftConfig.cargoAreas)) {
+    for (const cargoArea of aircraftConfig.cargoAreas) {
+      if (typeof cargoArea !== 'string') return "Aircraft config cargoAreas 'cargoArea' property is incorrect type"
+    }
+  }
+  if (Array.isArray(aircraftConfig.fuelTanks)) {
+    for (const fuelTank of aircraftConfig.fuelTanks) {
+      if (typeof fuelTank !== 'string') return "Aircraft config cargoAreas 'fuelTank' property is incorrect type"
+    }
+  }
+}
+
+function validateFuelTank(fuelTank: fuelTankT) {
+  if (fuelTank === null) return "Bad aircraft fuel tanks";
+  if (typeof fuelTank !== 'object') return "Bad aircraft fuel tanks";
+  if (!Object.hasOwn(fuelTank, 'name')) return "Aircraft fuel tanks missing 'name' property";
+  if (typeof fuelTank.name !== 'string') return "Aircraft fuel tanks 'name' property is incorrect type"
+  if (!Object.hasOwn(fuelTank, 'unusable')) return "Aircraft fuel tanks missing 'unusable' property";
+  if (typeof fuelTank.unusable !== 'number') return "Aircraft fuel tanks 'unusable' property is incorrect type"
+  if (!Object.hasOwn(fuelTank, 'maxWeight')) return "Aircraft fuel tanks missing 'maxWeight' property";
+  if (typeof fuelTank.maxWeight !== 'number') return "Aircraft fuel tanks 'maxWeight' property is incorrect type"
+  if (!Object.hasOwn(fuelTank, 'arm')) return "Aircraft fuel tanks missing 'arm' property";
+  if (typeof fuelTank.arm !== 'number') return "Aircraft fuel tanks 'arm' property is incorrect type"
+  if (!Object.hasOwn(fuelTank, 'removable')) return "Aircraft fuel tanks missing 'removable' property";
+  if (typeof fuelTank.removable !== 'boolean') return "Aircraft fuel tanks 'removable' property is incorrect type"
+  if (Object.hasOwn(fuelTank, 'priority') && typeof fuelTank.priority !== 'number') return "Aircraft fuel tanks 'priority' property is incorrect type"
+  return false;
+}
+function validateEquipment(equipment: equipmentT) {
+  if (equipment === null) return "Bad aircraft equipment";
+  if (typeof equipment !== 'object') return "Bad aircraft equipment";
+  if (!Object.hasOwn(equipment, 'name')) return "Aircraft equipment missing 'name' property";
+  if (typeof equipment.name !== 'string') return "Aircraft equipment 'name' property is incorrect type"
+  if (!Object.hasOwn(equipment, 'area')) return "Aircraft equipment missing 'area' property";
+  if (typeof equipment.area !== 'string') return "Aircraft equipment 'area' property is incorrect type"
+  if (!Object.hasOwn(equipment, 'weight')) return "Aircraft equipment missing 'weight' property";
+  if (typeof equipment.weight !== 'number') return "Aircraft equipment 'weight' property is incorrect type"
+  if (!Object.hasOwn(equipment, 'arm')) return "Aircraft equipment missing 'arm' property";
+  if (typeof equipment.arm !== 'number') return "Aircraft equipment 'arm' property is incorrect type"
+  return false;
+}
+
+function validateCargoArea(cargoArea: cargoAreaT) {
+  if (cargoArea === null) return "Bad aircraft cargoArea";
+  if (typeof cargoArea !== 'object') return "Bad aircraft cargoArea";
+  if (!Object.hasOwn(cargoArea, 'name')) return "Aircraft cargoArea missing 'name' property";
+  if (typeof cargoArea.name !== 'string') return "Aircraft cargoArea 'name' property is incorrect type"
+  if (!Object.hasOwn(cargoArea, 'maxWeight')) return "Aircraft cargoArea missing 'maxWeight' property";
+  if (typeof cargoArea.maxWeight !== 'number') return "Aircraft cargoArea 'maxWeight' property is incorrect type"
+  if (!Object.hasOwn(cargoArea, 'arm')) return "Aircraft cargoArea missing 'arm' property";
+  if (typeof cargoArea.arm !== 'number') return "Aircraft cargoArea 'arm' property is incorrect type"
+  return false;
+}
+
+function validateSeat(seat: seatT) {
+  if (seat === null) return "Bad aircraft seat";
+  if (typeof seat !== 'object') return "Bad aircraft seat";
+  if (!Object.hasOwn(seat, 'name')) return "Aircraft seat missing 'name' property";
+  if (typeof seat.name !== 'string') return "Aircraft seat 'name' property is incorrect type"
+  if (!Object.hasOwn(seat, 'lateralDist')) return "Aircraft seat missing 'lateralDist' property";
+  if (typeof seat.lateralDist !== 'number') return "Aircraft seat 'lateralDist' property is incorrect type"
+  if (!Object.hasOwn(seat, 'seatCount')) return "Aircraft seat missing 'seatCount' property";
+  if (typeof seat.seatCount !== 'number') return "Aircraft seat 'seatCount' property is incorrect type"
+  if (!Object.hasOwn(seat, 'maxWeight')) return "Aircraft seat missing 'maxWeight' property";
+  if (typeof seat.maxWeight !== 'number') return "Aircraft seat 'maxWeight' property is incorrect type"
+  if (!Object.hasOwn(seat, 'arm')) return "Aircraft seat missing 'arm' property";
+  if (typeof seat.arm !== 'number') return "Aircraft seat 'arm' property is incorrect type"
+  return false;
+}
+
+function validateLimit(limit: weightLimitT) {
+  if (limit === null) return "Bad aircraft limits";
+  if (typeof limit !== 'object') return "Bad aircraft limits";
+  if (!Object.hasOwn(limit, 'name')) return "Aircraft limits missing 'name' property";
+  if (typeof limit.name !== 'string') return "Aircraft limits 'name' property is incorrect type"
+  if (Object.hasOwn(limit, 'weight') && typeof limit.weight !== 'number') return "Aircraft limit 'weight' property is incorrect type";
+  if (Object.hasOwn(limit, 'color') && typeof limit.color !== 'string') return "Aircraft limit 'color' property is incorrect type";
+  if (Object.hasOwn(limit, 'lineStyle') && typeof limit.lineStyle !== 'string') return "Aircraft limit 'lineStyle' property is incorrect type";
+  return false;
+}
+
+function validateRegion(region: regionT) {
+  if (region === null) return "Bad aircraft limits";
+  if (typeof region !== 'object') return "Bad aircraft limits";
+  if (!Object.hasOwn(region, 'name')) return "Aircraft limits missing 'name' property";
+  if (typeof region.name !== 'string') return "Aircraft limits 'name' property is incorrect type"
+  if (!Object.hasOwn(region, 'data')) return "Aircraft limits missing 'name' property";
+  for (const point of region.data) {
+    if (Object.hasOwn(point, 'arm') && typeof point.arm !== 'number') return "Aircraft region data 'arm' is incorrect type"
+    if (Object.hasOwn(point, 'weight') && typeof point.weight !== 'number') return "Aircraft region data 'weight' is incorrect type"
+  }
+  if (Object.hasOwn(region, 'color') && typeof region.color !== 'string') return "Aircraft limit 'color' property is incorrect type";
+  if (Object.hasOwn(region, 'lineStyle') && typeof region.lineStyle !== 'string') return "Aircraft limit 'lineStyle' property is incorrect type";
+  return false;
+}
+
+function validateAircraftLimits(limits: aircraftLimitsT) {
+  if (limits === null) return "Bad aircraft limits";
+  if (typeof limits !== 'object') return "Bad aircraft limits";
+  if (!Object.hasOwn(limits, 'regions')) return "Aircraft limits missing 'regions' property";
+  if (!Object.hasOwn(limits, 'limits')) return "Aircraft limits missing 'limits' property";
+  for (const limit of limits.limits) {
+    const limitValid = validateLimit(limit);
+    if (limitValid) return limitValid;
+  }
+  for (const region of limits.regions) {
+    const limitValid = validateRegion(region);
+    if (limitValid) return limitValid;
+  }
+}
+
+function validateAircraftProperties(properties: aircraftPropertiesT) {
+  if (properties === null) return "Bad aircraft properties";
+  if (typeof properties !== 'object') return "Bad aircraft properties";
+  if (!Object.hasOwn(properties, 'tailNumber')) return "Aircraft properties missing 'tailNumber' property";
+  if (typeof properties.tailNumber !== 'string') return "Aircraft properties 'tailNumber' property is incorrect type";
+  if (!Object.hasOwn(properties, 'type')) return "Aircraft properties missing 'type' property";
+  if (typeof properties.type !== 'string') return "Aircraft properties 'type' property is incorrect type";
+  if (!Object.hasOwn(properties, 'emptyWeight')) return "Aircraft properties missing 'emptyWeight' property";
+  if (typeof properties.emptyWeight !== 'number') return "Aircraft properties 'emptyWeight' property is incorrect type";
+  if (!Object.hasOwn(properties, 'emptyArm')) return "Aircraft properties missing 'emptyArm' property";
+  if (typeof properties.emptyArm !== 'number') return "Aircraft properties 'emptyArm' property is incorrect type";
+  if (!Object.hasOwn(properties, 'leadingEdgeMAC')) return "Aircraft properties missing 'leadingEdgeMAC' property";
+  if (typeof properties.leadingEdgeMAC !== 'number') return "Aircraft properties 'leadingEdgeMAC' property is incorrect type";
+  if (!Object.hasOwn(properties, 'mac')) return "Aircraft properties missing 'mac' property";
+  if (typeof properties.mac !== 'number') return "Aircraft properties 'mac' property is incorrect type";
+  return false;
+}
+
 export function validateAircraft(aircraft: aircraftT): (string | false) {
   if (aircraft === null) return "Bad aircraft";
   if (typeof aircraft !== 'object') return "Bad aircraft";
   if (!Object.hasOwn(aircraft, 'properties')) return "Aircraft missing 'properties' property";
-  if (typeof aircraft.properties !== 'object') return "Aircraft 'properties' property is incorrect type";
+  const aircraftProps = validateAircraftProperties(aircraft.properties)
+  if (aircraftProps) return aircraftProps;
+  const aircraftLimits = validateAircraftLimits(aircraft.limits)
+  if (aircraftLimits) return aircraftLimits;
   if (!Object.hasOwn(aircraft, 'limits')) return "Aircraft missing 'limits' property";
   if (typeof aircraft.limits !== 'object') return "Aircraft 'limits' property is incorrect type";
+
   if (!Object.hasOwn(aircraft, 'seats')) return "Aircraft missing 'seats' property";
-  if (!Array.isArray(aircraft.seats)) return "Aircraft 'seats' property is incorrect type";
+  for (const seat of aircraft.seats) {
+    const seatValid = validateSeat(seat);
+    if (seatValid) return seatValid;
+  }
+
   if (!Object.hasOwn(aircraft, 'cargoAreas')) return "Aircraft missing 'cargoAreas' property";
-  if (!Array.isArray(aircraft.cargoAreas)) return "Aircraft 'cargoAreas' property is incorrect type";
+  for (const cargoArea of aircraft.cargoAreas) {
+    const cargoAreaValid = validateCargoArea(cargoArea);
+    if (cargoAreaValid) return cargoAreaValid;
+  }
+
   if (!Object.hasOwn(aircraft, 'fuelTanks')) return "Aircraft missing 'fuelTanks' property";
-  if (!Array.isArray(aircraft.fuelTanks)) return "Aircraft 'fuelTanks' property is incorrect type";
+  for (const fuelTank of aircraft.fuelTanks) {
+    const fuelTankValid = validateFuelTank(fuelTank);
+    if (fuelTankValid) return fuelTankValid;
+  }
+
   if (!Object.hasOwn(aircraft, 'equipment')) return "Aircraft missing 'equipment' property";
-  if (!Array.isArray(aircraft.equipment)) return "Aircraft 'equipment' property is incorrect type";
+  for (const equipment of aircraft.equipment) {
+    const equipmentValid = validateEquipment(equipment);
+    if (equipmentValid) return equipmentValid;
+  }
+
   if (!Object.hasOwn(aircraft, 'aircraftConfigs')) return "Aircraft missing 'aircraftConfigs' property";
-  if (!Array.isArray(aircraft.aircraftConfigs)) return "Aircraft 'aircraftConfigs' property is incorrect type";
+  for (const aircraftConfig of aircraft.aircraftConfigs) {
+    const configValid = validateAircraftConfig(aircraftConfig);
+    if (configValid) return configValid;
+  }
+
   if (!Object.hasOwn(aircraft, 'operationConfigs')) return "Aircraft missing 'operationConfigs' property";
   if (!Array.isArray(aircraft.operationConfigs)) return "Aircraft 'operationConfigs' property is incorrect type";
+  return false;
+}
+
+function validateSetupProperties(setup: setupT) {
+  if (setup === null) return "Bad setup";
+  if (typeof setup !== 'object') return "Bad setup";
+  if (!Object.hasOwn(setup, 'weightUnits')) return "Setup missing 'weightUnits' property"
+  if (!weightUnits.includes(setup.weightUnits)) return "Setup with invalid 'weightUnits' value"
+  if (!Object.hasOwn(setup, 'lengthUnits')) return "Setup missing 'lengthUnits' property"
+  if (!lengthUnits.includes(setup.lengthUnits)) return "Setup with invalid 'lengthUnits' value"
+  if (!Object.hasOwn(setup, 'fuelUnits')) return "Setup missing 'fuelUnits' property"
+  if (!fuelUnits.includes(setup.fuelUnits)) return "Setup with invalid 'fuelUnits' value"
+  if (!Object.hasOwn(setup, 'useMAC')) return "Setup missing 'useMAC' property"
+  if (typeof setup.useMAC !== 'boolean') return "Setup with invalid 'useMAC' value"
+  if (!Object.hasOwn(setup, 'fuelDensity')) return "Setup missing 'fuelDensity' property"
+  if (typeof setup.fuelDensity !== 'number') return "Setup with invalid 'fuelDensity' value"
   return false;
 }
 
@@ -364,7 +544,8 @@ export function validateConfig(config: Object): (string | false) {
   if (config === null) return "Bad config";
   if (typeof config !== 'object') return "Bad config";
   if (!Object.hasOwn(config as configT, 'setup')) return "Config missing 'setup' property";
-  if (typeof (config as configT).setup !== 'object') return "Config 'setup' property is incorrect type";
+  const setupProps = validateSetupProperties((config as configT).setup)
+  if (setupProps) return setupProps;
   if (!Object.hasOwn(config, 'name')) return "Config missing 'name' property";
   if (typeof (config as configT).name !== 'string') return "Config 'name' property is incorrect type";
 

@@ -130,7 +130,7 @@ export interface fuelTankT extends maxMomentObjectT {
   name: string;
   unusable: number;
   removable: boolean;
-  priority: number;
+  priority?: number;
 }
 
 export interface aircraftPropertiesT {

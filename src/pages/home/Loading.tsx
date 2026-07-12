@@ -530,7 +530,7 @@ function FuelLoader({ loading, setLoading, aircraft, selectedOpsConfig }: titleP
       return xs.reduce((rv: { [key: string]: fuelTankT[] }, x) => {
         const tank = aircraft.fuelTanks.find(v => v.id === x);
         if (tank === undefined) return rv;
-        (rv[tank.priority] ??= []).push(tank);
+        (rv[tank.priority ?? 0] ??= []).push(tank);
         return rv;
       }, {});
     };
@@ -667,7 +667,7 @@ function FuelUsageLoader({ loading, setLoading, aircraft, selectedOpsConfig }: t
       return xs.reduce((rv: { [key: string]: fuelTankT[] }, x) => {
         const tank = aircraft.fuelTanks.find(v => v.id === x);
         if (tank === undefined) return rv;
-        (rv[tank.priority] ??= []).push(tank);
+        (rv[tank.priority ?? 0] ??= []).push(tank);
         return rv;
       }, {});
     };
