@@ -339,6 +339,21 @@ export const saveStringToFile = (content: string, filename: string) => {
 };
 
 export function validateConfig(config: Object) {
+  if (!Array.isArray((config as configT).aircraft)) return false;
+  const aircraft = (config as configT).aircraft
+  for (const plane of aircraft) {
+    if (!(
+      typeof plane.properties === 'object' &&
+      typeof plane.limits === 'object' &&
+      Array.isArray(plane.seats) &&
+      Array.isArray(plane.cargoAreas) &&
+      Array.isArray(plane.fuelTanks) &&
+      Array.isArray(plane.equipment) &&
+      Array.isArray(plane.aircraftConfigs) &&
+      Array.isArray(plane.operationConfigs)
+    )) return false;
+  }
+
   return (
     config != null &&
     typeof config === 'object' &&
