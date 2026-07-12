@@ -1,7 +1,7 @@
 import { Fragment, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import './Graph.css'
 import { type aircraftLimitsT, type cargoAreaT, type aircraftT, type momentObjectT, type regionPointT, type regionT, type seatT, type weightLimitT, type setupT, baseLengthUnit, baseWeightUnit, type loadingT } from './Types';
-import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalancePointsForTanks, calculateEmptyBalanceForConfig, calculateMAC, calculateMaxBalanceForConfig, roundNumber, truncateNumber } from './utility';
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalancePointsForTanks, calculateEmptyBalanceForConfig, calculateMAC, calculateMaxBalanceForConfig, roundNumber, truncateNumber, validateAircraft } from './utility';
 import { convertLengthUnit, convertWeightUnit, UnitContext } from './UnitsContext';
 
 let width = 140;
@@ -554,7 +554,7 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
   };
 
   useMemo(() => {
-    if (aircraft && selectedConfig)
+    if (!validateAircraft(aircraft) && selectedConfig)
       configAreaPoints.current = generateConfigArea(aircraft, limits, selectedConfig, units).join(" ");
   }, [aircraft, selectedConfig, limits]);
 
@@ -581,8 +581,8 @@ function Graph({ aircraft, loading, selectedConfig, selectedOpsConfig, _options 
     }
   }, [ref, showCoords]);
 
+  if (validateAircraft(aircraft)) return;
 
-  if (aircraft === undefined) return;
   let data: aircraftLimitsT = JSON.parse(JSON.stringify(aircraft.limits));
 
   // Ensure that the arm is in MAC or distance units

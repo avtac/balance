@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import "./Diagram.css"
 import { DiagramModes, type seatT, type cargoAreaT, type aircraftConfigT, type operationConfigT, type aircraftT, type loadingT, baseLengthUnit } from "./Types";
-import { calculateMAC, roundNumber } from "./utility";
+import { calculateMAC, roundNumber, validateAircraft } from "./utility";
 import { convertLengthUnit, UnitContext } from "./UnitsContext";
 
 // This is the assumed length of a seat (in arm units) where the arm is expected to be
@@ -178,7 +178,7 @@ function Diagram({ aircraft, loading, setLoading, diagramMode, selectedConfig, s
     }
   }, [ref, showCoords]);
 
-  if (!aircraft) return (<></>);
+  if (validateAircraft(aircraft)) return (<></>);
 
   let seats = [...aircraft.seats]
   let cargoAreas = [...aircraft.cargoAreas]

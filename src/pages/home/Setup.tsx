@@ -1,6 +1,6 @@
 import './Setup.css'
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Subregion } from "../../Layout";
+import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import { showPopupDialog, Subregion } from "../../Layout";
 import { type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
 import { activeConfigData, roundNumber, uploadedConfigs, validateConfig } from "../../utility";
 import { convertDensityUnits, fuelTypes, fuelUnitsElements, lengthUnitsElements, unitPrecision, weightUnitsElements } from '../../UnitsContext';
@@ -149,6 +149,7 @@ interface SetupProps extends configProps, nameProps {
 function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selectedOpsConfig, setSelectedOpsConfig }: SetupProps): ReactNode {
   const foundConfigs: { id: string, name: string }[] = []
   const [availableConfigList, setAvailableConfigList] = useState(foundConfigs);
+  const validityRef: RefObject<(null | HTMLParagraphElement)> = useRef(null);
 
   useMemo(() => {
     const savedConfigsString = localStorage.getItem(uploadedConfigs);
@@ -157,6 +158,8 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
       const foundConfigs: { id: string, name: string }[] = Object.entries(savedConfigs).map(([id, config]) => ({ id: id, name: config.name }));
       setAvailableConfigList(foundConfigs);
     }
+    const notValid = validateConfig(config);
+    if (validityRef.current) validityRef.current.textContent = notValid ? notValid : "";
   }, [config])
 
   function openFile() {
@@ -174,9 +177,12 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
       fileReader.onload = () => {
         const data: string = fileReader.result as string;
         if (!data) return;
-        if (!validateConfig(JSON.parse(data))) return;
+        const validity = validateConfig(JSON.parse(data))
+        if (validity) {
+          showPopupDialog("INVALID", "Uploaded config is invalid\n" + validity);
+          return;
+        }
         setConfig(JSON.parse(data));
-        localStorage.setItem(activeConfigData, data)
         appendConfigToSavedConfigs(JSON.parse(data));
       };
     };
@@ -215,9 +221,8 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
     setConfig(selectedConfig)
   }
 
-
   const availableConfigs = availableConfigList.sort((a, b) => a.name.localeCompare(b.name)).map((v) => <option value={v.id} key={v.id}>{v.name}</option>)
-  const aircraftOptions = !config.aircraft ? [] : config.aircraft
+  const aircraftOptions = !config.aircraft || validateConfig(config) ? [] : config.aircraft
     .sort((a, b) =>
       a.properties.tailNumber.localeCompare(b.properties.tailNumber)
     )
@@ -230,7 +235,7 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
     )
 
   const selectedAircraftIndex = config.aircraft ? config.aircraft.findIndex(a => a.id === selectedAircraft) : -1;
-  const opsConfigOptions = selectedAircraftIndex < 0 ? [] : config.aircraft[selectedAircraftIndex].operationConfigs
+  const opsConfigOptions = selectedAircraftIndex < 0 || validateConfig(config) ? [] : config.aircraft[selectedAircraftIndex].operationConfigs
     .sort((a, b) =>
       a.name.localeCompare(b.name)
     )
@@ -251,6 +256,7 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
             {availableConfigs}
           </select>
         </div>
+        <p ref={validityRef}></p>
         <div id="buttons">
           <button onClick={openFile}>Upload Config</button>
           <button onClick={deleteConfig}>Remove Config</button>
@@ -276,7 +282,7 @@ function Setup({ config, setConfig, selectedAircraft, setSelectedAircraft, selec
         </div>
       </Subregion>
       <Units
-        macAvailable={selectedAircraftIndex >= 0 ? (config.aircraft[selectedAircraftIndex].properties.mac != 0 && config.aircraft[selectedAircraftIndex].properties.leadingEdgeMAC != 0) : false}
+        macAvailable={selectedAircraftIndex >= 0 && config.aircraft[selectedAircraftIndex].properties ? (config.aircraft[selectedAircraftIndex].properties.mac != 0 && config.aircraft[selectedAircraftIndex].properties.leadingEdgeMAC != 0) : false}
         config={config}
         setConfig={setConfig} />
       <Subregion>

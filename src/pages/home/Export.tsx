@@ -5,7 +5,7 @@ import graphStyle from '../../Graph.css?inline'
 import parse, { attributesToProps, domToReact, Element, type DOMNode, type HTMLReactParserOptions } from 'html-react-parser';
 import { useContext, useEffect, useRef, useState, type ComponentPropsWithRef, type CSSProperties, type ReactNode, type RefObject, type JSX } from "react";
 import { baseFuelUnit, baseLengthUnit, baseWeightUnit, DiagramModes, type aircraftT, type fuelUnitsT, type lengthUnitsT, type loadingT, type nameProps, type setupT, type weightUnitsT } from "../../Types";
-import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalanceForZeroFuel, calculateEmptyBalanceForConfig, calculateMAC, roundNumber, withinRegion } from '../../utility';
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateBalanceForZeroFuel, calculateEmptyBalanceForConfig, calculateMAC, roundNumber, validateAircraft, withinRegion } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { createPortal } from 'react-dom';
 import Graph, { type graphOptionsT } from '../../Graph';
@@ -170,9 +170,9 @@ function validTemplate(data: string, type: ('html' | 'json')) {
 }
 
 function generateScopeData(aircraft: aircraftT, loading: loadingT, selectedOpsConfig: string, units: setupT) {
-  if (!aircraft) return (<></>);
+  if (validateAircraft(aircraft)) return {};
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
-  if (opsConfigIndex < 0) return (<></>);
+  if (opsConfigIndex < 0) return {};
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);
 
   const graph = (options: graphOptionsT) => (<Graph aircraft={aircraft} loading={loading} selectedOpsConfig={selectedOpsConfig} selectedConfig={aircraft.operationConfigs[opsConfigIndex].config} _options={options} />);
@@ -492,7 +492,7 @@ export function Export({ loading, aircraft, selectedOpsConfig }: exportProps & n
   const [activeTemplate, setTemplate] = useState(active);
   const [iframeParts, setIframeParts] = useState(null as (null | { body: (string | JSX.Element | JSX.Element[]), head: (string | JSX.Element | JSX.Element[]) }));
   const [inputParts, setInputParts] = useState(null as (null | ReactNode[]));
-  if (!aircraft) return (<></>);
+  if (validateAircraft(aircraft)) return (<h2 style={{ margin: " 20px auto" }}>Invalid Config</h2>);
 
   function setTemplateSpecial(tempId: string) {
     localStorage.setItem("activeTemplate", tempId);

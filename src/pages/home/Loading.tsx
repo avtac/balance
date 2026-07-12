@@ -3,7 +3,7 @@ import './Loading.css'
 import { useContext, useRef, useState, type ReactNode, type RefObject } from "react";
 import { baseFuelUnit, baseLengthUnit, baseWeightUnit, type aircraftT, type cargoAreaT, type cargoT, type fuelTankT, type loadingProps, type loadingT, type nameProps, type passengerT, type seatT } from "../../Types";
 import { MultiPane, Subregion } from "../../Layout";
-import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, getSortedByArm, getSortedByArmClosest, roundNumber } from "../../utility";
+import { calculateBalanceForLanding, calculateBalanceForOperationConfig, calculateBalanceForTakeoff, calculateEmptyBalanceForConfig, getSortedByArm, getSortedByArmClosest, roundNumber, validateAircraft } from "../../utility";
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV, faFillDrip } from '@fortawesome/free-solid-svg-icons';
@@ -786,7 +786,7 @@ interface localLoadingProps extends loadingProps {
 
 function Loading({ loading, setLoading, aircraft, selectedOpsConfig }: localLoadingProps & nameProps): ReactNode {
   const units = useContext(UnitContext);
-  if (!aircraft) return (<></>);
+  if (validateAircraft(aircraft)) return (<h2 style={{ margin: " 20px auto" }}>Invalid Config</h2>);
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);

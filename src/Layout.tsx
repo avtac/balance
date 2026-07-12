@@ -123,4 +123,25 @@ function MultiPane({ selected, setSelected, children }: MultiPaneProps) {
   );
 }
 
-export { Region, Subregion, HorizontalRegion, VerticalRegion, Grouping, MultiPane }
+function showPopupDialog(title: string, text: string) {
+  const dialog = document.createElement('dialog');
+  dialog.classList.add("popupDialog")
+  dialog.onclose = () => dialog.remove()
+  dialog.closedBy = 'all';
+  const div = document.createElement('div');
+  dialog.appendChild(div);
+  const header = document.createElement("h3");
+  header.textContent = title;
+  const paragraph = document.createElement("p");
+  paragraph.textContent = text;
+  const button = document.createElement("button");
+  button.textContent = "Close";
+  button.onclick = () => dialog.close()
+  div.appendChild(header);
+  div.appendChild(paragraph);
+  div.appendChild(button);
+  document.body.appendChild(dialog);
+  dialog.showModal();
+}
+
+export { Region, Subregion, HorizontalRegion, VerticalRegion, Grouping, MultiPane, showPopupDialog }

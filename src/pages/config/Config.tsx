@@ -3,7 +3,7 @@ import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
 import { type aircraftConfigT, type cargoAreaT, type aircraftT, type equipmentT, type seatT, type aircraftProps, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit } from "../../Types";
-import { roundNumber } from '../../utility';
+import { roundNumber, validateAircraft } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -223,6 +223,7 @@ interface AircraftConfigsProps {
 
 function AircraftConfigs({ aircraft, setAircraft, selectedConfig, setSelectedConfig }: AircraftConfigsProps & nameProps): ReactElement {
   const units = useContext(UnitContext);
+  if (validateAircraft(aircraft)) return (<h2 style={{ margin: " 20px auto" }}>Invalid Config</h2>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === selectedConfig);
 
   function addConfig(): void {

@@ -2,7 +2,7 @@ import './Equipment.css'
 import '../../Layout.css'
 import { Subregion } from '../../Layout'
 import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type nameProps, baseLengthUnit, baseWeightUnit } from '../../Types'
-import { getSortedByArm, roundNumber } from '../../utility';
+import { getSortedByArm, roundNumber, validateAircraft } from '../../utility';
 import { useContext, type ReactElement } from 'react';
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -93,6 +93,8 @@ interface equipmentProps {
 
 function Equipment({ aircraft, setAircraft }: equipmentProps & nameProps): ReactElement {
   const units = useContext(UnitContext);
+  if (validateAircraft(aircraft)) return (<h2 style={{ margin: " 20px auto" }}>Invalid Config</h2>);
+
   // S or C are appended to the start of the area id in the equipment type to denote seat or cargoArea in selection value
   const values = getSortedByArm([...aircraft.seats.map(s => { return { ...s, id: "S" + s.id } }), ...aircraft.cargoAreas.map(c => { return { ...c, id: "C" + c.id } })])
 

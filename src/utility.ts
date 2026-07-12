@@ -338,27 +338,43 @@ export const saveStringToFile = (content: string, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export function validateConfig(config: Object) {
-  if (!Array.isArray((config as configT).aircraft)) return false;
+export function validateAircraft(aircraft: aircraftT): (string | false) {
+  if (aircraft === null) return "Bad aircraft";
+  if (typeof aircraft !== 'object') return "Bad aircraft";
+  if (!Object.hasOwn(aircraft, 'properties')) return "Aircraft missing 'properties' property";
+  if (typeof aircraft.properties !== 'object') return "Aircraft 'properties' property is incorrect type";
+  if (!Object.hasOwn(aircraft, 'limits')) return "Aircraft missing 'limits' property";
+  if (typeof aircraft.limits !== 'object') return "Aircraft 'limits' property is incorrect type";
+  if (!Object.hasOwn(aircraft, 'seats')) return "Aircraft missing 'seats' property";
+  if (!Array.isArray(aircraft.seats)) return "Aircraft 'seats' property is incorrect type";
+  if (!Object.hasOwn(aircraft, 'cargoAreas')) return "Aircraft missing 'cargoAreas' property";
+  if (!Array.isArray(aircraft.cargoAreas)) return "Aircraft 'cargoAreas' property is incorrect type";
+  if (!Object.hasOwn(aircraft, 'fuelTanks')) return "Aircraft missing 'fuelTanks' property";
+  if (!Array.isArray(aircraft.fuelTanks)) return "Aircraft 'fuelTanks' property is incorrect type";
+  if (!Object.hasOwn(aircraft, 'equipment')) return "Aircraft missing 'equipment' property";
+  if (!Array.isArray(aircraft.equipment)) return "Aircraft 'equipment' property is incorrect type";
+  if (!Object.hasOwn(aircraft, 'aircraftConfigs')) return "Aircraft missing 'aircraftConfigs' property";
+  if (!Array.isArray(aircraft.aircraftConfigs)) return "Aircraft 'aircraftConfigs' property is incorrect type";
+  if (!Object.hasOwn(aircraft, 'operationConfigs')) return "Aircraft missing 'operationConfigs' property";
+  if (!Array.isArray(aircraft.operationConfigs)) return "Aircraft 'operationConfigs' property is incorrect type";
+  return false;
+}
+
+export function validateConfig(config: Object): (string | false) {
+  if (config === null) return "Bad config";
+  if (typeof config !== 'object') return "Bad config";
+  if (!Object.hasOwn(config as configT, 'setup')) return "Config missing 'setup' property";
+  if (typeof (config as configT).setup !== 'object') return "Config 'setup' property is incorrect type";
+  if (!Object.hasOwn(config, 'name')) return "Config missing 'name' property";
+  if (typeof (config as configT).name !== 'string') return "Config 'name' property is incorrect type";
+
+  if (!Object.hasOwn(config, 'aircraft')) return "Config missing 'aircraft' property";
+  if (!Array.isArray((config as configT).aircraft)) return "Config 'aircraft' property is incorrect type";
   const aircraft = (config as configT).aircraft
   for (const plane of aircraft) {
-    if (!(
-      typeof plane.properties === 'object' &&
-      typeof plane.limits === 'object' &&
-      Array.isArray(plane.seats) &&
-      Array.isArray(plane.cargoAreas) &&
-      Array.isArray(plane.fuelTanks) &&
-      Array.isArray(plane.equipment) &&
-      Array.isArray(plane.aircraftConfigs) &&
-      Array.isArray(plane.operationConfigs)
-    )) return false;
+    const resp = validateAircraft(plane);
+    if (resp) return resp;
   }
 
-  return (
-    config != null &&
-    typeof config === 'object' &&
-    typeof (config as configT).setup === 'object' &&
-    typeof (config as configT).name === 'string' &&
-    Array.isArray((config as configT).aircraft)
-  )
+  return false;
 }

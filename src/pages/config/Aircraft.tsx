@@ -2,7 +2,7 @@ import './Aircraft.css'
 import { useRef, type ReactNode, type RefObject } from "react";
 import { type aircraftPropertiesT, type configProps, type aircraftT, type configT, type nameProps, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { Subregion } from "../../Layout";
-import { roundNumber } from '../../utility';
+import { roundNumber, validateConfig } from '../../utility';
 import { convertLengthUnit, convertWeightUnit, unitPrecision } from '../../UnitsContext';
 
 interface aircraftConfigProps extends configProps {
@@ -86,6 +86,7 @@ function AircraftMerging({ config, setConfig, selectedAircraft }: aircraftMergin
 
 function AircraftConfig({ config, setConfig, selectedAircraft, setSelectedAircraft }: aircraftConfigProps & nameProps): ReactNode {
   const aircraftIndex = config.aircraft.findIndex(a => a.id === selectedAircraft);
+  if (validateConfig(config)) return (<h2 style={{ margin: " 20px auto" }}>Invalid Config</h2>);
 
   function setValue<K extends keyof aircraftPropertiesT, V extends aircraftPropertiesT[K]>(key: K, value: V) {
     const tmp: configT = JSON.parse(JSON.stringify(config));

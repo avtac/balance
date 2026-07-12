@@ -3,7 +3,7 @@ import './BOW.css'
 import { useContext, useEffect, useRef, type ReactNode } from "react";
 import { Subregion, MultiPane } from "../../Layout";
 import { type aircraftConfigT, type cargoAreaT, type aircraftProps, type aircraftT, type operationConfigT, type seatT, type nameProps, baseWeightUnit } from "../../Types";
-import { getSortedByArm, roundNumber } from '../../utility';
+import { getSortedByArm, roundNumber, validateAircraft } from '../../utility';
 import { convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -166,6 +166,8 @@ interface aircraftOperationConfigProps extends aircraftProps {
 function AircraftOperationConfig({ aircraft, setAircraft, selectedConfig, setSelectedConfig, selectedOpsConfig, setSelectedOpsConfig }: aircraftOperationConfigProps & nameProps): ReactNode {
   const units = useContext(UnitContext);
   const configSelectRef = useRef(null);
+  if (validateAircraft(aircraft)) return (<h2 style={{ margin: " 20px auto" }}>Invalid Config</h2>);
+
   const opsConfigIndex: number = aircraft.operationConfigs.findIndex((c: operationConfigT) => c.id === selectedOpsConfig);
   const configIndex: number = opsConfigIndex < 0 ? -1 : aircraft.aircraftConfigs.findIndex((c: aircraftConfigT) => c.id === aircraft.operationConfigs[opsConfigIndex].config);
 

@@ -1,6 +1,6 @@
 import './Setup.css'
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Subregion } from "../../Layout";
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { showPopupDialog, Subregion } from "../../Layout";
 import { type configProps, type configT, type nameProps, type weightUnitsT, type setupT, type lengthUnitsT, type fuelUnitsT, volumeUnits, type volumeUnitsT, baseVolumeUnit, baseWeightUnit } from "../../Types";
 import { activeConfigBuilder, roundNumber, savedBuilderConfigs, saveStringToFile, validateConfig } from "../../utility";
 import { getNewConfig } from "./ConfigBuilder";
@@ -126,9 +126,12 @@ interface SetupProps extends configProps {
 function Setup({ config, setConfig, selectedAircraft }: SetupProps & nameProps): ReactNode {
   const foundConfigs: { id: string, name: string }[] = []
   const [availableConfigList, setAvailableConfigList] = useState(foundConfigs);
+  const validityRef: RefObject<(null | HTMLParagraphElement)> = useRef(null);
 
   useEffect(() => {
     saveFile();
+    const notValid = validateConfig(config);
+    if (validityRef.current) validityRef.current.textContent = notValid ? notValid : "";
   }, [config])
 
   function setName(name: string): void {
@@ -214,9 +217,12 @@ function Setup({ config, setConfig, selectedAircraft }: SetupProps & nameProps):
       fileReader.onload = () => {
         const data: string = fileReader.result as string;
         if (!data) return;
-        if (!validateConfig(JSON.parse(data))) return;
+        const validity = validateConfig(JSON.parse(data))
+        if (validity) {
+          showPopupDialog("INVALID", "Uploaded config is invalid\n" + validity);
+          return;
+        }
         setConfig(JSON.parse(data));
-        localStorage.setItem(activeConfigBuilder, data)
       };
     };
     input.click();
@@ -229,6 +235,8 @@ function Setup({ config, setConfig, selectedAircraft }: SetupProps & nameProps):
 
     const selectedConfig: (configT | undefined) = savedConfigs[configId];
     if (!selectedConfig) return;
+    const notValid = validateConfig(selectedConfig);
+    if (validityRef.current) validityRef.current.textContent = notValid ? notValid : "";
     localStorage.setItem(activeConfigBuilder, JSON.stringify(selectedConfig));
     setConfig(selectedConfig)
   }
@@ -244,6 +252,7 @@ function Setup({ config, setConfig, selectedAircraft }: SetupProps & nameProps):
             {availableConfigs}
           </select>
         </div>
+        <p ref={validityRef}></p>
         <div id="buttons">
           <button onClick={newFile}>New Config</button>
           <button onClick={deleteConfig}>Delete Config</button>
@@ -256,7 +265,7 @@ function Setup({ config, setConfig, selectedAircraft }: SetupProps & nameProps):
         <input id="configName" value={config.name} onChange={(e) => setName(e.target.value)} />
       </Subregion>
       <Units
-        macAvailable={selectedAircraftIndex >= 0 ? (config.aircraft[selectedAircraftIndex].properties.mac != 0 && config.aircraft[selectedAircraftIndex].properties.leadingEdgeMAC != 0) : false}
+        macAvailable={selectedAircraftIndex >= 0 && config.aircraft[selectedAircraftIndex].properties ? (config.aircraft[selectedAircraftIndex].properties.mac != 0 && config.aircraft[selectedAircraftIndex].properties.leadingEdgeMAC != 0) : false}
         config={config}
         setConfig={setConfig} />
     </>

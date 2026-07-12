@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { Subregion } from "../../Layout";
 import { type aircraftT, type seatT, type aircraftProps, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
-import { roundNumber } from "../../utility";
+import { roundNumber, validateAircraft } from "../../utility";
 import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -80,6 +80,8 @@ function SeatInput({ seat, index, aircraft, setAircraft }: seatInputProps) {
 
 function SeatConfig({ aircraft, setAircraft }: aircraftProps) {
   const units = useContext(UnitContext);
+  if (validateAircraft(aircraft)) return (<h2 style={{ margin: " 20px auto" }}>Invalid Config</h2>);
+
   function addSeat(): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));
     tmp.seats.push({

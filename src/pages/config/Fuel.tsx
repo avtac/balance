@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { Subregion } from "../../Layout";
 import { type fuelTankT, type aircraftProps, type aircraftT, baseLengthUnit, baseFuelUnit } from "../../Types";
 import { convertFuelUnits, convertLengthUnit, UnitContext, unitPrecision } from "../../UnitsContext";
-import { roundNumber } from "../../utility";
+import { roundNumber, validateAircraft } from "../../utility";
 import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -86,6 +86,7 @@ function FuelInput({ tank, index, aircraft, setAircraft }: fuelInputProps) {
 
 function FuelConfig({ aircraft, setAircraft }: aircraftProps) {
   const units = useContext(UnitContext);
+  if (validateAircraft(aircraft)) return <></>;
 
   function addFuel(): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));

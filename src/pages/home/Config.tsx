@@ -5,7 +5,7 @@ import '../../Layout.css'
 import { useContext, useEffect, useRef, useState, type ReactElement, type RefObject } from 'react';
 import { MultiPane, Subregion } from "../../Layout";
 import { type cargoAreaT, type aircraftT, type equipmentT, type seatT, type fuelTankT, type nameProps, baseLengthUnit, baseWeightUnit, baseFuelUnit, type aircraftProps, type configT, type loadingT, type loadingProps } from "../../Types";
-import { activeConfigData, calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber, uploadedConfigs } from '../../utility';
+import { activeConfigData, calculateBalanceForOperationConfig, calculateEmptyBalanceForConfig, getSortedByArm, roundNumber, uploadedConfigs, validateAircraft } from '../../utility';
 import { convertFuelUnits, convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from '../../UnitsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsRotate, faCheck, faEllipsisV } from "@fortawesome/free-solid-svg-icons"
@@ -468,7 +468,7 @@ interface ConfigProps extends aircraftProps, loadingProps {
 function Config({ aircraft, setAircraft, loading, setLoading, selectedOpsConfig }: ConfigProps & nameProps): ReactElement {
   const units = useContext(UnitContext);
   const [filter, setFilter] = useState(true);
-  if (!aircraft) return (<></>);
+  if (validateAircraft(aircraft)) return (<h2 style={{ margin: " 20px auto" }}>Invalid Config</h2>);
   const opsConfigIndex = aircraft.operationConfigs.findIndex(c => c.id === selectedOpsConfig);
   if (opsConfigIndex < 0) return (<></>);
   const configIndex = aircraft.aircraftConfigs.findIndex(c => c.id === aircraft.operationConfigs[opsConfigIndex].config);

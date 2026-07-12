@@ -4,7 +4,7 @@ import { useContext, useRef, type ClipboardEvent, type ReactNode } from "react";
 import { Subregion } from "../../Layout";
 import { type regionT, type regionPointT, type weightLimitT, type aircraftProps, type aircraftT, type nameProps, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
-import { roundNumber } from "../../utility";
+import { roundNumber, validateAircraft } from "../../utility";
 import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -320,7 +320,8 @@ function AircraftLimits({ aircraft, setAircraft }: aircraftProps): ReactNode {
   );
 }
 
-function Geometry({ aircraft, setAircraft }: aircraftProps & nameProps): ReactNode {
+function Limitations({ aircraft, setAircraft }: aircraftProps & nameProps): ReactNode {
+  if (validateAircraft(aircraft)) return (<h2 style={{ margin: " 20px auto" }}>Invalid Config</h2>);
   return (
     <>
       <AircraftLimits aircraft={aircraft} setAircraft={setAircraft} />
@@ -328,4 +329,4 @@ function Geometry({ aircraft, setAircraft }: aircraftProps & nameProps): ReactNo
   );
 }
 
-export default Geometry;
+export default Limitations;

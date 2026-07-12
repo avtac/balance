@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { Subregion } from "../../Layout";
 import { type cargoAreaT, type aircraftProps, type aircraftT, baseLengthUnit, baseWeightUnit } from "../../Types";
 import { convertLengthUnit, convertWeightUnit, UnitContext, unitPrecision } from "../../UnitsContext";
-import { roundNumber } from "../../utility";
+import { roundNumber, validateAircraft } from "../../utility";
 import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -64,6 +64,7 @@ function CargoInput({ area, index, aircraft, setAircraft }: cargoInputProps) {
 
 function CargoConfig({ aircraft, setAircraft }: aircraftProps) {
   const units = useContext(UnitContext);
+  if (validateAircraft(aircraft)) return;
 
   function addCargo(): void {
     const tmp: aircraftT = JSON.parse(JSON.stringify(aircraft));

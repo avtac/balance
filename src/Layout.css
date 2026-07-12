@@ -126,3 +126,31 @@
     }
   }
 }
+
+.popupDialog {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 20rem;
+
+  div {
+    display: grid;
+    padding: .5rem;
+    justify-content: center;
+    align-items: center;
+
+    h3 {
+      text-align: center;
+    }
+
+    p {
+      margin: 5px;
+      text-align: center;
+      white-space: pre-line;
+    }
+
+    button {
+      width: 8rem;
+      margin: auto;
+    }
+  }
+}
