@@ -455,7 +455,6 @@ const fuelModeNames = { proportional: "Proportional", even: "Even" } as const;
 type fuelModesT = typeof fuelModes[number];
 
 function fillGroup(group: fuelTankT[], loading: loadingT, fuelToAdd: number, mode: fuelModesT): number {
-  console.log("changing GROUP", fuelToAdd);
   let fuelRemaining = fuelToAdd;
   group.sort((a, b) => a.maxWeight - b.maxWeight);
 
@@ -505,7 +504,6 @@ function fillGroup(group: fuelTankT[], loading: loadingT, fuelToAdd: number, mod
     const fuelAdded = fuelToSet - startingFuel;
     fuelRemaining -= fuelAdded;
 
-    console.log("AA", startingFuel, fuelToSet, fuelAdded, tanksToFillCount, fuelToAdd, fuelRemaining);
     if (mode === 'even' && fuelAdded != 0 && ((fuelToSet === t.maxWeight && fuelRemaining > 0) || (fuelRemaining < 0 && fuelToSet === 0))) {
       fuelToAdd -= fuelAdded;
       tanksToFillCount -= 1;

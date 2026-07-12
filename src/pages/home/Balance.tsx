@@ -77,7 +77,6 @@ function Balance() {
     const saved = localStorage.getItem(uploadedConfigs);
     if (saved) {
       let data: configT[] = Object.values(JSON.parse(saved));
-      console.log(data);
       if (data.length > 0)
         storageConfig = data[0];
       localStorage.setItem(activeConfigData, JSON.stringify(storageConfig));

@@ -155,7 +155,6 @@ function validTemplate(data: string, type: ('html' | 'json')) {
     const doc = parser.parseFromString(data, 'text/html');
 
     const errorNode = doc.querySelector('parsererror');
-    console.log("LOAD", errorNode, doc);
     return !errorNode;
   } else if (type === 'json') {
     try {
